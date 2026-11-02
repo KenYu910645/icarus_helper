@@ -1,7 +1,7 @@
 {
   "source": "Icarus Intel",
   "url": "https://www.icarusintel.com/map/layers/prometheus",
-  "background_url_pattern": "https://www.icarusintel.com/maps/prometheus/3/{x}/{y}.jpg",
+  "background_url_pattern": "https://www.icarusintel.com/maps/prometheus2/3/{x}/{y}.jpg",
   "fetched_at": "2026-10-31T15:20:27.247005+00:00",
   "private_local_cache": true,
   "counts": {
@@ -12,5 +12,597 @@
     "metaDeposits": 207,
     "oilGeysers": 21
   },
-  "notice": "Community map catalog: potential positions, not proof of a live world resource. Attribution retained; game assets are not distributed."
+  "notice": "Community map catalog: potential positions, not proof of a live world resource. Attribution retained; game assets are not distributed.",
+  "background": {
+    "tileset": "prometheus2",
+    "zoom": 3,
+    "source_tile_size": 512,
+    "output_tile_size": 256,
+    "url_pattern": "https://www.icarusintel.com/maps/prometheus2/3/{x}/{y}.jpg",
+    "generated_at": "2026-11-02T05:59:04.375245+00:00",
+    "fetched_at": "2026-11-02T05:59:04.095310+00:00",
+    "width": 2048,
+    "height": 2048,
+    "tiles_loaded": 64,
+    "tiles_expected": 64,
+    "sha256": "4cf7f37e7e5ee7f99a9dc470f11c4d5677c7e6a3d4b1bf4918bf6027675a5695",
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/0.jpg",
+        "fetched_at": "2026-11-02T05:58:52.775433+00:00",
+        "sha256": "1a9e2d3e87aa7fbfff261283014f991f573f1726b26a611f77e525c6126ccc00",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/1.jpg",
+        "fetched_at": "2026-11-02T05:58:52.975682+00:00",
+        "sha256": "81e19b4519545aea0d19f929b09329aae72f649101d72eee66268ae98494559f",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/2.jpg",
+        "fetched_at": "2026-11-02T05:58:52.927098+00:00",
+        "sha256": "9fa517b6e67200a66d9a862e58e20b27575b3750ea8f621605b561b9b1d5c472",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/3.jpg",
+        "fetched_at": "2026-11-02T05:58:52.942716+00:00",
+        "sha256": "fce1e1a30b47478e4487b666da1e67f5918f9402d149bcc3061c334f46721b13",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/4.jpg",
+        "fetched_at": "2026-11-02T05:58:52.943631+00:00",
+        "sha256": "b30280c20f307d4ce65915d3af5a10401a548f7fef531165c46d9ddd8672aae9",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/5.jpg",
+        "fetched_at": "2026-11-02T05:58:52.955073+00:00",
+        "sha256": "3b61e2f8f06bacfcb87bf308dde80adf5453d17f6a6ee6e225d501ab025afbfe",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/6.jpg",
+        "fetched_at": "2026-11-02T05:58:53.877935+00:00",
+        "sha256": "6d16d7b72294d358ab31b8358a2c41a5075ca7d1a2d4b5f64103110433e1a43d",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 0,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/0/7.jpg",
+        "fetched_at": "2026-11-02T05:58:53.977175+00:00",
+        "sha256": "37dc85858c71f06d3fcf06f63aa4cfb7dee03b79942bf1680b85484f7eaf7f1f",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/0.jpg",
+        "fetched_at": "2026-11-02T05:58:54.089627+00:00",
+        "sha256": "d8a9d41114955ec24885b8935f5332293f5a23fcea3b4411d3e8095eb119f2ce",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/1.jpg",
+        "fetched_at": "2026-11-02T05:58:54.041883+00:00",
+        "sha256": "cde47316ebbf00cef42e2bc0fabf7d5953965798db03ae068fa0ffb122eb1ec1",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/2.jpg",
+        "fetched_at": "2026-11-02T05:58:54.020308+00:00",
+        "sha256": "8f4d619c6dcfff1288a76573d34fba26c1237164fc8024a03ea6a9451cff4a70",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/3.jpg",
+        "fetched_at": "2026-11-02T05:58:54.040377+00:00",
+        "sha256": "610ef63c45c3a297fa93e74ae28e51b4c16218062f04bc472a786b052aa6298a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/4.jpg",
+        "fetched_at": "2026-11-02T05:58:54.928527+00:00",
+        "sha256": "89a7a0fa86a52b145ff03b325e54273c771e4b71d59a214df07ba00e990e4aa1",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/5.jpg",
+        "fetched_at": "2026-11-02T05:58:55.034233+00:00",
+        "sha256": "201dc58224060a23cd4476f4df2d70346c291cd9a97303513cc63e7250bee651",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/6.jpg",
+        "fetched_at": "2026-11-02T05:58:55.071834+00:00",
+        "sha256": "bbadb8ffbbed2e07ccd75f597ad0987f68730e4703b1421dfd7c170ba9dc021d",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 1,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/1/7.jpg",
+        "fetched_at": "2026-11-02T05:58:55.135762+00:00",
+        "sha256": "ee72bf4a777a0525e5ed7357c83e96175d67e68f75cf8695dae75582040062de",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/0.jpg",
+        "fetched_at": "2026-11-02T05:58:55.108443+00:00",
+        "sha256": "37cd5e9a4ce628bd112acd99c60f69b46e6490c4b12c28f1ea8ec36e058dc14c",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/1.jpg",
+        "fetched_at": "2026-11-02T05:58:55.202598+00:00",
+        "sha256": "8d04aaa919d07367d36da7734fbd0322fc1ec6e3f82fdeb30c6fb5b2708e3bc8",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/2.jpg",
+        "fetched_at": "2026-11-02T05:58:55.971735+00:00",
+        "sha256": "2b762c0876c772cd13262958ce95682f93e6dc1619a63de2f6b501ed8f62e83f",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/3.jpg",
+        "fetched_at": "2026-11-02T05:58:56.096426+00:00",
+        "sha256": "51704a670a0b4e5538d900420236b34ca20e34629216eaf12380e95043ded517",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/4.jpg",
+        "fetched_at": "2026-11-02T05:58:56.125024+00:00",
+        "sha256": "bd390d131b6de33fbe9eda6ace992abf912b5ce37e39bd5571f628e82813d1c1",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/5.jpg",
+        "fetched_at": "2026-11-02T05:58:56.171687+00:00",
+        "sha256": "d23d3c80e79085fe5edc9d7434fb37da8748b047256c21733c3b3eda15458864",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/6.jpg",
+        "fetched_at": "2026-11-02T05:58:56.233603+00:00",
+        "sha256": "5cb8a64483e8befb684dd4749572c4501688f5851ce7d7602cdd2de4554f4eaa",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/2/7.jpg",
+        "fetched_at": "2026-11-02T05:58:56.262684+00:00",
+        "sha256": "d5f43e4411f938d493842520145912c63e792364abec059ae6ccba6de52953db",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/0.jpg",
+        "fetched_at": "2026-11-02T05:58:57.017490+00:00",
+        "sha256": "b5991406174ab45ee3634bb7b4fbcdf30c3761453b26b716bc7ec2ef5abd6812",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/1.jpg",
+        "fetched_at": "2026-11-02T05:58:57.433034+00:00",
+        "sha256": "ae864ee44b0485d27682de86f65acda8e236b497e705e67108dd78a4f3730164",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/2.jpg",
+        "fetched_at": "2026-11-02T05:58:57.455260+00:00",
+        "sha256": "59a158212228b6a24a0efe164e68862596be2f1e633159c80ec0524448c57b22",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/3.jpg",
+        "fetched_at": "2026-11-02T05:58:57.430019+00:00",
+        "sha256": "ae63897311cd67b06437a300d9c5cb7e8acd1b0de68973d452de265d932d8e80",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/4.jpg",
+        "fetched_at": "2026-11-02T05:58:57.444793+00:00",
+        "sha256": "2821d3de3c88c2e8cf7ed36eb9f87d70f31b9fbc2e9520312149d6ffadc323aa",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/5.jpg",
+        "fetched_at": "2026-11-02T05:58:57.638012+00:00",
+        "sha256": "f1e3b3d478c62db332abdd1d01a92a218c44697d70a7d793b03b6f1a04a71ecc",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/6.jpg",
+        "fetched_at": "2026-11-02T05:58:58.082785+00:00",
+        "sha256": "2c24d234eacc0af2a4d36ea2d779f51d58f9428da4fd937cca8e330ec36ced6a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 3,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/3/7.jpg",
+        "fetched_at": "2026-11-02T05:58:58.496826+00:00",
+        "sha256": "c5ee65bd60a972e7959dcbf7708b74f2b4c68f179967dc6f9aa61120c7384857",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/0.jpg",
+        "fetched_at": "2026-11-02T05:58:58.487816+00:00",
+        "sha256": "64bd251758582bba12b3a5a2ce944ea7ce3431403d36eb0fbb50874f0fb1284b",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/1.jpg",
+        "fetched_at": "2026-11-02T05:58:58.505216+00:00",
+        "sha256": "dff965b43fad07101c124b0a89330040f63ba6c52dfd6dbab83d85f46e6aea8a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/2.jpg",
+        "fetched_at": "2026-11-02T05:58:58.525609+00:00",
+        "sha256": "47e1afd81ddbecd621c5e27fd93b167b987a13fdec2acd58da59ffef1bdb2bab",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/3.jpg",
+        "fetched_at": "2026-11-02T05:58:58.700556+00:00",
+        "sha256": "8a5bb48bce7af78b52e7ca7254bb86c64116bbdcd851a43757e0de4d71d4a912",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/4.jpg",
+        "fetched_at": "2026-11-02T05:58:59.135509+00:00",
+        "sha256": "741356ce6c365a38a834841a24ee486afa8f4d28bd27da3dafca7593e3bd6ad8",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/5.jpg",
+        "fetched_at": "2026-11-02T05:58:59.538640+00:00",
+        "sha256": "a5054b0359833bc58d0da9b91f24ade9eed15101cfa1ad2c0b2739c8dfb5f4e7",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/6.jpg",
+        "fetched_at": "2026-11-02T05:58:59.543721+00:00",
+        "sha256": "ec5ad7230280cdd5805a138ab6d4483efbe2cd850087ea269d738f10bb7e139a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 4,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/4/7.jpg",
+        "fetched_at": "2026-11-02T05:58:59.582677+00:00",
+        "sha256": "2287bf3344eeb31cf82b473a12beacd503c9cba2710ba129cd6b683d44fa7ffd",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/0.jpg",
+        "fetched_at": "2026-11-02T05:58:59.608070+00:00",
+        "sha256": "3d00c55f31a65fabcb1656f87f3cc980b11dd0d713d324ba71a533131f0a69d2",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/1.jpg",
+        "fetched_at": "2026-11-02T05:58:59.753213+00:00",
+        "sha256": "479f2bec5699d6f42a6750e402283878b3358ededcf9d994c4bfbff154f2a55e",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/2.jpg",
+        "fetched_at": "2026-11-02T05:59:00.187445+00:00",
+        "sha256": "1a0a13e8f020ec200b89f2d3c57d9209c647b5225ccba477509f490a4c8980b2",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/3.jpg",
+        "fetched_at": "2026-11-02T05:59:00.835405+00:00",
+        "sha256": "b8badb8bf5080e4022534143485f138f0c7912333fdf5acbc4a09ddcb78158ff",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/4.jpg",
+        "fetched_at": "2026-11-02T05:59:00.626052+00:00",
+        "sha256": "fab7dde0f1c84756d81dce610e8b021ee4dfa3fc0e512ad3d3ed2e9d6873a165",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/5.jpg",
+        "fetched_at": "2026-11-02T05:59:00.647397+00:00",
+        "sha256": "9b9a976d651b07a1b36443f5c92e9858cd21760e272b028339ccd4b802da12d3",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/6.jpg",
+        "fetched_at": "2026-11-02T05:59:00.660893+00:00",
+        "sha256": "3331ebbce0d3916a7a04c43653c1c449f56f557eb73d5305402511ee3dcb48b4",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 5,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/5/7.jpg",
+        "fetched_at": "2026-11-02T05:59:00.798924+00:00",
+        "sha256": "71dbab2f308bc217b42ecf888d81f7562c3cb5c5931f26db460a8dce27b0840e",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/0.jpg",
+        "fetched_at": "2026-11-02T05:59:01.419148+00:00",
+        "sha256": "c076078f02a386e8b571a2e672f5021824056953bf3e43502da51fae2f0c6038",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/1.jpg",
+        "fetched_at": "2026-11-02T05:59:01.900449+00:00",
+        "sha256": "aae32669a0dcef887580e16c30a4b83b449068ea8a35df11016a93fb502bcf1e",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/2.jpg",
+        "fetched_at": "2026-11-02T05:59:01.756693+00:00",
+        "sha256": "5849137b944b04b63cdfd877862c31245d4d643010573d67248594f23c8aefdb",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/3.jpg",
+        "fetched_at": "2026-11-02T05:59:01.705570+00:00",
+        "sha256": "2df044abf6bf23ec7c2a6ed3d73e87ac1b51d7fc721245bb9c3ec4127f212a99",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/4.jpg",
+        "fetched_at": "2026-11-02T05:59:01.860634+00:00",
+        "sha256": "0947ab23d588f03b07c21d1702f085517c42bc60a52852b74ca0414dc6ddeea4",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/5.jpg",
+        "fetched_at": "2026-11-02T05:59:01.892931+00:00",
+        "sha256": "5af1d8dbbb163d4511bc762bbf666d487dcd09b34e2e5115c63b89eebe2f0195",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/6.jpg",
+        "fetched_at": "2026-11-02T05:59:02.714414+00:00",
+        "sha256": "380def76f6d8937d0aca2b6adb388da81c454a88dd907b4d43fc7748e4f8d676",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 6,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/6/7.jpg",
+        "fetched_at": "2026-11-02T05:59:02.755158+00:00",
+        "sha256": "9df6fc25f616db9435102660fc3efe303a34686c7fe3071a7497919bb003c7fd",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 0,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/0.jpg",
+        "fetched_at": "2026-11-02T05:59:02.819525+00:00",
+        "sha256": "e76972e5522fb13e102622bc6129766b7d9a24cc4d4f072eabf172d00400387a",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/1.jpg",
+        "fetched_at": "2026-11-02T05:59:03.127276+00:00",
+        "sha256": "0d5f64bc909f37ea840035e83e2668157f56b101f17bf517acdd8107955e9407",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/2.jpg",
+        "fetched_at": "2026-11-02T05:59:03.142981+00:00",
+        "sha256": "4ed8d845b589f600b903b601f1bd6872ca7a07fd2c6fa5ca47e6affd654c6336",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 3,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/3.jpg",
+        "fetched_at": "2026-11-02T05:59:02.999638+00:00",
+        "sha256": "fbcbbcd9c900984d70d2194f87fad54f1b70d45b7a540ce04fea31439d1c3a90",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 4,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/4.jpg",
+        "fetched_at": "2026-11-02T05:59:03.776898+00:00",
+        "sha256": "a9b3729126005166449615099bbc455f6c0a115ebd439f7cffaf682a4a1e51e9",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 5,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/5.jpg",
+        "fetched_at": "2026-11-02T05:59:03.807352+00:00",
+        "sha256": "c34680c1eca890200395f9ab69a5528a014a8caf2cef34fee4ea03fd32b228c9",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 6,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/6.jpg",
+        "fetched_at": "2026-11-02T05:59:03.883311+00:00",
+        "sha256": "01b8b22ae6a0f22051eb8a54633d3d22dac2aae652090b04df1885013ca3cee0",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "x": 7,
+        "y": 7,
+        "url": "https://www.icarusintel.com/maps/prometheus2/3/7/7.jpg",
+        "fetched_at": "2026-11-02T05:59:04.095310+00:00",
+        "sha256": "783e10acb70b0072b737ba64b3b203da9c97bc3187ef05836a504cca528b41f4",
+        "width": 512,
+        "height": 512
+      }
+    ]
+  }
 }

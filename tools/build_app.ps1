@@ -28,7 +28,7 @@ try {
     $taskPythonRoot = Split-Path -Parent $taskPython
     $taskBuildPaths = @($taskPythonRoot, (Join-Path $taskPythonRoot 'Scripts'), (Join-Path $env:SystemRoot 'System32'), $env:SystemRoot, (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0'))
     $env:PATH = ($taskBuildPaths | Where-Object { Test-Path -LiteralPath $_ }) -join ';'
-    & $taskPython -m PyInstaller --clean --noconfirm --windowed --name 'ICARUS Helper' --distpath $taskOutput --icon 'icarus_helper/assets/app.ico' --add-data 'icarus_helper/assets/app.ico;icarus_helper/assets' --add-data 'icarus_helper/assets/items;icarus_helper/assets/items' --add-data 'icarus_helper/data;icarus_helper/data' --add-data "$taskAtlas;icarus_helper/atlas/$taskBuild" --exclude-module PySide6.QtWebEngineCore --exclude-module PySide6.QtWebEngineWidgets --exclude-module PySide6.QtQml --exclude-module PySide6.QtQuick --exclude-module PySide6.QtPdf --exclude-module PySide6.QtPdfWidgets --exclude-module PySide6.QtVirtualKeyboard main.py
+    & $taskPython -m PyInstaller --clean --noconfirm --windowed --name 'ICARUS Helper' --distpath $taskOutput --icon 'icarus_helper/assets/app.ico' --add-data 'icarus_helper/assets/app.ico;icarus_helper/assets' --add-data 'icarus_helper/assets/items;icarus_helper/assets/items' --add-data 'icarus_helper/assets/animals;icarus_helper/assets/animals' --add-data 'icarus_helper/data;icarus_helper/data' --add-data "$taskAtlas;icarus_helper/atlas/$taskBuild" --exclude-module PySide6.QtWebEngineCore --exclude-module PySide6.QtWebEngineWidgets --exclude-module PySide6.QtQml --exclude-module PySide6.QtQuick --exclude-module PySide6.QtPdf --exclude-module PySide6.QtPdfWidgets --exclude-module PySide6.QtVirtualKeyboard main.py
     if ($LASTEXITCODE -ne 0) { throw '桌面 APP 建置失敗' }
 } finally {
     $env:PATH = $taskPreviousPath
@@ -65,7 +65,8 @@ if ($Shortcut) {
     $taskLink.Description = 'ICARUS 地圖資源與任務助手（唯讀）'
     $taskBundledIcon = Join-Path $taskBundle '_internal\icarus_helper\assets\app.ico'
     $taskIconHash = (Get-FileHash -LiteralPath $taskBundledIcon -Algorithm SHA256).Hash.ToLowerInvariant()
-    $taskIconCache = Join-Path $env:LOCALAPPDATA 'IcarusHelper\icons'
+    # Keep Explorer's icon source outside Store-app LocalAppData virtualization.
+    $taskIconCache = Join-Path $taskBundle '.icons'
     New-Item -ItemType Directory -Path $taskIconCache -Force | Out-Null
     $taskShortcutIcon = Join-Path $taskIconCache ('helper-' + $taskIconHash.Substring(0, 16) + '.ico')
     Copy-Item -LiteralPath $taskBundledIcon -Destination $taskShortcutIcon -Force

@@ -41,6 +41,17 @@ def number_text(value):
     return f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}".rstrip("0").rstrip(".")
 
 
+def _quantity_order(value):
+    known = _number(value)
+    return (not known, -value if known else 0)
+
+
+def _row_order(row):
+    values = tuple(row["values"].values())
+    total = sum(values) if values and all(_number(value) for value in values) else None
+    return (*_quantity_order(total), str(row["label"]), str(row["key"]))
+
+
 def _chart_rows(category):
     result = []
     for row in category.get("rows", category.get("materials", [])):
@@ -48,7 +59,7 @@ def _chart_rows(category):
         values = values if isinstance(values, dict) else {}
         result.append({"key": row.get("key", row.get("id", "")), "label": row.get("label", row.get("name", "未分類")),
                        "values": {_form(key): value for key, value in values.items()}, "items": row.get("items", [])})
-    return result
+    return sorted(result, key=_row_order)
 
 
 def _series(category, rows):
@@ -453,6 +464,7 @@ class InventoryPanel(QWidget):
         items = [item for item in self.summary.get("items", []) if item.get("category") in (key, category.get("label"))]
         if not items:
             items = [item for row in _chart_rows(category) for item in row.get("items", [])]
+        items.sort(key=lambda item: (*_quantity_order(item.get("quantity")), str(item.get("name", "")), _item_id(item)))
         container_names = {str(container.get("id")): str(container.get("name", container.get("id", "容器"))) for container in self.summary.get("containers", [])}
         self.table.setRowCount(len(items))
         for row, item in enumerate(items):

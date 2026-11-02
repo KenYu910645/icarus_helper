@@ -126,6 +126,8 @@ def test_first_launch_opens_shared_map_even_with_unrelated_local_saves(shared_wi
     assert not widget.controller.watcher.files() and not widget.controller.watcher.directories()
     assert widget.inventory_panel.snapshot is None and widget.inventory_panel.summary is None
     assert "未連接主機存檔" in widget.inventory_panel.status.text()
+    assert widget.animal_panel.snapshot is None and widget.animal_panel.summary is None
+    assert "未連接主機存檔" in widget.animal_panel.status.text()
     assert widget.mission_list.count() > 0
     assert all(m["status_key"] == "unknown" and not m["progress"] for m in widget.missions)
     assert "攻略預覽" in widget.mission_list.item(0).text()
@@ -137,6 +139,7 @@ def test_real_world_selection_is_remembered_and_does_not_inherit_shared_home(sha
     monkeypatch.setattr(widget.controller, "set_path", selected.append)
     widget.world_combo.setCurrentIndex(widget.world_combo.findData(str(other)))
     assert selected == [str(other)]
+    assert widget.animal_panel.summary is None
     assert widget.current_base() is None
     assert Settings(widget.settings.path).data["selected_source"] == str(other)
     now = datetime.now(timezone.utc)

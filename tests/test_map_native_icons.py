@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication
 
 from icarus_helper import map_icons
 from icarus_helper.inventory import load_item_catalog
-from icarus_helper.item_icons import has_item_icon, item_icon_path
+from icarus_helper.item_icons import has_item_icon, item_icon_path, item_pixmap
 
 
 @pytest.fixture
@@ -78,3 +78,39 @@ def test_red_raw_exotic_and_uranium_keep_distinct_exact_native_items():
     assert item_icon_path("Exotic_Red_Raw") != item_icon_path("Exotic_Red")
     assert map_icons.mineral_item_id("Exotic_Raw_Uranium") == "Uranium_Raw"
     assert map_icons.mineral_item_id("Uranium") != "Raw_Iron_Wood"
+
+
+def test_exotic_category_and_biome_candidates_show_native_art_with_small_question(app):
+    category = map_icons.marker_pixmap("exotic", "", 32).toImage()
+    native = item_pixmap("MetaResource", 26).toImage()
+    opaque_samples = [(x, y) for x in range(10, 22) for y in range(10, 22)
+                      if native.pixelColor(x - 3, y - 3).alpha() == 255]
+    assert len(opaque_samples) > 20
+    assert all(category.pixelColor(x, y) == native.pixelColor(x - 3, y - 3) for x, y in opaque_samples)
+    for biome in ("Conifer", "Arctic", "Plant", "Volcanic"):
+        assert map_icons.mineral_item_id(biome) is None
+        assert map_icons.marker_item_id("exotic", biome, candidate=True) == "MetaResource"
+        candidate = map_icons.marker_pixmap("exotic", biome, 32, candidate=True).toImage()
+        assert all(candidate.pixelColor(x, y) == category.pixelColor(x, y) for x in range(12, 22) for y in range(12, 22))
+        assert candidate.pixelColor(5, 5) != category.pixelColor(5, 5)
+        assert candidate != category  # Question badge and dashed frame remain.
+
+
+def test_exact_exotic_red_and_uranium_art_is_not_replaced_by_category_art(app):
+    expected = {"Exotic": "MetaResource", "Exotic_Red_Raw": "Exotic_Red_Raw",
+                "Exotic_Red": "Exotic_Red", "Exotic_Raw_Uranium": "Uranium_Raw"}
+    images = []
+    for resource, ident in expected.items():
+        assert map_icons.marker_item_id("exotic", resource) == ident
+        assert map_icons.marker_item_id("exotic", resource, candidate=True) == ident
+        images.append(map_icons.marker_pixmap("exotic", resource, 32, candidate=True).toImage())
+    assert all(left != right for index, left in enumerate(images) for right in images[index + 1:])
+
+
+def test_confirmed_unknown_exotic_and_unknown_deep_stay_questions(app, monkeypatch):
+    monkeypatch.setattr(map_icons, "item_pixmap", lambda *_args, **_kwargs: pytest.fail("Unknown resource guessed a native image"))
+    for kind, resource, candidate in (("exotic", "Unknown_New_Subtype", False),
+                                      ("exotic", "Conifer", False),
+                                      ("deep", "Unknown_New_Mineral", True)):
+        assert map_icons.marker_item_id(kind, resource, candidate=candidate) is None
+        assert not map_icons.marker_pixmap(kind, resource, 32, candidate=candidate).isNull()

@@ -22,6 +22,7 @@ from .settings import DEFAULT_VISIBLE_LAYERS, Settings
 from .map_icons import marker_pixmap
 from .mission_map import MissionMapPanel
 from .inventory_view import InventoryPanel
+from .animals_view import AnimalPanel
 from .shared_profile import SHARED_SOURCE, seed_shared_bases
 
 
@@ -123,6 +124,9 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self._mission_tab(), "任務地圖與攻略")
         self.inventory_panel = InventoryPanel()
         self.tabs.addTab(self.inventory_panel, "家中物資")
+        self.animal_panel = AnimalPanel()
+        self.animal_panel.ownerSourcesRequested.connect(self.browse_owner_profiles)
+        self.tabs.addTab(self.animal_panel, "馴養動物")
         root.addWidget(self.tabs, 1)
 
     def _map_tab(self):
@@ -285,6 +289,7 @@ class MainWindow(QMainWindow):
         self.map.set_bases([])
         self.map.set_catalog({"map": "", "calibrated": False})
         self.inventory_panel.clear()
+        self.animal_panel.clear()
         self.mission_list.clear()
         self.mission_route.clear()
         self.mission_detail.setHtml("<p>正在讀取所選世界…</p>")
@@ -444,8 +449,29 @@ class MainWindow(QMainWindow):
     def update_inventory(self):
         if self.snapshot and getattr(self.snapshot, "is_shared_map", False):
             self.inventory_panel.set_missing_source()
+            self.animal_panel.set_missing_source()
         else:
             self.inventory_panel.set_snapshot(self.snapshot, self.current_base())
+            configured = self.settings.world(self.snapshot.world_id).get("animal_owner_sources", []) if self.snapshot else []
+            # Keep automatic local discovery and explicitly connected backups.
+            source = getattr(self.snapshot, "source_path", None)
+            local = [str(Path(source).parent.parent.parent)] if source and Path(source).parent.name.casefold() == "prospects" else []
+            self.animal_panel.owner_profile_roots = local + [dict(world_id=self.snapshot.world_id, path=p) for p in configured if isinstance(p, str)] if self.snapshot else None
+            self.animal_panel.set_snapshot(self.snapshot, self.current_base(), self.catalog)
+
+    def browse_owner_profiles(self):
+        if not self.snapshot or getattr(self.snapshot, "is_shared_map", False):
+            return
+        world_id = self.snapshot.world_id
+        path = QFileDialog.getExistingDirectory(self, "連接飼養者帳號備份（唯讀，包含 Characters／Profile／BestiaryData）", str(Path.home()))
+        if not path or not self.snapshot or self.snapshot.world_id != world_id:
+            return
+        config = self.settings.world(world_id)
+        paths = [p for p in config.get("animal_owner_sources", []) if isinstance(p, str)]
+        if path not in paths:
+            config["animal_owner_sources"] = paths + [path]
+            self.save_settings()
+        self.update_inventory()
 
     def change_base(self, base_id=None):
         if self.snapshot:
@@ -738,9 +764,11 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout(dialog)
         detail = QTextBrowser()
         source = "公開共用地圖設定（未連接主機存檔）" if getattr(self.snapshot, "is_shared_map", False) else str(self.snapshot.source_path) if self.snapshot else None
-        info = {"世界": self.snapshot.name if self.snapshot else None, "來源": source, "存檔覆蓋": self.snapshot.coverage if self.snapshot else None, "地圖覆蓋": self.catalog.get("coverage", {}), "地圖來源": self.catalog.get("sources", []), "警告": self.snapshot.warnings if self.snapshot else [], "最近錯誤": getattr(self, "last_error", ""), "原始存檔": "全程唯讀；APP設定與快照另存 LocalAppData/IcarusHelper"}
+        info = {"世界": self.snapshot.name if self.snapshot else None, "來源": source, "存檔覆蓋": self.snapshot.coverage if self.snapshot else None, "地圖覆蓋": self.catalog.get("coverage", {}), "地圖來源": self.catalog.get("sources", []), "警告": self.snapshot.warnings if self.snapshot else [], "最近錯誤": getattr(self, "last_error", ""), "原始存檔": "全程唯讀；APP設定與快照使用自己的資料位置"}
+        info["APP設定檔"] = str(self.settings.path.resolve())
         info["任務位置覆蓋"] = self.mission_route.route.get("coverage", {})
         info["物資統計覆蓋"] = self.inventory_panel.summary.get("coverage", {}) if self.inventory_panel.summary else {"狀態": self.inventory_panel.status.text()}
+        info["馴養動物覆蓋"] = self.animal_panel.summary.get("coverage", {}) if self.animal_panel.summary else {"狀態": self.animal_panel.status.text()}
         if self.missions:
             info["任務版本"] = {key: self.missions[0].get(key) for key in ("source_version", "source_date", "source_build", "installed_build", "version_compatible")}
         detail.setPlainText(json.dumps(info, ensure_ascii=False, indent=2, default=str))
@@ -751,6 +779,7 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def closeEvent(self, event):
+        self.animal_panel.shutdown()
         self.inventory_panel.shutdown()
         self.controller.close()
         super().closeEvent(event)

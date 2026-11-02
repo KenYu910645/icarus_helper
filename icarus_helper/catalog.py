@@ -8,6 +8,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 import copy
 from datetime import datetime, timezone
+import hashlib
 import json
 import math
 import os
@@ -52,9 +53,13 @@ def installed_game_build() -> str | None:
     return None
 
 
+def _bundled_cache() -> Path:
+    return Path(__file__).resolve().parent / "atlas" / CATALOG_BUILD
+
+
 def _cache() -> Path:
     local = CACHE_ROOT / CATALOG_BUILD
-    bundled = Path(__file__).resolve().parent / "atlas" / CATALOG_BUILD
+    bundled = _bundled_cache()
     local_metadata = _read(local / "prometheus_nodes.json")
     bundled_metadata = _read(bundled / "prometheus_nodes.json")
     if local_metadata is None:
@@ -71,6 +76,56 @@ def _read(path: Path, fallback=None):
         return json.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return fallback
+
+
+def _background_info(key: str) -> dict:
+    """Select imagery separately from the generated-resource atlas revision.
+
+    A pre-update local node cache must not hide a bundled Null Sector image.
+    Only the image hash in its own provenance can establish the full tileset.
+    """
+    roots = dict.fromkeys((_cache(), CACHE_ROOT / CATALOG_BUILD, _bundled_cache()))
+    candidates = []
+    for root in roots:
+        path = root / f"{key}.jpg"
+        provenance = _read(root / f"{key}_public_provenance.json", {})
+        if not isinstance(provenance, dict):
+            provenance = {}
+        metadata = provenance.get("background", {})
+        if not isinstance(metadata, dict):
+            metadata = {}
+        expected_hash = str(metadata.get("sha256", "")).lower()
+        full = key == "prometheus" and metadata.get("tileset") == "prometheus2"
+        try:
+            if not path.is_file():
+                continue
+            # A complete-tileset claim needs a matching receipt; a partially
+            # replaced or corrupted file must not be accepted as full terrain.
+            if full and not expected_hash:
+                continue
+            if expected_hash and hashlib.sha256(path.read_bytes()).hexdigest() != expected_hash:
+                continue
+        except OSError:
+            continue
+        candidates.append({**metadata, "source": provenance.get("source", "Icarus Intel"),
+                           "path": str(path), "includes_null_sector": full,
+                           "hash_verified": bool(expected_hash),
+                           "fetched_at": metadata.get("fetched_at", provenance.get("fetched_at", "")),
+                           "url_pattern": metadata.get("url_pattern", provenance.get("background_url_pattern", ""))})
+    if not candidates:
+        return {}
+    complete = [info for info in candidates if info["includes_null_sector"]]
+    if not complete:
+        return candidates[0]
+
+    def fetched_at(info):
+        try:
+            value = datetime.fromisoformat(str(info["fetched_at"]).replace("Z", "+00:00"))
+            return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+        except (TypeError, ValueError):
+            return datetime.min.replace(tzinfo=timezone.utc)
+
+    return max(complete, key=fetched_at)
 
 
 def _map_key(name: str) -> str:
@@ -256,10 +311,12 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
                                                           "社群特殊資源點僅為候選；全圖普通礦生成資產目前支援 Prometheus。"]}
     if not compatible:
         coverage["limitations"].insert(0, f"目前遊戲 build {actual_build} 與資產快取 {CATALOG_BUILD} 不符；已停用舊版資產及礦種還原，請重新建立並驗證資料。")
+    background = _background_info(key)
+    coverage["background"] = background
     bounds = MAP_BOUNDS.get(key)
     return {"map": map_name, "map_key": key, "game_build": installed.get("game_build", CATALOG_BUILD),
             "bounds": dict(zip(("min_x", "min_y", "max_x", "max_y"), bounds)) if bounds else {},
-            "calibrated": calibration["verified"], "background_path": str(_cache() / f"{key}.jpg") if (_cache() / f"{key}.jpg").exists() else "",
+            "calibrated": calibration["verified"], "background_path": background.get("path", ""),
             "caves": caves, "resources": resources, "coverage": coverage,
             "sources": [provenance, {"source": "本機 ICARUS 地圖資產", "build": installed.get("game_build"), "tiles": installed.get("tiles_loaded", 0),
                                       "generated_at": installed.get("generated_at"), "coordinate_rule": installed.get("coordinate_rule"),

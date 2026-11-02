@@ -50,6 +50,14 @@ python -m unittest tests.test_catalog -v
 
 背景圖目前包含 Prometheus、Olympus、Styx。Elysium圖層目錄可取得但使用不同貼圖路徑；目前沒有宣稱其底圖與座標已支援。
 
+Prometheus 預設取用含 Null Sector 地形的 `prometheus2` tileset，其他地圖保留各自的來源。只更新 Prometheus 底圖、不重新下載候選資源或其他地圖：
+
+```powershell
+python tools/refresh_atlas_sources.py --map prometheus --background-only
+```
+
+圖塊快取按 tileset 隔離，避免重用舊 `prometheus` 黑底圖。工具核對全部64張512×512 JPEG後縮放拼成2048×2048，完整成功才原子替換成品；取回時間、hash與實際來源保存在原 provenance 的 `background`，不把更新底圖時間寫成候選資源清單的更新時間。重新封裝前，將驗證過的 `prometheus.jpg` 及 `prometheus_public_provenance.json` 同步至原始碼內 `icarus_helper/atlas/26313227/`。
+
 ## 精簡封裝白名單
 
 只能封裝以下檔案，不應把整個快取加入APP：
@@ -123,7 +131,7 @@ python -m pytest tests/test_inventory.py -q --junitxml=artifacts/inventory-tests
 
 應用程式本身的圖示與物品縮圖分開：`extract_app_icon.py`唯讀擷取遊戲來源到`assets/game-native.ico/png/json`；助手使用`app-master.png`的金色標誌加綠色H角標編輯成果。執行`python tools/export_app_icon.py`可重建`app.ico`六種Windows尺寸、`app.png`預覽與`app.json`輸出hash，不重新生成或修改圖案。`app.json`保留built-in image_gen模式與完整prompt。
 
-`build_app.ps1 -Shortcut`會把助手ICO另存到`%LOCALAPPDATA%/IcarusHelper/icons/helper-<hash16>.ico`並更新桌面捷徑的IconLocation，用新內容路徑避開舊快取；舊圖示副本保留，不刪系統快取或重啟Explorer。
+`build_app.ps1 -Shortcut`會把助手ICO另存到成品資料夾的`.icons/helper-<hash16>.ico`（預設為`dist/ICARUS Helper/.icons/`）並更新桌面捷徑的IconLocation。圖示保存在實際成品路徑，避免Store應用程式的LocalAppData虛擬化讓Explorer讀不到檔案；新內容路徑也可避開舊快取。不刪系統快取或重啟Explorer。
 
 ## 物品原生圖示
 
@@ -138,3 +146,74 @@ python tools/build_item_icons.py
 輸出`icarus_helper/data/item_icons.json`與`icarus_helper/assets/items/*.png`；PNG最大128px、保留alpha，以貼圖路徑hash命名並共用去重。manifest保存來源資料表hash、貼圖來源pak／路徑／hash、像素格式、原圖與縮圖尺寸、PNG hash，以及缺圖原因。解碼只接受可驗證尺寸、inline bulk offset與bytecount的貼圖，未支援格式不偽造圖片。重建後檢查manifest的`coverage`與`missing`，再執行物資UI／圖示測試。
 
 `build_app.ps1`明確封裝`assets/items/`和`data/`。封裝EXE自我檢查會驗證目前基地物品的原生圖示路徑及Qt解碼，並在`artifacts/packaged-startup.json`記錄可用圖示數與缺圖物品；執行時不需要遊戲檔、repak、Pillow或網路。
+
+
+## 動物等級曲線重建
+
+`read_animal_assets.ps1`以PowerShell 7及既有repak／UAssetAPI，唯讀擷取兩條經驗曲線及相關藍圖到指定的私人工作目錄。參數為`-Repak`、`-Content`、`-UAssetLibrary`與`-OutputRoot`；不啟動遊戲，完整藍圖輸出不得提交Git。
+
+`build_animal_level_catalog.py --repak <工具> --content <Icarus/Content> --curve-dir <上述輸出> --catalog <既有animal_catalog.json> --output <新目錄>`可重建整數經驗門檻。工具先驗證目前遊戲EXE雜湊與build，再依已核對的單精度非加權cubic運算重現原生門檻；來源、版本或曲線型態不同就停止。新版本仍須重新核對原生與介面契約，不能只更新版本號。
+
+執行時`animals.py`以同一組門檻計算等級及本級經驗條的`experience_progress`，保留零級、滿級、未知與曲線驗證。狀態容量另依下節目錄與原生規則計算；生命／耐力的個體重建仍不能稱為完整目前上限。
+
+## 動物狀態容量與加成目錄
+
+下列工具需要已驗證build26313227、對應EXE雜湊、repak、PowerShell 7及UAssetAPI；沿用本文件的`ICARUS_CONTENT`、`ICARUS_REPAK`與`ICARUS_UASSET_LIBRARY`環境設定，不使用私人分析路徑，也不啟動遊戲或寫入存檔：
+
+```powershell
+python tools/build_animal_capacity_catalog.py
+python tools/build_animal_capacity_effects.py
+python -m pytest tests/test_animal_capacity_catalog.py tests/test_animal_capacity_effects.py -q
+```
+
+`build_animal_capacity_catalog.py`產生`data/animal_capacities.json`，保存`D_AISetup.AIGrowth → D_AIGrowth.Base/Health/CustomStats`的物種欄位與明確引用的原生曲線鍵值。`build_animal_capacity_effects.py`產生`data/animal_capacity_effects.json`，保存遺傳／血統曲線、394個動物天賦的逐rank完整stat、779個modifier的最大值影響及NPC／保存旗標、118個equippable定義與154個item→trait關聯，以及主人stat轉換與原生規則。兩份目錄包含來源SHA-256，完整表與原始曲線留在本機建置快取。需要改用其他工具位置時，先讀各工具的`--help`；PowerShell參數名稱分別為`--pwsh`與`--powershell`。
+
+加成目錄明確區分已知無直接影響的列與未知列；`known_ineffective`僅表示該已知資料列沒有直接五種容量stat，不能忽略自訂行為、間接效果、保存物品的`AdditionalStats`、`Alterations`與未展開配件。不存在的列不得默認為0。遺傳輸入是保存的遺傳值，血統輸入是原生等級；曲線結果逐條向零截斷，天賦選`Rewards[rank-1]`且不累加低rank。生命／耐力最終計算最低1，三種補給容量無最低1規則；衍生`Maximum*_+`快取不再另加一次。
+
+目前可精確處理已驗證物種的食物、水分及氧氣容量；牛的存檔氧氣與耐力尚未驗證，保留未知。生命與可計算耐力提供個體遺傳、血統與天賦，並透過`owner_stats.py`核對精確主人角色／帳號圖鑑／裝備效果；完整持續來源以`*`標記，主人來源未完整則為`≈`。原生程式已證實recorder會過濾`SaveToDatabase=false`的臨時效果，因此持續上限仍不是完整即時上限。`build_owner_stat_catalog.py`沿用上述ICARUS環境設定，可重建2319個天賦、107個圖鑑及完整物品／裝備等來源索引。獨立角色／帳號檔各保留hash及時間，不強行當作同次世界資料；缺隊友檔不當作零加成。
+
+使用目前所選世界做唯讀核對：
+
+```powershell
+$env:QT_QPA_PLATFORM = 'offscreen'
+python tools/verify_animal_capacities.py
+```
+
+驗證輸出位於`artifacts/animal-capacities-20261102/`，包含來源／設定未變檢查、同快照狀態、容量分類及元件畫面。工具的實際成功結果才算真實存檔唯讀驗證；來源必須有受支援且可辨識的動物，不能把某份案例數量寫成所有世界的固定預期。原生容量運算另有470例離線Unicorn仿真，證據為該目錄的`native-capacity-contract.json`，僅執行有限函式位元組與合成記憶體，不啟動遊戲。離線仿真、真實存檔唯讀／Qt元件、封裝啟動與Windows桌面互動是不同驗收，須各自保留結果。
+
+## 動物原生種類圖示
+
+準備上述合法遊戲來源、repak、Pillow及`data/animal_catalog.json`後，執行：
+
+```powershell
+python tools/build_animal_icons.py
+```
+
+工具先核對build26313227，再從`data.pak`讀取`AI/D_AISetup.json`及`Bestiary/D_BestiaryData.json`，依`BestiaryGroup → Image`明確關聯擷取對應原生貼圖。索引缺失或不唯一不猜圖；貼圖解碼沿用物品圖示的尺寸、bulk offset及bytecount驗證。透明邊界裁切後等比例縮至最大128px，按貼圖路徑hash命名並去重。
+
+輸出為`icarus_helper/data/animal_icons.json`及`icarus_helper/assets/animals/*.png`，目前涵蓋241個種類定義中的219個，另22個記錄缺圖原因並使用問號。manifest保存資料表／原始貼圖／PNG雜湊、pak引用、裁切範圍與尺寸。原生圖屬圖鑑種類／群組代表，不能用來判斷個體毛色、性別或幼獸的精確外觀。原始貼圖封裝保留於`%LOCALAPPDATA%/IcarusHelper/catalog_cache/26313227/animal_icon_source/`，pak索引沿用物品圖示建置快取；不提交完整解包資產。
+
+`build_app.ps1`已納入`assets/animals/`及既有`data/`白名單。執行時`animal_icons.py`直接用Qt讀取縮圖，沒有遊戲、repak、Pillow或網路依賴；來源未知、檔案缺失或無法解碼時使用問號備援。
+
+## 馴養動物卡片與地圖驗證
+
+`python tools/verify_animal_owner_live.py --output artifacts/animal-owner-live-20261102`核對目前所選世界的飼養者來源與遊戲／存檔狀態成對值，並以隔離設定渲染寬／窄畫面。遊戲可自行執行；工具不操作角色。來源hash前後變動只記錄為可能的外部存檔活動，使用者設定則必須未變。當次12隻及本機主人30%生命／10%耐力是案例前提，工具可調整動物數量；完整報告與畫面屬私人artifacts，不提交。原生UI同源getter與限制詳見DATA_SOURCES；合成記憶體測試不代稱遊戲實讀或桌面互動。
+
+合成資料的Qt測試可獨立執行，不操作遊戲：
+
+```powershell
+python -m pytest tests/test_animal_progress.py tests/test_animal_owner_groups.py tests/test_animal_board.py tests/test_animal_map.py -q
+```
+
+主人欄位以有效平台ID與角色slot的穩定SHA-256鍵分組，欄名僅顯示角色名稱；同名不同角色分開，無效主人歸入未知欄。動物卡片與地圖使用同一次存檔，地圖標記維持原位；測試涵蓋分欄、經驗門檻、未知值、卡片／地圖雙向選取、定位、篩選、刷新選取與世界切換清除。
+
+若目前已選真實來源含可辨識動物及至少一隻離基地100m以上的動物，可執行唯讀元件驗證：
+
+```powershell
+$env:QT_QPA_PLATFORM = 'offscreen'
+python tools/verify_animal_board.py
+```
+
+工具讀取固定使用者設定的目前來源與基地，將設定放入獨立暫存目錄，背景讀取有效存檔，驗證原生動物圖、飼養者分欄、地圖點數、離家動物定位、篩選同步、小視窗與清除。這份驗證要求當次動物均有圖示，屬有明確前提的案例檢查，不是所有世界必然通過的範例。結果及畫面位於`artifacts/animals-refined-20261102/`，結束前核對原始存檔hash及使用者設定位元組未變。畫面與結果含私人世界資訊，不提交Git或公開Release。
+
+上述為Qt元件及唯讀真實快照驗證，不能代稱Windows桌面滑鼠操作、封裝交付或遊戲內動物行為驗證；這些驗收須另外記錄。

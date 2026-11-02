@@ -123,6 +123,24 @@ def _uses_mineral_thumbnail(kind: str) -> bool:
     return "deep" in kind or "deposit" in kind or kind in ("ore", "mineral", "voxel", "exotic", "ice")
 
 
+def marker_item_id(kind: str, resource_type: str = "", candidate: bool = False) -> str | None:
+    """Choose artwork without changing the resource's identity or confidence.
+
+    An empty exotic type is a layer/category icon. Unidentified exotic candidates
+    can use that same category artwork with their question badge and dashed frame;
+    a biome name is never promoted to a confirmed purple/red exotic subtype.
+    Unknown confirmed resources and unknown ordinary minerals keep a question.
+    """
+    if not _uses_mineral_thumbnail(kind):
+        return None
+    exact = mineral_item_id(resource_type)
+    if exact is not None:
+        return exact
+    if str(kind).lower() == "exotic" and (not str(resource_type or "").strip() or candidate):
+        return "MetaResource"
+    return None
+
+
 _KIND_STYLES = {
     "cave": MarkerStyle("地穴", "#d7b7ff", "洞", "cave", "cave"),
     "drill": MarkerStyle("鑽機", "#7ef2bd", "鑽", "drill", "drill"),
@@ -430,7 +448,7 @@ def marker_pixmap(kind: str, resource_type: str = "", size: int = 28,
     painter.setPen(border)
     painter.drawRoundedRect(frame,6,6)
     if _uses_mineral_thumbnail(kind):
-        item_id = mineral_item_id(resource_type)
+        item_id = marker_item_id(kind, resource_type, candidate=candidate)
         if item_id and has_item_icon(item_id):
             picture = item_pixmap(item_id, size=max(16, size - 6))
             # The thumbnail keeps its source alpha and aspect ratio. No custom

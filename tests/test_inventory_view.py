@@ -60,7 +60,8 @@ def test_unknown_quantity_keeps_known_partial_and_never_draws_zero(app):
     panel.resize(900, 700)
     panel.show()
     app.processEvents()
-    assert panel.table.item(0, 3).text() == "未知（已確認 45）"
+    assert panel.table.item(0, 3).text() == "70"
+    assert panel.table.item(1, 3).text() == "未知（已確認 45）"
     assert panel.chart.rows[0]["values"]["ore"] is None
     assert "數量：未知" in panel.chart.bar_targets[0][1]
     assert not panel.table.item(0, 0).icon().isNull()
@@ -182,4 +183,40 @@ def test_small_window_can_scroll_to_item_icons_and_axis_labels(app):
         assert scroll.viewport().rect().contains(bottom)
     axis_bottom = panel.chart.mapTo(scroll.viewport(), panel.chart.rect().bottomLeft())
     assert axis_bottom.y() <= scroll.viewport().height()
+    panel.close()
+
+
+@pytest.mark.parametrize("items_in_summary", [True, False])
+def test_quantity_order_is_numeric_descending_for_chart_and_details(app, items_in_summary):
+    from copy import deepcopy
+
+    def item(ident, quantity, material, form="other"):
+        return {"id": ident, "name": ident, "category": "metals", "material": material,
+                "form": form, "quantity": quantity, "containers": ["box"]}
+
+    copper = [item("CopperOre", 200, "copper", "ore"), item("CopperIngot", 200, "copper", "ingot")]
+    iron = [item("IronOre", 300, "iron", "ore"), item("IronIngot", 5, "iron", "ingot")]
+    coal = [item("Coal", 4000, "coal")]
+    zero = [item("Zero", 0, "zero")]
+    unknown = [item("UnknownOre", None, "unknown", "ore")]
+    unknown[0]["known_quantity"] = 9000
+    rows = [
+        {"key": "copper", "label": "Copper", "values": {"ore": 200, "ingot": 200}, "items": copper},
+        {"key": "unknown", "label": "Unknown", "values": {"ore": None}, "items": unknown},
+        {"key": "zero", "label": "Zero", "values": {"other": 0}, "items": zero},
+        {"key": "iron", "label": "Iron", "values": {"ore": 300, "ingot": 5}, "items": iron},
+        {"key": "coal", "label": "Coal", "values": {"other": 4000}, "items": coal},
+    ]
+    data = {"categories": [{"id": "metals", "label": "金屬", "rows": rows}],
+            "items": [value for row in rows for value in row["items"]] if items_in_summary else [],
+            "coverage": {"status": "partial", "unknown_stacks": 1}}
+    before = deepcopy(data)
+    panel = InventoryPanel()
+    panel.set_summary(data)
+    assert [row["key"] for row in panel.chart.rows] == ["coal", "copper", "iron", "zero", "unknown"]
+    assert [panel.table.item(i, 0).data(Qt.ItemDataRole.UserRole) for i in range(panel.table.rowCount())] == [
+        "Coal", "IronOre", "CopperIngot", "CopperOre", "IronIngot", "Zero", "UnknownOre"]
+    assert [panel.table.item(i, 3).text() for i in range(panel.table.rowCount())] == [
+        "4,000", "300", "200", "200", "5", "0", "未知（已確認 9,000）"]
+    assert data == before
     panel.close()

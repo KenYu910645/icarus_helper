@@ -43,6 +43,7 @@ def window(tmp_path, monkeypatch):
     widget.close()
     app.processEvents()
     assert widget.inventory_panel._closed
+    assert widget.animal_panel._closed
     assert widget.controller.closed
 
 
@@ -89,6 +90,20 @@ def test_current_base_uses_saved_selection_and_returns_world_bound_copy(window):
     assert widget.current_base() is None
     config["active_base"] = "outpost"
     assert widget.current_base()["name"] == "前哨"
+
+
+def test_animal_tab_uses_same_world_and_home_as_other_panels(window, monkeypatch):
+    _, widget, *_ = window
+    calls = []
+    monkeypatch.setattr(widget.animal_panel, "set_snapshot", lambda snap, selected, catalog=None: calls.append((snap, deepcopy(selected))))
+    configure(window, base())
+    widget.update_inventory()
+    assert widget.tabs.tabText(widget.tabs.indexOf(widget.animal_panel)) == "馴養動物"
+    assert calls == [(widget.snapshot, widget.current_base())]
+    configure(window, base("outpost", "前哨", 25000, 30000), active="outpost")
+    widget.update_inventory()
+    assert calls[-1][1]["id"] == "outpost"
+    assert calls[-1][1]["world_id"] == widget.snapshot.world_id
 
 
 def test_right_menu_add_and_edit_persist_coordinates_and_sync_dependents(window, monkeypatch):

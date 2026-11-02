@@ -1,4 +1,4 @@
-"""Launch ICARUS Helper without touching the game process or save files."""
+"""Launch the read-only ICARUS Helper desktop app."""
 from __future__ import annotations
 
 import argparse
@@ -76,19 +76,45 @@ def main():
                 snapshot = window.snapshot
                 assert snapshot is not None, "未載入世界快照"
                 assert window.points and window.visible_points, "地圖資源未載入"
+                background = window.catalog.get("coverage", {}).get("background", {})
+                if window.catalog.get("map_key") == "prometheus":
+                    assert background.get("includes_null_sector") and background.get("hash_verified"), "未載入已核對的 Null Sector 完整底圖"
+                    assert window.map.terrain.width() == window.map.terrain.height() == 2048, "完整底圖尺寸錯誤"
+                release_result["map_background"] = {key: background.get(key) for key in (
+                    "path", "tileset", "sha256", "hash_verified", "includes_null_sector", "fetched_at")}
+                assert window.tabs.indexOf(window.animal_panel) >= 0, "馴養動物頁未載入"
+                from icarus_helper.animal_icons import animal_icon_path, load_animal_icon_catalog
+                animal_icons = load_animal_icon_catalog().get("species", {})
+                animal_icon_files = {animal_icon_path(species) for species in animal_icons}
+                animal_icon_files.discard(None)
+                assert animal_icon_files and all(not QImage(str(path)).isNull() for path in animal_icon_files), "原生動物圖示未封裝或無法解碼"
+                from icarus_helper.animal_capacities import load_capacity_catalog
+                capacity_catalog, capacity_effects = load_capacity_catalog()
+                assert capacity_catalog.get("species") and capacity_effects.get("genetics"), "動物容量來源未封裝"
                 if args.self_test_shared:
                     assert getattr(snapshot, "is_shared_map", False), "首次啟動沒有選擇共用地圖"
                     assert snapshot.source_path is None and snapshot.saved_at is None, "共用地圖不得偽造存檔來源／時間"
                     assert window.current_base(), "共用基地未載入"
                     assert not window.map.terrain.isNull(), "共用底圖未載入"
                     assert "未連接" in window.world_label.text(), "未顯示主機存檔連線狀態"
+                    assert window.animal_panel.snapshot is None and window.animal_panel.summary is None, "共用地圖不得包含私人動物資料"
+                    assert not window.animal_panel.animal_cards and not window.animal_panel.animal_map.map.points, "共用地圖不可殘留動物卡片或位置"
+                    from icarus_helper.animals import load_animal_catalog
+                    animal_catalog = load_animal_catalog()
+                    assert animal_catalog.get("species") and animal_catalog.get("level_rule", {}).get("verified"), "動物目錄與等級規則未封裝"
+                    from icarus_helper.owner_stats import load_owner_stat_catalog
+                    assert load_owner_stat_catalog().get("bestiary"), "飼養者圖鑑／加成目錄未封裝"
                     assert not window.windowIcon().pixmap(32, 32).isNull(), "APP 圖示無法繪製"
                     from icarus_helper.item_icons import item_icon_path
                     assert all(not QImage(str(item_icon_path(ident))).isNull() for ident in ("Gold_Ore", "Metal_Ore", "Copper_Ore")), "原生礦物圖示無法解碼"
                     release_result.update(stage="shared_map_and_base_loaded", map_name=snapshot.map_name,
                                           point_count=len(window.points), visible_map_points=len(window.visible_points),
                                           shared_map=True, host_save_connected=False, base_name=window.current_base()["name"],
-                                          private_snapshot_included=False, window_title=window.windowTitle())
+                                          private_snapshot_included=False, animal_tab_loaded=True,
+                                          animal_catalog_species=len(animal_catalog["species"]),
+                                          animal_native_icon_files=len(animal_icon_files),
+                                          animal_capacity_catalog_loaded=True,
+                                          animal_requires_host_save=True, window_title=window.windowTitle())
                     finish_release(True)
                     return
                 assert window.missions and window.mission_list.count(), "任務目錄未載入"
@@ -105,6 +131,15 @@ def main():
                     return
                 assert not window.current_base() or window.inventory_panel.summary, window.inventory_panel.status.text()
                 stock = window.inventory_panel.summary or {}
+                if window.animal_panel.summary is None and (window.animal_panel.busy or window.animal_panel.debounce.isActive()):
+                    QTimer.singleShot(100, lambda: check_release(None))
+                    return
+                assert window.animal_panel.summary is not None, window.animal_panel.status.text()
+                animals = window.animal_panel.summary
+                entries = animals.get("animals", [])
+                assert len(window.animal_panel.animal_cards) == len(entries), "動物卡片與存檔清單不一致"
+                assert len(window.animal_panel.owner_columns) == len({a.get("owner_key") or a.get("owner_name") or "unknown" for a in entries}), "飼養者分欄與存檔不一致"
+                assert len(window.animal_panel.animal_map.map.points) == sum(a.get("position") is not None for a in entries), "動物地圖位置與快照不一致"
                 from icarus_helper.item_icons import has_item_icon, item_icon_path
                 native_items = [item["id"] for item in stock.get("items", []) if has_item_icon(item["id"])]
                 missing_icons = [item["id"] for item in stock.get("items", []) if not has_item_icon(item["id"])]
@@ -124,6 +159,14 @@ def main():
                                       inventory_containers=stock.get("coverage", {}).get("counted_containers"),
                                       inventory_item_types=stock.get("coverage", {}).get("item_types"),
                                       inventory_native_icons=len(native_items), inventory_missing_icons=missing_icons,
+                                      animal_tab_loaded=True, tamed_animal_count=len(animals.get("animals", [])),
+                                      animal_owner_columns=len(window.animal_panel.owner_columns),
+                                      animal_map_positions=len(window.animal_panel.animal_map.map.points),
+                                      animal_native_icon_files=len(animal_icon_files),
+                                      animal_capacity_status_counts=animals.get("coverage", {}).get("capacity_status_counts", {}),
+                                      animal_live_status=animals.get("live_stats", {}).get("status"),
+                                      animal_live_sample_time=animals.get("live_stats", {}).get("sample_time"),
+                                      animal_coverage=animals.get("coverage", {}),
                                       map_mineral_icons=map_mineral_items, window_title=window.windowTitle(),
                                       world_selector_width=window.world_combo.width())
                 finish_release(True)
