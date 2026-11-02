@@ -38,6 +38,8 @@
 
 異質圖層與未確認的異質候選點使用遊戲原生異質類別圖；候選以角落的小問號及虛線框表示。類別圖不代表已確認礦種或生成狀態，已確認的紅異質與鈾仍使用各自圖片。
 
+資源地圖的所有圖示下方都有中文名稱，包含異質、噴泉、石油、水源、植物及部署物；縮小地圖後仍顯示。可以直接點選圖示或下方名稱查看明細。
+
 Prometheus 預設使用包含 Null Sector 的完整地形底圖，南方冰原與東南灰燼地形也可縮放查看；資源、任務與動物地圖共用這張底圖。它是助手提供的地形參考，不代表遊戲內地圖已解鎖，也不保證標記間有可通行路線。完整圖隨 APP 封裝，更新後不需手動清除舊快取。
 
 世界／地圖、所選基地與存檔時間放在最上方資訊列的左側，旁邊是縮短的世界下拉選單。小視窗可折行，滑鼠停留可看完整來源／更新時間。「重新整理」按鈕會顯示讀取／重試狀態。檔案尚在寫入或損毀時，保留上次成功畫面並標示過期。大標題／logo列、統計卡、綠色說明列、地圖頂部基地工具列、底部資源表及狀態列已依使用者要求移除。
@@ -94,8 +96,8 @@ powershell -NoProfile -File tools/build_app.ps1 -Shortcut
 公開成品可使用獨立輸出目錄，保留正在使用的舊版 APP：
 
 ```powershell
-powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.2.0
-python tools/package_release.py --bundle "dist/releases/v0.2.0/ICARUS Helper" --output releases/v0.2.0 --version v0.2.0
+powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.2.1
+python tools/package_release.py --bundle "dist/releases/v0.2.1/ICARUS Helper" --output releases/v0.2.1 --version v0.2.1
 ```
 
 目前建置必須通過沒有使用者設定的共用地圖／基地首次啟動驗收，結果為 `artifacts/packaged-shared-startup.json`；個人世界整合可另用 `--self-test-reference-settings` 驗證，不會隨 Release 公開。封裝排除未使用的 Qt PDF／Virtual Keyboard／QML／Quick 元件，移除前先檢查剩餘原生檔案沒有依賴。ZIP 隨附第三方授權、逐檔 SHA-256 manifest，旁邊產生 `SHA256SUMS.txt`。

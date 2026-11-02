@@ -9,7 +9,7 @@ from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap, QPolygonF
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsView
 
-from .map_icons import marker_pixmap, mineral_style
+from .map_icons import marker_pixmap, mineral_item_id, mineral_style, marker_style
 
 
 COLORS = {
@@ -272,17 +272,27 @@ class WorldMap(QGraphicsView):
     @staticmethod
     def _marker_label(point, scale):
         group = kind_group(point)
-        if group == "deep" and scale >= 0.32:
+        kind = str(value(point, "kind", "")).lower()
+        if group in ("deep", "ore") or kind in ("ice", "deposit"):
             style = mineral_style(str(value(point, "resource_type", "")))
-            return style.label + ("礦" if not style.label.endswith("礦") and style.label not in ("未知", "超冷冰", "凍木", "石材", "黏土", "石灰石") else "")
+            if style.key == "unknown":
+                return "未知礦物"
+            return style.label + ("礦" if not style.label.endswith("礦") and style.label not in ("未知", "冰", "超冷冰", "凍木", "石材", "黏土", "石灰石") else "")
+        if group == "exotic":
+            item = mineral_item_id(str(value(point, "resource_type", "")))
+            return {"Exotic_Red_Raw": "紅異質", "Exotic_Red": "紅異質", "Uranium_Raw": "鈾礦"}.get(item, "異質")
         if group == "base":
-            return str(value(point, "name", "基地"))
-        if group == "cave" and scale >= 0.6:
+            name = str(value(point, "name", "") or "").strip()
+            return name if any("\u3400" <= char <= "\u9fff" for char in name) else f"基地 {name}".strip()
+        if group == "cave":
             name = str(value(point, "name", "地穴"))
             return name if name.startswith("地穴 ") and len(name) < 14 else "地穴"
-        if group == "player" and scale >= 0.6:
-            return str(value(point, "name", "玩家"))
-        return ""
+        if group == "player":
+            name = str(value(point, "name", "") or "").strip()
+            return name if any("\u3400" <= char <= "\u9fff" for char in name) else f"玩家 {name}".strip()
+        if group == "drill":
+            return "採礦鑽機"
+        return marker_style(group, str(value(point, "resource_type", ""))).label
 
     @staticmethod
     def _marker_size(point, scale):

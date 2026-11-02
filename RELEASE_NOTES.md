@@ -1,3 +1,14 @@
+# v0.2.1
+
+資源地圖的圖示下方補齊中文名稱，異質、噴泉及其他類型皆可辨識；縮小地圖後仍保留標籤，點選名稱可查看對應地點。標記沿用原位座標、候選狀態與基地／鑽機優先順序。
+
+- 包含 v0.2.0 的馴養動物頁、Null Sector 完整底圖、基地保存修正與物資排序。
+- 首次空設定仍預設開啟 Prometheus 共用地圖與「我們家」，基地座標與 v0.1.0／v0.2.0 完全相同；已有設定不重設。
+- 下載 `ICARUS-Helper-v0.2.1-Windows-x64.zip`，完整解壓縮後開啟 `ICARUS Helper.exe`，並保留 `_internal`。
+- 實際世界礦量、庫存、動物與任務進度仍需要主機存檔；動物頁的英文物種名稱規則維持。
+
+第三方來源及權利說明見隨附 `DATA_SOURCES.md`、`THIRD_PARTY_NOTICES.md` 與 `licenses/`。ZIP 內含逐檔 SHA-256 manifest，下載旁附 `SHA256SUMS.txt`。
+
 # v0.2.0
 
 新增馴養動物管理，補上 Prometheus Null Sector 完整地形，並修正基地保存與圖示顯示。
