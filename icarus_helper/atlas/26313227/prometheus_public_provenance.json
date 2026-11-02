@@ -1,0 +1,16 @@
+{
+  "source": "Icarus Intel",
+  "url": "https://www.icarusintel.com/map/layers/prometheus",
+  "background_url_pattern": "https://www.icarusintel.com/maps/prometheus/3/{x}/{y}.jpg",
+  "fetched_at": "2026-10-31T15:20:27.247005+00:00",
+  "private_local_cache": true,
+  "counts": {
+    "caves": 276,
+    "ores": 412,
+    "geysers": 29,
+    "missions": 23,
+    "metaDeposits": 207,
+    "oilGeysers": 21
+  },
+  "notice": "Community map catalog: potential positions, not proof of a live world resource. Attribution retained; game assets are not distributed."
+}

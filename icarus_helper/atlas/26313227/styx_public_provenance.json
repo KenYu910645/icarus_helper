@@ -1,0 +1,16 @@
+{
+  "source": "Icarus Intel",
+  "url": "https://www.icarusintel.com/map/layers/styx",
+  "background_url_pattern": "https://www.icarusintel.com/maps/styx/3/{x}/{y}.jpg",
+  "fetched_at": "2026-10-31T15:20:54.905612+00:00",
+  "private_local_cache": true,
+  "counts": {
+    "caves": 181,
+    "ores": 766,
+    "geysers": 23,
+    "missions": 28,
+    "metaDeposits": 69,
+    "oilGeysers": 20
+  },
+  "notice": "Community map catalog: potential positions, not proof of a live world resource. Attribution retained; game assets are not distributed."
+}

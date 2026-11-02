@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8,<10
+PyInstaller==6.21.0
+Pillow==12.2.0

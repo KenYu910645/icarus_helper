@@ -1,0 +1,54 @@
+{
+  "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Icarus\\Icarus\\Binaries\\Win64\\Icarus-Win64-Shipping.exe",
+  "source_sha256": "195e4883deda64be9dfe0bbbd876adce359c93c083512995bcc4a0383ba86c98",
+  "group_id": 123,
+  "language_id": 1033,
+  "extracted_at": "2026-11-01T01:34:25.436768+00:00",
+  "icon_sha256": "9eff30137b7f6022b1568828777bd2cf731f5c7bc1d82530529c8e885b21a87f",
+  "images": [
+    {
+      "width": 256,
+      "height": 256,
+      "bits_per_pixel": 32,
+      "resource_id": 1,
+      "payload_sha256": "17340c5261879b8a193b3e572861964e5d81bc4cf9da3967836545545291ea81"
+    },
+    {
+      "width": 128,
+      "height": 128,
+      "bits_per_pixel": 32,
+      "resource_id": 2,
+      "payload_sha256": "db7e726a683e3c4f0b306967d35a3c6e54157875bbcab4ca87430c14d083d1b4"
+    },
+    {
+      "width": 64,
+      "height": 64,
+      "bits_per_pixel": 32,
+      "resource_id": 3,
+      "payload_sha256": "2ae4a9266ec0afb7c9d286413578ac63ff45548d5a0d9a84c5efd11da8d6afd6"
+    },
+    {
+      "width": 48,
+      "height": 48,
+      "bits_per_pixel": 32,
+      "resource_id": 4,
+      "payload_sha256": "a51f131010d7f20060c628da6cf425cb6df74ca888017b89859bcb28b14fa112"
+    },
+    {
+      "width": 32,
+      "height": 32,
+      "bits_per_pixel": 32,
+      "resource_id": 5,
+      "payload_sha256": "b953de0ae94a19116e3043ef1b91f7e65b88f26657d0aaf243f8f7aa036a0e59"
+    },
+    {
+      "width": 16,
+      "height": 16,
+      "bits_per_pixel": 32,
+      "resource_id": 6,
+      "payload_sha256": "9df0e2b751aa6196b27f63af15ad0f1496f63e5f444944577e56e63247d8f790"
+    }
+  ],
+  "usage": "Native ICARUS application icon copied for the user's local helper; original icon payloads unchanged.",
+  "preview": "PNG decoded from the largest original image; no visual changes."
+}
