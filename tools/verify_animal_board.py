@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from pathlib import Path
 import sys
 import tempfile
@@ -11,9 +10,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QFont, QFontDatabase
-from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
 from icarus_helper.animal_icons import has_animal_icon

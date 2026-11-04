@@ -18,42 +18,42 @@ from .catalog import installed_game_build
 DATA_PATH = Path(__file__).resolve().parent / "data" / "mission_locations.json"
 
 QUERY_LABELS = {
-    "PRO_Story_Mo_Hideout1": "嫌疑人的洞穴基地", "PRO_Story_Mo_Hideout2": "嫌疑人的隱藏基地",
-    "PRO_Story_3_Scan_1": "Alpha 掃描點", "PRO_Story_3_Scan_2": "Beta 掃描點", "PRO_Story_3_Scan_3": "Delta 掃描點",
-    "PRO_Story_4_Body_1": "第一位失聯探員", "PRO_Story_4_Body_2": "第二位失聯探員", "PRO_Story_4_Body_3": "第三位失聯探員",
-    "PRO_Story_4_Body_1_Search": "第一段訊號搜尋區", "PRO_Story_4_Body_2_Search": "第二段訊號搜尋區", "PRO_Story_4_Body_3_Search": "第三段訊號搜尋區",
-    "PRO_Story_4_Sol_Cache": "Sol 的補給／交付區", "PRO_Story_5_Mo_Outpost": "前哨調查區",
-    "PRO_Story_2_DynamicDrop": "Sinotai 任務補給／交付區", "PRO_Story_3_DynamicDrop": "Group 15 升級補給區",
-    "PRO_Story_6_TraitorLocation": "叛徒最後出現位置", "PRO_Story_6_TraitorTrail1": "叛徒足跡第一段",
-    "PRO_Story_6_TraitorTrail2": "叛徒足跡第二段", "PRO_Story_6_TraitorTrail3": "叛徒足跡第三段", "PRO_Story_6_TraitorTrail4": "足跡與洞穴出口",
-    "PRO_Story_6_Group15_Camp": "Group 15 營地", "PRO_Story_6_Group15_Base": "Group 15 基地／駭入區",
-    "PRO_Story_6_LavaCave_Entry": "證據洞穴入口", "PRO_Story_6_LavaCave_Inner": "證據洞穴內部",
-    "PRO_Story_6_LavaCave_Tunnel": "洞穴第一段通道", "PRO_Story_6_LavaCave_Cavern": "洞穴大廳",
-    "PRO_Story_6_LavaCave_LastTunnel": "洞穴最後通道", "PRO_Story_6_LavaCave_End": "洞穴聚落／終點",
-    "PRO_Story_6_LavaCave_Outside": "洞穴外側調查區", "PRO_Story_6_LavaCave_OutsideLava": "熔岩區證據位置",
-    "PRO_Story_6_LavaCave_CreatureSpawn": "大型熔岩生物區", "PRO_Story_1_Daisy": "Daisy 最後出現位置", "PRO_Story_1_Daisy_Base": "Daisy 飼主基地",
-    "PRO_ArcticSteppe_Rear": "冰原補給／交付區", "PRO_Marshlands_Middle": "沼澤補給／交付區",
-    "PRO_Treehouse": "樹頂住宅施工區", "PRO_MiasmicResearchStation": "沼澤研究站施工區", "PRO_ArcticExtraction": "超冷冰採掘區",
-    "PRO_VolcanicFishing": "火山狩獵／釣魚區", "PRO_Ashlands_Outpost": "灰燼地前哨",
-    "PRO_Ashlands_IcesheetTransition": "灰燼地至冰蓋過渡區", "PRO_Ashlands_Entrances": "灰燼地入口",
-    "PRO_Icesheet_Outpost": "冰蓋前哨", "PRO_Icesheet_Entrance": "冰蓋入口", "PRO_Ashlands_Volcano": "灰燼地火山",
-    "PRO_Marshlands_East": "物資儲備起點", "PRO_Ashlands_NorthPath": "灰燼地物資運送終點",
-    "PRO_Ashlands_ValleyEntrance": "Beta 液體測試區", "PRO_Ashlands_ValleyEntryway": "Alpha 氣霧測試區",
-    "PRO_Ashlands_ValleyDeep": "Chi 後續測試區", "PRO_Icesheet_UpperPillar": "冰蓋研究區",
-    "PRO_ASH_Truck": "失事卡車／救援物資", "PRO_ASH_NPC1": "第一位任務探員", "PRO_ASH_NPC2": "第二位任務探員",
-    "PRO_ASH_NPC3": "第三位任務探員", "PRO_ASH_NPC4": "第四位任務探員", "PRO_ASH_NPC5": "第五位任務探員",
-    "PRO_ASH_Search": "失聯探員搜尋區", "PRO_ASH_Search2": "後續探員搜尋區", "PRO_ASH_Shed": "探員棚屋", "PRO_ASH_Camp": "第一處探員營地", "PRO_ASH_Camp2": "第二處探員營地",
-    "PRO_ASH_NPC4_Rescue": "第一位待救援探員", "PRO_ASH_NPC5_Rescue": "第二位待救援探員", "PRO_ASH_Evac": "救援船撤離位置",
-    "PRO_ASH_Entrance_Search": "灰燼地入口搜尋區", "PRO_NULL_AudioWarning": "灰燼地警告訊號區", "PRO_NULL_AudioEntered": "灰燼地訊號調查區",
-    "PRO_ASH_BUNKER_NOTE1": "地堡第一份筆記", "PRO_ASH_BUNKER_NOTE2": "地堡第二份筆記", "PRO_ASH_BUNKER_NOTE3": "地堡第三份筆記",
-    "PRO_ASH_E1": "第一處異質資源", "PRO_ASH_E2": "第二處異質資源", "PRO_ASH_E3": "第三處異質資源",
-    "PRO_NUL_CAVE": "異常洞穴搜尋區", "PRO_NUL_EQU": "洞穴任務裝備", "PRO_NUL_CAVE_ENTRANCE": "異常洞穴入口",
-    "PRO_NUL_FLASHLIGHT_PROP": "洞穴手電筒線索", "PRO_NUL_CAVE_RUNNING_PROP": "洞穴奔跑者線索", "PRO_NUL_CAVE_EVENT_RUNNING": "洞穴後續事件區",
-    "PRO_NUL_CAVE_CHAMBER": "洞穴深處石室", "PRO_NUL_CAVE_CAMP": "洞穴營地", "PRO_NUL_CAVE_MAN_PROP": "洞穴人物線索", "PRO_NUL_CAVE_EXOTICS": "洞穴異質資源終點",
-    "PRO_Ashlands_Blocker": "灰燼地通道阻擋處", "PRO_Icesheet_Blocker": "冰蓋通道阻擋處",
-    "PRO_Icesheet_Cave_Note1": "洞穴第一份筆記", "PRO_Icesheet_Cave_Note2": "洞穴第二份筆記", "PRO_Icesheet_Cave_Note3": "洞穴第三份筆記",
-    "SQ_NPC_FARM": "農夫基地", "SQ_NPC_FISHER": "漁夫基地", "SQ_NPC_FISHER_INJURED": "受傷漁夫位置",
-    "SQ_NPC_HUNTER": "獵人基地", "SQ_NPC_NOREX_BOSS": "Norex 狩獵目標區", "SQ_NPC_NOREX_LAND": "Norex 到達／交付區",
+    "PRO_Story_Mo_Hideout1": "Suspect's cave base", "PRO_Story_Mo_Hideout2": "Suspect's hidden base",
+    "PRO_Story_3_Scan_1": "Alpha scan site", "PRO_Story_3_Scan_2": "Beta scan site", "PRO_Story_3_Scan_3": "Delta scan site",
+    "PRO_Story_4_Body_1": "First missing agent", "PRO_Story_4_Body_2": "Second missing agent", "PRO_Story_4_Body_3": "Third missing agent",
+    "PRO_Story_4_Body_1_Search": "First signal search area", "PRO_Story_4_Body_2_Search": "Second signal search area", "PRO_Story_4_Body_3_Search": "Third signal search area",
+    "PRO_Story_4_Sol_Cache": "Sol's supply / delivery area", "PRO_Story_5_Mo_Outpost": "Outpost investigation area",
+    "PRO_Story_2_DynamicDrop": "Sinotai mission supply / delivery area", "PRO_Story_3_DynamicDrop": "Group 15 upgrade supply area",
+    "PRO_Story_6_TraitorLocation": "Traitor's last known location", "PRO_Story_6_TraitorTrail1": "First section of the traitor's trail",
+    "PRO_Story_6_TraitorTrail2": "Second section of the traitor's trail", "PRO_Story_6_TraitorTrail3": "Third section of the traitor's trail", "PRO_Story_6_TraitorTrail4": "Trail and cave exit",
+    "PRO_Story_6_Group15_Camp": "Group 15 camp", "PRO_Story_6_Group15_Base": "Group 15 base / hacking area",
+    "PRO_Story_6_LavaCave_Entry": "Evidence cave entrance", "PRO_Story_6_LavaCave_Inner": "Evidence cave interior",
+    "PRO_Story_6_LavaCave_Tunnel": "First cave tunnel", "PRO_Story_6_LavaCave_Cavern": "Cave cavern",
+    "PRO_Story_6_LavaCave_LastTunnel": "Final cave tunnel", "PRO_Story_6_LavaCave_End": "Cave settlement / end",
+    "PRO_Story_6_LavaCave_Outside": "Outside-cave investigation area", "PRO_Story_6_LavaCave_OutsideLava": "Lava-area evidence site",
+    "PRO_Story_6_LavaCave_CreatureSpawn": "Giant Lava Creature area", "PRO_Story_1_Daisy": "Daisy's last known location", "PRO_Story_1_Daisy_Base": "Daisy's owner's base",
+    "PRO_ArcticSteppe_Rear": "Icesheet supply / delivery area", "PRO_Marshlands_Middle": "Swamp supply / delivery area",
+    "PRO_Treehouse": "Treetop housing site", "PRO_MiasmicResearchStation": "Swamp research-station site", "PRO_ArcticExtraction": "Super Cooled Ice extraction area",
+    "PRO_VolcanicFishing": "Volcanic hunting / fishing area", "PRO_Ashlands_Outpost": "Ashlands outpost",
+    "PRO_Ashlands_IcesheetTransition": "Ashlands-to-Icesheet transition", "PRO_Ashlands_Entrances": "Ashlands entrance",
+    "PRO_Icesheet_Outpost": "Icesheet outpost", "PRO_Icesheet_Entrance": "Icesheet entrance", "PRO_Ashlands_Volcano": "Ashlands volcano",
+    "PRO_Marshlands_East": "Supply stockpile origin", "PRO_Ashlands_NorthPath": "Ashlands supply destination",
+    "PRO_Ashlands_ValleyEntrance": "Beta liquid-test area", "PRO_Ashlands_ValleyEntryway": "Alpha aerosol-test area",
+    "PRO_Ashlands_ValleyDeep": "Chi follow-up test area", "PRO_Icesheet_UpperPillar": "Icesheet research area",
+    "PRO_ASH_Truck": "Crashed truck / rescue supplies", "PRO_ASH_NPC1": "First mission agent", "PRO_ASH_NPC2": "Second mission agent",
+    "PRO_ASH_NPC3": "Third mission agent", "PRO_ASH_NPC4": "Fourth mission agent", "PRO_ASH_NPC5": "Fifth mission agent",
+    "PRO_ASH_Search": "Missing-agent search area", "PRO_ASH_Search2": "Follow-up agent search area", "PRO_ASH_Shed": "Agents' shed", "PRO_ASH_Camp": "First agent camp", "PRO_ASH_Camp2": "Second agent camp",
+    "PRO_ASH_NPC4_Rescue": "First rescue agent", "PRO_ASH_NPC5_Rescue": "Second rescue agent", "PRO_ASH_Evac": "Rescue ship evacuation site",
+    "PRO_ASH_Entrance_Search": "Ashlands entrance search area", "PRO_NULL_AudioWarning": "Ashlands warning-signal area", "PRO_NULL_AudioEntered": "Ashlands signal investigation area",
+    "PRO_ASH_BUNKER_NOTE1": "First bunker note", "PRO_ASH_BUNKER_NOTE2": "Second bunker note", "PRO_ASH_BUNKER_NOTE3": "Third bunker note",
+    "PRO_ASH_E1": "First Exotics site", "PRO_ASH_E2": "Second Exotics site", "PRO_ASH_E3": "Third Exotics site",
+    "PRO_NUL_CAVE": "Anomalous cave search area", "PRO_NUL_EQU": "Cave mission equipment", "PRO_NUL_CAVE_ENTRANCE": "Anomalous cave entrance",
+    "PRO_NUL_FLASHLIGHT_PROP": "Cave flashlight clue", "PRO_NUL_CAVE_RUNNING_PROP": "Cave runner clue", "PRO_NUL_CAVE_EVENT_RUNNING": "Later cave event area",
+    "PRO_NUL_CAVE_CHAMBER": "Deep cave chamber", "PRO_NUL_CAVE_CAMP": "Cave camp", "PRO_NUL_CAVE_MAN_PROP": "Cave figure clue", "PRO_NUL_CAVE_EXOTICS": "Cave Exotics endpoint",
+    "PRO_Ashlands_Blocker": "Ashlands passage barrier", "PRO_Icesheet_Blocker": "Icesheet passage barrier",
+    "PRO_Icesheet_Cave_Note1": "First cave note", "PRO_Icesheet_Cave_Note2": "Second cave note", "PRO_Icesheet_Cave_Note3": "Third cave note",
+    "SQ_NPC_FARM": "Farmer's base", "SQ_NPC_FISHER": "Fisher's base", "SQ_NPC_FISHER_INJURED": "Injured fisher location",
+    "SQ_NPC_HUNTER": "Hunter's base", "SQ_NPC_NOREX_BOSS": "Norex hunting target area", "SQ_NPC_NOREX_LAND": "Norex arrival / delivery area",
 }
 
 
@@ -99,27 +99,27 @@ def _status(record: dict | None, mission: dict) -> str:
 def _plans(mid: str, info: dict, mission: dict) -> list[dict]:
     if mid == "PRO_A_Extraction":
         return [
-            {"id": "collect", "label": "領取 Sinotai 鑽探設備", "quest_ids": ["PRO_A_Extraction_Collect"], "queries": []},
-            {"id": "travel", "label": "前往超冷冰採掘區", "quest_ids": ["PRO_A_Extraction_Travel"], "queries": ["PRO_ArcticExtraction"]},
-            {"id": "extract", "label": "放置 Ice Borer，開採超冷冰", "quest_ids": ["PRO_A_Extraction_Extract", "PRO_A_Extraction_Extract_MISSIONDISPLAY"], "queries": ["PRO_ArcticExtraction"]},
-            {"id": "build", "label": "在冰區建立指定營地", "quest_ids": ["PRO_A_Extraction_Build"], "queries": ["PRO_ArcticExtraction"]},
-            {"id": "deliver", "label": "到 Sinotai 回收艙交付物資", "quest_ids": ["PRO_A_Extraction_Deliver"], "queries": []},
+            {"id": "collect", "label": "Collect Sinotai drilling equipment", "quest_ids": ["PRO_A_Extraction_Collect"], "queries": []},
+            {"id": "travel", "label": "Travel to the Super Cooled Ice extraction area", "quest_ids": ["PRO_A_Extraction_Travel"], "queries": ["PRO_ArcticExtraction"]},
+            {"id": "extract", "label": "Place the Ice Borer and extract Super Cooled Ice", "quest_ids": ["PRO_A_Extraction_Extract", "PRO_A_Extraction_Extract_MISSIONDISPLAY"], "queries": ["PRO_ArcticExtraction"]},
+            {"id": "build", "label": "Build the required arctic camp", "quest_ids": ["PRO_A_Extraction_Build"], "queries": ["PRO_ArcticExtraction"]},
+            {"id": "deliver", "label": "Deliver supplies to the Sinotai Retrieval Pod", "quest_ids": ["PRO_A_Extraction_Deliver"], "queries": []},
         ]
     if mid == "PRO_Story_5":
         return [
-            {"id": "investigate", "label": "調查並進入前哨", "quest_ids": ["PRO_Story_5_Investigate", "PRO_Story_5_Investigate_Enter"], "queries": ["PRO_Story_5_Mo_Outpost"]},
-            {"id": "transmit", "label": "前哨通訊器供電與防守傳輸", "quest_ids": ["PRO_Story_5_Outpost_Power", "PRO_Story_5_Outpost_Trasmit", "PRO_Story_5_Outpost_Progress"], "queries": ["PRO_Story_5_Mo_Outpost"]},
-            {"id": "craft", "label": "製作任務信標", "quest_ids": ["PRO_Story_5_Beacon_Craft"], "queries": []},
-            {"id": "beacon", "label": "返回前哨放置信標", "quest_ids": ["PRO_Story_5_Beacon_Place"], "queries": ["PRO_Story_5_Mo_Outpost"]},
-            {"id": "escape", "label": "離開即將摧毀的前哨", "quest_ids": ["PRO_Story_5_Run", "PRO_Story_5_Run_Timer"], "queries": ["PRO_Story_5_Mo_Outpost"]},
+            {"id": "investigate", "label": "Investigate and enter the outpost", "quest_ids": ["PRO_Story_5_Investigate", "PRO_Story_5_Investigate_Enter"], "queries": ["PRO_Story_5_Mo_Outpost"]},
+            {"id": "transmit", "label": "Power the outpost communicator and defend transmission", "quest_ids": ["PRO_Story_5_Outpost_Power", "PRO_Story_5_Outpost_Trasmit", "PRO_Story_5_Outpost_Progress"], "queries": ["PRO_Story_5_Mo_Outpost"]},
+            {"id": "craft", "label": "Craft the mission Beacon", "quest_ids": ["PRO_Story_5_Beacon_Craft"], "queries": []},
+            {"id": "beacon", "label": "Return to the outpost and place the Beacon", "quest_ids": ["PRO_Story_5_Beacon_Place"], "queries": ["PRO_Story_5_Mo_Outpost"]},
+            {"id": "escape", "label": "Evacuate the outpost before destruction", "quest_ids": ["PRO_Story_5_Run", "PRO_Story_5_Run_Timer"], "queries": ["PRO_Story_5_Mo_Outpost"]},
         ]
     if mid == "PRO_D_Rescue":
         return [
-            {"id": "search", "label": "搜尋失聯隊員區域", "quest_ids": ["PRO_D_Rescue_Locate"], "queries": ["PRO_ASH_Search2"]},
-            {"id": "simmons", "label": "找到並裝載 Simmons", "quest_ids": ["PRO_D_Rescue_Locate_NPC1", "PRO_D_Rescue_Locate_NPC1_Find", "PRO_D_Rescue_Locate_NPC1_Collect"], "queries": ["PRO_ASH_NPC4_Rescue"]},
-            {"id": "deliver-simmons", "label": "將 Simmons 送到救援船", "quest_ids": ["PRO_D_Rescue_Locate_NPC1_Deliver"], "queries": ["PRO_ASH_Evac"]},
-            {"id": "washington", "label": "找到並裝載 Washington", "quest_ids": ["PRO_D_Rescue_Locate_NPC2", "PRO_D_Rescue_Locate_NPC2_Find", "PRO_D_Rescue_Locate_NPC2_Collect"], "queries": ["PRO_ASH_NPC5_Rescue"]},
-            {"id": "deliver-washington", "label": "將 Washington 送到救援船", "quest_ids": ["PRO_D_Rescue_Locate_NPC2_Deliver"], "queries": ["PRO_ASH_Evac"]},
+            {"id": "search", "label": "Search for the missing team members", "quest_ids": ["PRO_D_Rescue_Locate"], "queries": ["PRO_ASH_Search2"]},
+            {"id": "simmons", "label": "Find and bag Simmons", "quest_ids": ["PRO_D_Rescue_Locate_NPC1", "PRO_D_Rescue_Locate_NPC1_Find", "PRO_D_Rescue_Locate_NPC1_Collect"], "queries": ["PRO_ASH_NPC4_Rescue"]},
+            {"id": "deliver-simmons", "label": "Deliver Simmons to the rescue ship", "quest_ids": ["PRO_D_Rescue_Locate_NPC1_Deliver"], "queries": ["PRO_ASH_Evac"]},
+            {"id": "washington", "label": "Find and bag Washington", "quest_ids": ["PRO_D_Rescue_Locate_NPC2", "PRO_D_Rescue_Locate_NPC2_Find", "PRO_D_Rescue_Locate_NPC2_Collect"], "queries": ["PRO_ASH_NPC5_Rescue"]},
+            {"id": "deliver-washington", "label": "Deliver Washington to the rescue ship", "quest_ids": ["PRO_D_Rescue_Locate_NPC2_Deliver"], "queries": ["PRO_ASH_Evac"]},
         ]
     plans = []
     stages = list(info.get("query_stages", []))
@@ -132,7 +132,7 @@ def _plans(mid: str, info: dict, mission: dict) -> list[dict]:
         stages.sort(key=lambda stage: rank.get(stage["query"], 1000))
     for index, stage in enumerate(stages, 1):
         query = stage["query"]
-        plans.append({"id": query, "label": QUERY_LABELS.get(query, "任務執行區域"), "quest_ids": stage.get("quest_ids", []), "queries": [query]})
+        plans.append({"id": query, "label": QUERY_LABELS.get(query, "Mission area"), "quest_ids": stage.get("quest_ids", []), "queries": [query]})
     return plans
 
 
@@ -148,7 +148,7 @@ def build_mission_locations(snapshot: Any, mission: dict) -> dict:
     mission_map = str(mission.get("map_name", map_name))
     result = {"points": [], "regions": [], "pending_stages": [], "coverage": {"map": map_name, "mission": mid, "static_build": catalog.get("source_build"), "sources": catalog.get("source_files", {})}}
     if mission_map not in (map_name, "All", "", "None"):
-        result["coverage"]["reason"] = "所選任務與目前世界地圖不符"
+        result["coverage"]["reason"] = "The selected mission does not match the current world's map"
         return result
     info = catalog.get("missions", {}).get(mid, {})
     records = _get(snapshot, "raw_records", []) or []
@@ -195,7 +195,7 @@ def build_mission_locations(snapshot: Any, mission: dict) -> dict:
     planned_qids = {name for plan in plans for name in plan.get("quest_ids", [])}
     for name in relevant:
         if name not in planned_qids and (not plans or selected_current and name.startswith("DYN_")):
-            plans.append({"id": name, "label": "追蹤巨獸區域" if name == "DYN_Kill" else "獵殺附近巨獸" if name == "DYN_Kill_Boss" else "目前任務執行位置", "quest_ids": [name], "queries": []})
+            plans.append({"id": name, "label": "Track the creature's area" if name == "DYN_Kill" else "Hunt the nearby creature" if name == "DYN_Kill_Boss" else "Current mission location", "quest_ids": [name], "queries": []})
     if not plans:
         for index, step in enumerate(mission.get("guide", []), 1):
             plans.append({"id": f"guide-{index}", "label": str(step), "quest_ids": [], "queries": []})
@@ -225,13 +225,13 @@ def build_mission_locations(snapshot: Any, mission: dict) -> dict:
                     resolved = resolve(ref.get(field))
                     if resolved:
                         target, xyz = resolved
-                        evidence.append((xyz, f"uid:{ref.get(field)}", record, "任務物件的位置；生物或可搬運物件仍可能移動。", "known"))
+                        evidence.append((xyz, f"uid:{ref.get(field)}", record, "Mission actor location; creatures and movable objects may move.", "known"))
             variables = _variables(record)
             location_set = any(variables.get(key, {}).get("bVariable") for key in ("LocationSet", "LocationReached", "bLocationSet", "bLocationReached"))
             xyz = _xyz(record)
             inherited = xyz is not None and parent_locations.get(record.get("IcarusActorGUID")) == xyz
             if not evidence and xyz and (location_set or inherited):
-                evidence.append((xyz, "quest:" + qid, record, "任務搜尋／執行區域；目標生物或物件可能位於附近。", "known"))
+                evidence.append((xyz, "quest:" + qid, record, "Mission search / activity area; the target creature or object may be nearby.", "known"))
         seen_coordinates = set()
         for xyz, ident, record, description, confidence in evidence:
             if xyz in seen_coordinates:
@@ -248,15 +248,15 @@ def build_mission_locations(snapshot: Any, mission: dict) -> dict:
                             seen_coordinates.add(xyz)
                             found.append((query, marker, xyz))
             for query, marker, xyz in found:
-                result["points"].append({"id": f"{mid}:{plan['id']}:anchor:{marker['name']}", "label": label, "stage": plan["id"], "order": order, "x": xyz[0], "y": xyz[1], "z": xyz[2], "status": "candidate", "confidence": "candidate", "description": "此階段可能在這個區域進行；開始後會更新選定地點。", "source": "installed_map_gameplay_tag", "query": query})
+                result["points"].append({"id": f"{mid}:{plan['id']}:anchor:{marker['name']}", "label": label, "stage": plan["id"], "order": order, "x": xyz[0], "y": xyz[1], "z": xyz[2], "status": "candidate", "confidence": "candidate", "description": "This stage may take place in this area. The selected site updates after starting.", "source": "installed_map_gameplay_tag", "query": query})
             if not found:
-                reason = "推進任務後會標出後續地點。"
+                reason = "Later locations will appear as the mission progresses."
                 if plan["id"] in ("collect", "deliver"):
-                    reason = "任務投放／回收艙出現後會標出位置。"
+                    reason = "The location will appear when the mission drop / retrieval pod spawns."
                 elif plan["id"] == "craft":
-                    reason = "可在你選擇的工作台／基地製作。"
+                    reason = "Craft at a bench / base of your choice."
                 elif not static_compatible and plan.get("queries"):
-                    reason = "此任務的地點資料尚未更新。"
+                    reason = "Location data for this mission has not yet been updated."
                 result["pending_stages"].append({"id": f"{mid}:{plan['id']}:pending", "stage": plan["id"], "order": order, "label": label, "reason": reason, "description": reason, "status": "pending"})
     result["coverage"].update(static_compatible=static_compatible, stage_count=len(plans), known_point_count=sum(p["confidence"] == "known" for p in result["points"]), candidate_point_count=sum(p["confidence"] == "candidate" for p in result["points"]), pending_count=len(result["pending_stages"]))
     return result

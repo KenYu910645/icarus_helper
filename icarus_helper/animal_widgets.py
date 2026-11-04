@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+from datetime import datetime
 
 from PySide6.QtCore import QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QIcon, QPixmap
@@ -11,11 +12,33 @@ from .animal_icons import animal_pixmap
 
 
 STAT_STYLE = {
-    "health": ("生命", "#f1848e"), "food": ("食物", "#dfba68"),
-    "water": ("水分", "#66c5ef"), "oxygen": ("氧氣", "#99cfe0"),
-    "stamina": ("耐力", "#a6db84"), "experience": ("經驗", "#b6a0f4"),
-    "milk": ("乳量", "#e7ded0"),
+    "health": ("Health", "#f1848e"), "food": ("Food", "#dfba68"),
+    "water": ("Water", "#66c5ef"), "oxygen": ("Oxygen", "#99cfe0"),
+    "stamina": ("Stamina", "#a6db84"), "experience": ("XP", "#b6a0f4"),
+    "milk": ("Milk", "#e7ded0"),
 }
+
+
+def sample_time_text(value):
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return value or "Time unknown"
+    return value.astimezone().strftime("%m/%d %H:%M:%S") if isinstance(value, datetime) else "Time unknown"
+
+
+def position_source_text(record, fallback_time=None):
+    live = record.get("position_source") == "live"
+    when = record.get("position_sample_time") or record.get("sample_time")
+    if not live and not when:
+        when = fallback_time
+    return ("Game position" if live else "Saved position") + " · " + sample_time_text(when)
+
+
+def valid_position(value):
+    return isinstance(value, (list, tuple)) and len(value) == 3 and all(
+        isinstance(number, (int, float)) and not isinstance(number, bool) and math.isfinite(number) for number in value)
 
 
 def valid_number(value):
@@ -112,7 +135,7 @@ class AnimalGauge(QWidget):
         self.stat = dict(stat)
         self.progress = progress
         self.key = str(stat.get("id", ""))
-        self.label, self.color = STAT_STYLE.get(self.key, (stat.get("label", "狀態"), "#a8b7c4"))
+        self.label, self.color = STAT_STYLE.get(self.key, (stat.get("label", "Status"), "#a8b7c4"))
         self.value, self.maximum = stat.get("value"), stat.get("maximum")
         self.reconstructed = stat.get("maximum_status") == "reconstructed"
         self.persistent = stat.get("maximum_status") == "persistent"
@@ -125,16 +148,18 @@ class AnimalGauge(QWidget):
         self.ratio_known = self.has_capacity and not self.over_capacity
         self.setFixedHeight(27)
         self.setMinimumWidth(100)
-        self.setAccessibleName(f"{self.label}：{self.display_text()}")
+        self.setAccessibleName(f"{self.label}: {self.display_text()}")
         detail = str(stat.get("detail") or "")
         if stat.get("maximum_status") == "live":
-            detail += "\n遊戲讀取時間：" + str(stat.get("sample_time") or "未知")
+            detail += "\nCurrent game value and maximum sampled together: " + sample_time_text(stat.get("sample_time"))
         if self.key == "experience" and progress:
-            detail = ("已達目前可顯示的最高等級" if self.capped else f"本級經驗 {number_text(self.value)} / {number_text(self.maximum)}；下一級 {progress.get('next_level')}") + f"；累積經驗 {number_text(progress.get('total'))}"
+            detail = ("Highest displayable level reached" if self.capped else f"Level XP {number_text(self.value)} / {number_text(self.maximum)}; next level {progress.get('next_level')}") + f"; total XP {number_text(progress.get('total'))}"
         elif self.over_capacity:
-            detail += "\n目前值高於此個體基準，代表仍有未涵蓋的加成；不顯示為 100% 或更改分母。"
+            detail += ("\nCurrent game value exceeds the maximum from the same sample; original values are retained without showing 100% or changing the denominator."
+                       if stat.get("maximum_status") == "live" else
+                       "\nCurrent value exceeds the individual baseline, indicating bonuses not covered here; it is not shown as 100% and the denominator is not changed.")
         elif not self.ratio_known:
-            detail += "\n上限未知，斜紋不代表百分比。" if valid_number(self.value) else "\n存檔數值未知，不能當作零。"
+            detail += "\nMaximum unknown; hatching does not represent a percentage." if valid_number(self.value) else "\nSaved value is unknown and cannot be treated as zero."
         self.setToolTip(f"{self.label} · {self.display_text()}\n{detail}")
 
     def display_text(self):
@@ -196,7 +221,7 @@ class AnimalCard(QFrame):
         self.setMaximumWidth(360)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.setAccessibleName(f"{animal.get('name')}，{animal.get('species')}，飼養者 {animal.get('owner_name')}")
+        self.setAccessibleName(f"{animal.get('name')}, {animal.get('species')}, Owner {animal.get('owner_name')}")
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 11, 12, 10)
         layout.setSpacing(8)
@@ -209,7 +234,7 @@ class AnimalCard(QFrame):
         portrait.setStyleSheet("background:transparent")
         header.addWidget(portrait)
         titles = QVBoxLayout()
-        name = QLabel(str(animal.get("name") or "未命名動物"))
+        name = QLabel(str(animal.get("name") or "Unnamed animal"))
         name.setWordWrap(True)
         name.setStyleSheet("font-size:16px;font-weight:600;background:transparent")
         titles.addWidget(name)
@@ -236,22 +261,24 @@ class AnimalCard(QFrame):
         state_icon.setFixedSize(16, 16)
         state_icon.setStyleSheet("background:transparent")
         footer.addWidget(state_icon)
-        label = number_text(distance) + " m" if valid_number(distance) else "距離未知"
+        label = number_text(distance) + " m" if valid_number(distance) else "Distance unknown"
         location = QLabel(label)
+        self.location_label = location
         location.setStyleSheet("color:#8faabd;background:transparent;font-size:12px")
-        location.setToolTip("距離所選基地的水平直線距離；不是步行路線。")
+        source_note = position_source_text(animal)
+        location.setToolTip("Horizontal straight-line distance from the selected base; not a walking route.\n" + source_note)
         footer.addWidget(location, 1)
         locate = QPushButton()
         locate.setIcon(symbol_icon("locate", color))
-        locate.setAccessibleName(f"地圖定位 {animal.get('name')}")
-        locate.setToolTip("在動物地圖定位")
+        locate.setAccessibleName(f"Locate on map: {animal.get('name')}")
+        locate.setToolTip("Locate on the animal map\n" + source_note)
         locate.setFixedSize(32, 26)
-        locate.setEnabled(isinstance(animal.get("position"), (list, tuple)) and len(animal["position"]) == 3)
+        locate.setEnabled(valid_position(animal.get("position")))
         locate.clicked.connect(lambda: self.locate.emit(self.ident))
         footer.addWidget(locate)
         layout.addLayout(footer)
-        status = str(animal.get("status_label") or "狀態未知")
-        self.setToolTip(status)
+        status = str(animal.get("status_label") or "Status unknown")
+        self.setToolTip(status + "\n" + source_note)
         self.set_selected(False)
 
     def set_selected(self, selected):
@@ -264,7 +291,7 @@ class AnimalCard(QFrame):
         super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and isinstance(self.animal.get("position"), (list, tuple)) and len(self.animal["position"]) == 3:
+        if event.button() == Qt.MouseButton.LeftButton and valid_position(self.animal.get("position")):
             self.locate.emit(self.ident)
         super().mouseDoubleClickEvent(event)
 

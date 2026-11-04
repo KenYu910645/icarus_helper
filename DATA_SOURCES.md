@@ -2,11 +2,35 @@
 
 本文件記錄截至2026-11-02開發時的本機資料查核。特定存檔的數量是當次唯讀快照結果，不是未來世界的固定值。APP會隨有效存檔重新計算。
 
+## GitHub Releases 公開世界來源
+
+2026-11-02世界持有人明確同意GuoGuoGaGa／Prometheus完整存檔公開，接受任何人下載。`world-sync-guoguogaga`為獨立資料Release，不影響APP最新安裝包；索引`world-index.json`保存schema_version、精確world_id、地圖、存檔／發布UTC時間、原始bytes大小及SHA-256，原始附件使用完整hash檔名。索引不含本機檔案路徑或上傳憑證；完整世界檔自身原有的玩家與帳號識別屬本次明確授權內容。其他世界、獨立角色／帳號檔、私人設定與診斷未分享。
+
+`release_sync.py`限定正式GitHub repo／tag與官方附件轉址、下載大小／URL／索引版本，驗證原始hash、完整壓縮封裝及來源world_id／名稱／地圖／存檔時間。帶UTC epoch的索引查詢避免固定檔名舊快取，只有帶SHA的原始版本可被索引採用。有效資料才原子成為獨立last-good快取，失敗保留上次並標過期。朋友每120秒背景檢查，不把下載時間當主機存檔時間；不對接收端遊戲程序或帳號檔取值，也不允許下載副本登記備份或還原。
+
+主機發布器限定已綁定來源、完整世界身分與兩輪穩定signature，先驗證獨立bytes副本再上傳，最後提交並重讀核對索引；成功後才記錄已發布hash。GitHub CLI只在主機沿用既有登入，不擷取或將憑證封裝給朋友。正式啟用最近3版的清理，只處理由此發布器實際上傳且可再次核對的資產；不影響本機備份歷史。主機與接收端仍須符合現版存檔／圖資相容性；未分享的主人持續來源仍保留缺口。
+
+## Deep Mining Drill 產出庫存
+
+鑽機庫存由同份有效世界快照的`DrillRecorderComponent.SavedInventories`取得，現版`InventoryID=1`對應`D_InventoryID.General`產出儲存槽；`ItemStaticData`提供物品，`DynamicData.Index=7`為`ItemableStack`件數。沿用物資解析的數量衝突處理，不能用槽位、耐久、重量或最大堆疊量推測件數。`InventoryID=7`的生質燃料罐及設備升級槽排除，明確空陣列與資料缺失分開。
+
+`drill_inventory.py`按鑽機身分核對紀錄與槽位，並沿用`FoundationActorIcarusUID`優先／三維雙向唯一的礦床關聯；有衝突時不把舊庫存掛到其他礦床。摘要包含世界識別、同次存檔hash及時間，地圖顯示庫存第二行，點選可核對逐物品／槽位。數量是保存的物品件數，與`ResourceRemaining`、鑽機是否運轉及預期採礦產出不同。未知或不支援版本維持未知；共用圖不提供私人庫存。
+
+## 世界備份的玩家保存值
+
+`backup_players.py`與`world_backups.py`從每份已核對壓縮封裝、長度、內容hash及完整世界識別的備份，僅解碼`PlayerStateRecorderComponent`紀錄。已驗證`PlayerStateRecorderVersion=1`及`ActorStateRecorderVersion=3`；以`PlayerCharacterID.PlayerID/ChrSlot`對應同備份`ProspectInfo.AssociatedMembers.UserID/ChrSlot`，顯示`CharacterName`，不以同名或帳號單獨配對、不向介面輸出平台識別。
+
+血量使用頂層`Health`，存活使用明確的`bIsAlive`，另提供`FoodLevel`、`WaterLevel`、`OxygenLevel`、`RadiationLevel`、`RespawnCount`與`Location`。數值零與False保留；未知、重複衝突及未支援版本不變成零。存活旗標未知時不能只依血量判斷死亡；血量與旗標不一致則保留兩者並提示。
+
+成員的`IsCurrentlyPlaying`是同備份的參與旗標，False仍可能附完整玩家紀錄；該角色血量與位置應稱最後保存值，不是備份當時實際在線的證明。沒有逐人更新時間及可驗證MaxHealth，不顯示百分比或混用目前遊戲／角色資料。備份選版及還原確認使用該版本的摘要，候選hash在實際還原前再次核對，不能用新世界或另一份合法同世界內容取代確認時看到的資料。
+
+2026-11-02以三份真實歷史備份逐玩家比對完整`load_snapshot`解碼，血量、存活及位置吻合；10/31 02:19例為563／488且存活旗標均True，22:45例包含0／False。這些是當次備份案例，不能當成目前玩家狀態。摘要只在APP的記憶體快取，不修改歷史存檔或metadata；解析摘要失敗降級未知，不改原有完整性核對與備份保存規則。
+
 ## 公開共用地圖
 
 `icarus_helper/data/share_profile.json`只包含 Prometheus 地圖名稱與使用者指定公開的「我們家」位置（X=-38989.4、Y=-189495.1、Z=0 cm）。此位置來自已保存的基地設定；Z=0 是該基地的地圖定位值，沒有額外地形高度驗證。沒有加入世界識別碼、Steam帳號、存檔路徑、世界種子、任務／庫存或完整存檔。
 
-首次啟動顯示獨立 `SharedMapContext`，沒有存檔來源、存檔時間或存檔hash；讀取靜態目錄，不合併私人存檔。共用基地與各真實世界隔離，資源目前狀態未知，任務僅供攻略預覽；實際剩餘量、設備、玩家及庫存仍需主機存檔。第三方資料與圖示的來源不等於再授權，見 `THIRD_PARTY_NOTICES.md`。
+首次啟動顯示獨立 `SharedMapContext`，沒有存檔來源、存檔時間或存檔hash；讀取靜態目錄，不合併私人存檔。共用基地與各真實世界隔離，資源目前狀態未知，任務清單與總覽為空；實際剩餘量、設備、玩家及庫存仍需主機存檔。第三方資料與圖示的來源不等於再授權，見 `THIRD_PARTY_NOTICES.md`。
 
 ## 目前地圖覆蓋
 
@@ -118,6 +142,22 @@ APP只納入最大128px的PNG及來源／hash對照，執行時由Qt載入並快
 - `tests/test_mission_locations.py`有12項測試，涵蓋多階段／往返、UID優先、重複UID衝突、其他任務／地圖隔離、明確完成旗標、未初始化／非有限座標、版本變更與動態任務父子區域關聯。
 
 
+## 任務同區規劃（2026-11-03）
+
+目前安裝build26313227的`D_ProspectList`有24項Prometheus表列操作（含4項NPC）及11種SMPL3委派類型；這只是內部目錄，不是目前可接清單。其中CARAVAN（PRO_D_Transport）沒有`D_Talents`任務板入口，並已檢查現版Prometheus關卡與NPC藍圖，不能因前置為空就列為可接。3個舊探索、1個Open World入口、11個Great Hunt prospect的OnProspectAvailability為None也不混入。正常介面只列全部已確認解鎖及進行中的Operation／NPC，排除完成、鎖定、待確認與SIMPLE／SMPL3，不以推薦分數限制筆數。
+
+`operation_eligibility.py`以同版EXE及C0NT4CT／任務板藍圖驗證：ProspectTalentController使用Account儲存，RequiredTalents為任一正rank（OR），default reroute依前置計算closure，不是全部無條件開啟。`Profile.json`的UserID與來源帳號目錄、世界ClaimedAccountID三方核對，僅保留解鎖資料與獨立hash／時間；它不冒稱與世界同一時間。公開同步／共用圖不使用接收端Profile。世界完成歷史不能替代帳號解鎖，C0NT4CT模組需實際裝在裝置內。缺帳號資料則維持待確認並不列可接。規則精簡於`data/operation_rules.json`，以`tools/build_operation_rules.py`從已驗證三表可逐位元組重建；完整原始遊戲資產不提交。
+
+現版Profile的UnlockedFlags可為非負數字ID；D_AccountFlags的GenerateEnum表列順序與ID映射尚未證實，不猜零起或一起索引。Prometheus26個任務／reroute節點均無required／forbidden旗標需求，因此這不影響本次解鎖判定；其他具名稱旗標門檻的任務若只有未映射數字，保守維持未知。真存檔格式查核見本機`feature-audit/account-flag-shape-contract.json`。
+
+原生`UpdateLockedMissions`忽略Abandoned=2／Failed=3，其他歷史用同一世界`LevelTimeElapsedSec`核對157680000秒重接期限，不用現實經過天數猜測。`Mission_In_Progress`及DynamicQuestDelay由所有Operation／NPC共用的任務板UI阻擋開始，故已解鎖與`can_start_now`分開；當前有操作時顯示「已解鎖待接」，不可聲稱可同時接取。`RequiredFeatureLevel`由原生版本階段索引判斷，非Steam DLC擁有權；DangerousHorizons階段的跨圖NPC任務屬免費Kepler內容，不虛構付費授權缺口。原生／藍圖證據保留於本機`artifacts/mission-clusters-20261103/native-gates/`與`artifacts/operation-eligibility-20261103/feature-audit/`，來源hash綁定build26313227。
+
+`mission_overview.py`在一張圖保留全部已解鎖／進行中任務的原位階段點，點圖標開對應攻略但不移除其他任務。共點使用選單，沒有位置不造原點；未生成目標保留候選或待定位，已完成階段不顯示。Profile及世界檔分別監看並在背景更新，切世界清除舊任務投影。
+
+`mission_clusters.py`僅使用同一有效快照判定為可接／進行中的任務及`mission_locations.py`既有位置證據。已確認點與現版候選錨點分開做有界完整連結分群；群內任兩點的水平直線距離不超過所選500／1200／2000 m。群組至少含兩個不同任務，各任務可出現在不同區域；群外已定位階段、待定位階段及同階段替代候選分開，完成階段排除。同階段多個已確認目標仍保留群外需求，候選多錨點不視為必訪清單。群中心只供規劃及距離參考，不新增或偏移遊戲任務座標。
+
+群組不證實地形可通行或一趟可完成所有任務；Operation不能並行，接取後以新快照重核。世界／地圖／基地隔離沿用既有world_id；共用離線地圖沒有可接或私人進度推論。SMPL3歷史次數僅保留在內部資料，不進正常任務清單／地圖／分組。Unreal的None/null任務名與完成manager不構成進行中操作。
+
 ## 玩家馴養動物（2026-11-02）
 
 `animals.py`從與地圖相同的已驗證世界快照讀取Mount、Cow及Juvenile recorder。有效主人角色、明確非野生旗標及幼獸的已馴服狀態分開核對；名稱、Leader與距離不構成所有權證據。以動物GUID去重，衝突保留警告，平台帳號ID不進入輸出。鞍具／貨物依實際SavedInventories分區，件數使用現版ItemableStack；動物物品不併入家中部署容器統計。
@@ -149,7 +189,11 @@ APP只納入最大128px的PNG及來源／hash對照，執行時由Qt載入並快
 
 生命對應`UActorState.GetHealth/GetMaxHealth`（getter RVA0x1466490／0x1468aa0，state+0x1d8／0x1dc）；耐力對應`UCharacterState.GetStamina/GetMaxStamina`（RVA0x146ff10／0x1469390，state+0x278／0x27c）。已獨立核對`UMG_MountSurvival`、`UMG_MountTooltip`、`UMG_Stamina`呼叫相同getter，所以讀取的是遊戲介面已套用加成的快取，不是離線估計。每個欄位同時替換目前值與上限，不拿舊存檔目前值配即時分母；保留原存檔值、持續來源及讀取時間。只有通過核對的欄位為`maximum_status=live`，其餘保留存檔範圍；牛耐力未有適用證據而不輸出。
 
-卡片保留來源範圍：遊戲目前值用實心條，已保存持續上限標`*`，個體基準標`≈`，未知斜紋不代表百分比。動物頁可見時每30秒背景核對，失去遊戲來源即回到明示存檔來源；地圖位置、經驗與其他狀態仍隨有效自動存檔更新，不能將其稱即時位置。鞍具、背包、重型貨物各區以物品圖示及數量呈現，細節可展開。僅支援目前已驗證格式，新增元件需另行核對。
+`live_world_fields.py`補上SurvivalCharacterState原生current/max補給快取：Food+0x330/+0x348、Water+0x32c/+0x340、Oxygen+0x328/+0x338，逐對重複讀取與重核State世代，沒有寫死300。牛氧氣／耐力缺適用證據，仍不輸出。位置依K2_GetActorLocation相同來源Actor.RootComponent+0x130→ComponentToWorld.Translation+0x1d0，不讀RelativeLocation；另核UWorld.OriginLocation+0x5b8，目前僅原點(0,0,0)採用，非零不猜存檔座標的重基準語義。玩家以IcarusPlayerState+0x498精確帳號／slot配對所選快照，PawnPrivate+0x280與Pawn.PlayerState+0x240雙向核對，Pawn／RootComponent／PlayerState均重核世代與完整世界。對外只保留匿名player key及角色名稱，缺成員資料不以同名代替。
+
+`live_actor_cache.py`只在記憶體保留物件定位及索引世代，綁程序PID／建立時間／EXE路徑、hash、module base、世界與目標指紋；不保存取樣數值或寫記憶體dump。使用快取時仍重核索引slot、flags／serial、header／class、Recorder／State及世界，再讀新值；失效、世界／程序／目標變更或300秒盤點到期會重搜。每輪另比對FUObjectItem索引世代，相關新增或重用槽位回完整搜尋，確保不略過GUID／玩家重複與多世界檢查；一般無關索引更新沿用定位，不延長完整盤點期限。預算耗盡整輪不套值，舊數值不能因命中快取而續用。
+
+`live_positions.py`將同次遊戲值投影到動物及玩家展示，保留saved_position與UTC取樣時間，不修改原WorldSnapshot；玩家身分只使用匿名key。動物距離／在家篩選依採用的位置重算，主資源圖只替換已核對玩家標記。`AnimalPanel.loaded`按world_id與snapshot hash交由主視窗更新；切換世界、共用圖或舊背景工作不得回灌。卡片遊戲值實心、持續上限`*`、個體基準`≈`，位置實線為遊戲取樣、虛線為存檔，介面時間轉本地。30秒更新不受分頁可見性限制；失去來源回存檔並明示。未載入／未同步／離線玩家不保證有遊戲資料。經驗、背包、血統與任務／資源狀態仍依存檔更新。
 
 動物圖示由`D_AISetup.BestiaryGroup → D_BestiaryData.Image`的明確引用解析到原生貼圖，精簡對照為`data/animal_icons.json`，縮圖位於`assets/animals/`，來源表與貼圖雜湊、版本及缺圖原因保留於對照中。目前241個種類定義有219個原生圖示、22個缺圖，以問號備援，不用近似物種代替。這些圖是遊戲圖鑑的種類／群組代表，不證明個體毛色、性別或外觀變異；幼獸共用群組圖也不表示個體外觀相同。原始解包貼圖留在本機建置快取，不進入APP。
 

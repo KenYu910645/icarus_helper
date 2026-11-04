@@ -24,7 +24,7 @@ def app():
 def sample_animal():
     catalog = load_animal_catalog()
     return {"id": "stable-one", "name": "阿鳥", "species": "恐鳥", "species_id": "Mount_Moa",
-            "owner_name": "飼養者甲", "level": 31, "position": [1, 2, 3], "distance_m": 0,
+            "owner_name": "Owner甲", "level": 31, "position": [1, 2, 3], "distance_m": 0,
             "stats": [{"id": "health", "value": 180, "maximum": None},
                       {"id": "food", "value": 0, "maximum": None},
                       {"id": "experience", "value": 162560, "maximum": None}],
@@ -45,7 +45,7 @@ def test_xp_gauge_uses_the_verified_current_level_interval(app):
     gauge.resize(240, 27)
     image = render(app, gauge)
     assert gauge.ratio_known and gauge.display_text() == "5,560 / 17,800"
-    assert "162,560" in gauge.toolTip() and "下一級 32" in gauge.toolTip()
+    assert "162,560" in gauge.toolTip() and "next level 32" in gauge.toolTip()
     # A 31.2% interval fills the first third, independently of cumulative XP.
     assert image.pixelColor(45, 7) != image.pixelColor(180, 7)
     assert image.pixelColor(120, 7) == image.pixelColor(180, 7)
@@ -79,9 +79,9 @@ def test_zero_unknown_value_and_unknown_capacity_are_distinct(app, value, maximu
     assert gauge.ratio_known is (value == 0 and maximum == 100)
     assert "%" not in gauge.display_text()
     if value is None:
-        assert "不能當作零" in gauge.toolTip()
+        assert "cannot be treated as zero" in gauge.toolTip()
     elif maximum is None:
-        assert "斜紋不代表百分比" in gauge.toolTip()
+        assert "hatching does not represent a percentage" in gauge.toolTip()
     gauge.close()
 
 

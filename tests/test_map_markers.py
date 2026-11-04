@@ -28,7 +28,7 @@ def visible_map():
 
 
 def point(ident, x=0, y=0, kind="deep_deposit", mineral="Gold"):
-    return Resource(ident, kind, "金礦", mineral, x, y, 0)
+    return Resource(ident, kind, "Gold ore", mineral, x, y, 0)
 
 
 def test_large_icon_outer_edge_selects_the_displayed_resource(visible_map):
@@ -74,7 +74,7 @@ def test_overlapping_icons_stay_at_exact_locations_and_select_topmost(visible_ma
 def test_base_stays_at_real_coordinates_above_overlapping_icons(visible_map):
     app, view = visible_map
     view.set_points([point(f"ore-{i}", i * 10, i * 10) for i in range(12)])
-    base = {"id": "our-home", "kind": "base", "name": "我們家", "x": 0, "y": 0, "z": 0}
+    base = {"id": "our-home", "kind": "base", "name": "Home", "x": 0, "y": 0, "z": 0}
     view.set_bases([base], base)
     view.fit_map()
     view.viewport().repaint()
@@ -88,7 +88,7 @@ def test_base_stays_at_real_coordinates_above_overlapping_icons(visible_map):
 def test_drilled_deposit_has_red_ring_and_remains_selectable(visible_map):
     app, view = visible_map
     ore = point("installed")
-    ore.drill_status = "已放置"
+    ore.drill_status = "Installed"
     view.set_points([ore])
     view.viewport().repaint()
     app.processEvents()
@@ -104,7 +104,7 @@ def test_drilled_deposit_has_red_ring_and_remains_selectable(visible_map):
 def test_drilled_deposit_draws_above_nearby_unplaced_deposit(visible_map):
     app, view = visible_map
     installed, unplaced = point("installed"), point("unplaced")
-    installed.drill_status = "已放置"
+    installed.drill_status = "Installed"
     view.set_points([installed, unplaced])
     view.viewport().repaint()
     app.processEvents()
@@ -120,7 +120,7 @@ def test_world_edge_clips_icon_and_hit_area_without_moving_coordinates(visible_m
     outside = view.mapFromScene(107, 0)
     original_pixel = view.viewport().grab().toImage().pixelColor(outside)
     ore = point("near-edge", x=9900)
-    ore.drill_status = "已放置"
+    ore.drill_status = "Installed"
     view.set_points([ore])
     view.viewport().repaint()
     app.processEvents()

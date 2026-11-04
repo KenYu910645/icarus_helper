@@ -26,17 +26,17 @@ def animal(ident="one", name="阿牛", distance=20, owner="隊友甲"):
         "id": ident, "name": name, "species": "水牛", "species_id": "Buffalo",
         "owner_name": owner, "level": 12, "level_note": "依目前資料規則計算",
         "status_label": "存活", "distance_m": distance,
-        "stats": [{"id": "health", "label": "生命", "value": 180, "maximum": None,
-                   "unit": "", "detail": "存檔值，未取得可驗證上限"},
-                  {"id": "water", "label": "水分", "value": 0, "maximum": 100}],
-        "details": [{"label": "行為", "value": "跟隨"}],
+        "stats": [{"id": "health", "label": "Health", "value": 180, "maximum": None,
+                   "unit": "", "detail": "save值，未取得可驗證上限"},
+                  {"id": "water", "label": "Water", "value": 0, "maximum": 100}],
+        "details": [{"label": "行為", "value": "Follow"}],
         "inventory_status": "ok",
         "inventories": [
             {"id": "bag", "label": "背包", "status": "ok", "items": [
                 {"id": "CopperOre", "name": "銅礦", "quantity": 320, "slot": 0},
                 {"id": "CopperIngot", "name": "銅錠", "quantity": None, "slot": 1}]},
             {"id": "gear", "label": "裝備", "status": "ok", "items": [
-                {"id": "Saddle", "name": "鞍具", "quantity": 1, "slot": 0}]},
+                {"id": "Saddle", "name": "Saddle", "quantity": 1, "slot": 0}]},
         ], "warnings": [],
     }
 
@@ -72,19 +72,19 @@ def test_selected_animal_shows_exact_item_icons_and_quantities(app, monkeypatch)
     assert panel.table.item(0, 5).text() == "隊友甲"
     assert len(panel.inventory_tables) == 2
     table = panel.inventory_tables[0]
-    assert [table.item(row, 1).text() for row in range(2)] == ["320", "未知"]
+    assert [table.item(row, 1).text() for row in range(2)] == ["320", "Unknown"]
     assert [table.item(row, 0).data(Qt.ItemDataRole.UserRole) for row in range(2)] == ["CopperOre", "CopperIngot"]
     assert table.item(0, 0).icon().pixmap(32, 32).toImage().pixelColor(16, 16) == colors["CopperOre"]
     assert table.item(1, 0).icon().pixmap(32, 32).toImage().pixelColor(16, 16) == colors["CopperIngot"]
     assert panel.inventory_tables[1].item(0, 1).text() == "1"
-    assert "存檔" in panel.status.text()
+    assert "save" in panel.status.text().lower()
     assert data == before
     panel.close()
 
 
 def test_all_animals_default_and_distance_search_filters(app):
     panel = AnimalPanel()
-    panel.set_summary(summary(animal("home", "阿牛", 50), animal("away", "遠方鳥", 250, "另一位玩家"), animal("unknown", "失去座標", None)))
+    panel.set_summary(summary(animal("home", "阿牛", 50), animal("away", "遠方鳥", 250, "另一位Player"), animal("unknown", "失去座標", None)))
     assert panel.table.rowCount() == 3
     panel.scope_combo.setCurrentIndex(panel.scope_combo.findData("home"))
     assert [entry["id"] for entry in panel._row_animals] == ["home"]
@@ -93,13 +93,13 @@ def test_all_animals_default_and_distance_search_filters(app):
     panel.scope_combo.setCurrentIndex(panel.scope_combo.findData("unknown"))
     assert [entry["id"] for entry in panel._row_animals] == ["unknown"]
     panel.scope_combo.setCurrentIndex(0)
-    panel.search_edit.setText("另一位玩家")
+    panel.search_edit.setText("另一位Player")
     assert [entry["id"] for entry in panel._row_animals] == ["away"]
     panel.search_edit.setText("水牛")
     assert panel.table.rowCount() == 3
-    panel.search_edit.setText("沒有這個名稱")
+    panel.search_edit.setText("沒有這個Name")
     assert panel.table.rowCount() == 0 and not panel.inventory_tables
-    assert "沒有符合" in panel.detail_title.text()
+    assert "match the current filters" in panel.detail_title.text()
     panel.close()
 
 
@@ -111,11 +111,11 @@ def test_unknown_stats_never_become_zero_or_an_invented_percentage(app):
     values = {panel.stats_table.item(row, 0).data(Qt.ItemDataRole.UserRole):
               [panel.stats_table.item(row, column).text() for column in (1, 2)]
               for row in range(panel.stats_table.rowCount())}
-    assert values["health"] == ["180", "未提供"]
+    assert values["health"] == ["180", "Not provided"]
     assert values["water"] == ["0", "100"]
-    assert values["oxygen"] == ["未知", "未提供"]
-    assert values["experience"] == ["未知", "未提供"]
-    assert panel.table.item(0, 2).text() == "未知"
+    assert values["oxygen"] == ["Unknown", "Not provided"]
+    assert values["experience"] == ["Unknown", "Not provided"]
+    assert panel.table.item(0, 2).text() == "Unknown"
     assert all("%" not in cell for values_for_stat in values.values() for cell in values_for_stat)
     panel.close()
 
@@ -132,8 +132,8 @@ def test_level_zero_is_a_valid_displayed_level(app):
 def test_inventory_precedes_long_genetics_and_talent_details(app):
     panel = AnimalPanel()
     entry = animal()
-    value = "生命與耐力血統加成、天賦效果及存檔狀態說明。" * 24
-    entry["details"] = [{"label": "天賦與血統", "value": value}]
+    value = "Health與StaminaLineage加成, Talents效果及saveStatusNotes." * 24
+    entry["details"] = [{"label": "Talents與Lineage", "value": value}]
     panel.set_summary(summary(entry))
     panel.resize(720, 480)
     panel.show()
@@ -141,7 +141,7 @@ def test_inventory_precedes_long_genetics_and_talent_details(app):
     layout = panel.detail_content.layout()
     assert layout.indexOf(panel.inventory_host) == layout.indexOf(panel.stats_table) + 1
     assert layout.indexOf(panel.details_table) > layout.indexOf(panel.inventory_host)
-    assert panel.details_label.text() == "血統、天賦與其他資訊"
+    assert panel.details_label.text() == "Lineage, talents, and other details"
     assert panel.details_table.item(0, 1).toolTip() == value
     assert panel.details_table.rowHeight(0) > 100
     assert panel.details_table.height() > panel.details_table.rowHeight(0)
@@ -160,8 +160,8 @@ def test_absent_inventory_distinguishes_unknown_from_confirmed_empty(app, status
     entry["inventory_status"] = status
     panel.set_summary(summary(entry))
     text = "\n".join(widget.text() for widget in panel.inventory_host.findChildren(QLabel))
-    assert ("沒有物品" in text) == expect_empty
-    assert ("內容未知" in text) == (not expect_empty)
+    assert ("is empty" in text) == expect_empty
+    assert ("contents are unknown" in text) == (not expect_empty)
     assert not panel.inventory_tables
     panel.close()
 
@@ -172,7 +172,7 @@ def test_unknown_inventory_section_does_not_claim_empty(app):
     entry["inventories"] = [{"id": "gear", "label": "裝備", "status": "unavailable", "items": []}]
     panel.set_summary(summary(entry))
     text = "\n".join(widget.text() for widget in panel.inventory_host.findChildren(QLabel))
-    assert "不能確認是否為空" in text and "已確認空置" not in text
+    assert "empty state unconfirmed" in text and "Confirmed empty" not in text
     panel.close()
 
 
@@ -199,7 +199,7 @@ def test_background_all_animals_work_without_a_selected_base(app):
     wait_for(app, lambda: panel.summary is not None and not panel.busy)
     assert calls == [("one", None, 100)]
     assert panel.table.rowCount() == 1
-    assert "未知" in panel.table.item(0, 4).text()
+    assert "unknown" in panel.table.item(0, 4).text().lower()
     panel.close()
 
 
@@ -219,7 +219,7 @@ def test_same_context_failure_retains_success_and_selected_identity(app):
     panel.set_snapshot(snapshot, base)
     wait_for(app, lambda: bool(panel.last_error) and not panel.busy)
     assert panel.summary is previous and panel.selected_animal()["id"] == "second"
-    assert "上次成功" in panel.status.text()
+    assert "last valid result" in panel.status.text()
     panel.close()
 
 
@@ -229,7 +229,7 @@ def test_unavailable_summary_retains_last_good_for_same_context(app):
     previous = panel.summary
     assert not panel.set_summary({"animals": [], "coverage": {"status": "unsupported", "reason": "尚未支援此格式"}})
     assert panel.summary is previous and panel.table.rowCount() == 1
-    assert "上次成功" in panel.status.text()
+    assert "last valid result" in panel.status.text()
     panel.close()
 
 
@@ -264,7 +264,7 @@ def test_new_base_failure_cannot_retain_previous_base_success(app):
     assert panel.summary is None and panel.table.rowCount() == 0
     wait_for(app, lambda: bool(panel.last_error) and not panel.busy)
     assert panel.summary is None and not panel.inventory_tables
-    assert "上次成功" not in panel.status.text()
+    assert "last valid result" not in panel.status.text()
     panel.close()
 
 
@@ -310,9 +310,9 @@ def test_clear_and_shared_map_invalidate_inflight_jobs(app, missing_source):
     wait_for(app, lambda: not panel.busy)
     assert panel.summary is None and panel.table.rowCount() == 0
     assert not panel.inventory_tables and panel.stats_table.rowCount() == 0
-    assert "存檔" in panel.status.text() and "0 隻" not in panel.status.text()
+    assert "save" in panel.status.text().lower() and "0 animals" not in panel.status.text()
     if missing_source:
-        assert "選擇主機存檔" in panel.status.text()
+        assert "Choose host save" in panel.status.text()
     panel.close()
 
 

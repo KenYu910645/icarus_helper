@@ -34,7 +34,7 @@ def test_all_current_deep_minerals_resolve_to_native_raw_item_art():
     assert map_icons.mineral_item_id("Aluminium") == "Bauxite"
     assert catalog["Aluminium"]["form"] == "ingot"
     assert map_icons.mineral_item_id("Silicon") == "Silica"
-    assert map_icons.mineral_item_id("Gold_Dense") == map_icons.mineral_item_id("金礦") == "Gold_Ore"
+    assert map_icons.mineral_item_id("Gold_Dense") == map_icons.mineral_item_id("Gold ore") == "Gold_Ore"
 
 
 def test_native_art_is_drawn_for_both_ore_and_deep_markers_with_status_badges(app, monkeypatch):

@@ -47,24 +47,24 @@ class CatalogTests(unittest.TestCase):
         ore = next(row for row in resources if row.kind == "ore")
         self.assertEqual(ore.resource_type, "Gold_Normal")
         self.assertIsNone(ore.remaining)
-        self.assertEqual(ore.remaining_status, "採集狀態未知")
+        self.assertEqual(ore.remaining_status, "Mining status unknown")
 
     def test_exact_actor_join_preserves_depletion_and_override(self):
         world = self.world()
-        world.resources = [Resource("saved:ore", "ore", "礦", "未知", 100, 200, 300, remaining=0,
-                                    remaining_status="已耗盡", actor_path=self.paths,
+        world.resources = [Resource("saved:ore", "ore", "礦", "Unknown", 100, 200, 300, remaining=0,
+                                    remaining_status="Depleted", actor_path=self.paths,
                                     raw={"VoxelSaveData": {"VoxelResourceOverride": "Copper_Normal", "bIsVoxelFullyMined": 1}})]
         resources = merge_catalog(world)
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0].remaining, 0)
         self.assertEqual(resources[0].resource_type, "Copper_Normal")
-        self.assertEqual(resources[0].remaining_status, "已耗盡")
+        self.assertEqual(resources[0].remaining_status, "Depleted")
 
     def test_missing_world_seed_does_not_guess_mineral(self):
         world = self.world()
         world.raw_records = []
         resources = merge_catalog(world)
-        self.assertEqual(resources[0].resource_type, "未知")
+        self.assertEqual(resources[0].resource_type, "Unknown")
         self.assertIsNone(resources[0].remaining)
 
     def test_new_game_build_disables_old_assets(self):
@@ -100,7 +100,7 @@ class CatalogTests(unittest.TestCase):
             {"RecordIndex": 7, "DestroyedInstanceIndices": [1, 2, 2], "Instances": [], "DynamicInstances": []}]}}]
         tree = next(row for row in merge_catalog(world) if row.kind == "tree")
         self.assertEqual(tree.remaining, 8)
-        self.assertEqual(tree.remaining_unit, "生成實例（非物品產量）")
+        self.assertEqual(tree.remaining_unit, "Spawned instances (not item yield)")
         self.assertEqual(tree.raw["region_bounds"], group["region_bounds"])
 
     def test_out_of_range_destroyed_index_does_not_create_negative_count(self):

@@ -17,9 +17,9 @@ from typing import Any
 from .catalog import installed_game_build
 
 CATEGORY_LABELS = {
-    "resources": "礦石、金屬與燃料", "construction": "材料、零件與建材",
-    "supplies": "食物與醫療補給", "gear": "工具、裝備與彈藥", "other": "其他物品",
-    "unknown": "未辨識物品",
+    "resources": "Ores, Metals & Fuel", "construction": "Materials, Parts & Construction",
+    "supplies": "Food & Medical Supplies", "gear": "Tools, Equipment & Ammunition", "other": "Other Items",
+    "unknown": "Unrecognized Item",
 }
 CATEGORY_GROUPS = {
     "metals": "resources", "minerals": "resources",
@@ -27,7 +27,7 @@ CATEGORY_GROUPS = {
     "food": "supplies", "medical": "supplies",
     "tools": "gear", "equipment": "gear",
 }
-FORM_LABELS = {"ore": "原礦", "ingot": "錠", "processed": "加工坯", "other": "物品"}
+FORM_LABELS = {"ore": "Ore", "ingot": "Ingot", "processed": "Processed Material", "other": "Item"}
 # D_InventoryID: general, processor, fuel, seed, fertilizer, turret ammo.
 # Suit/equipment, machine upgrades, sockets and alteration slots are not stock.
 STOCK_INVENTORY_IDS = frozenset({1, 6, 7, 15, 16, 24})
@@ -117,37 +117,37 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
     canonical_ids = {key.casefold(): key for key in definitions}
     coverage = {
         "status": "ok", "reason": "", "base_name": str((base or {}).get("name", "")),
-        "radius_m": radius_m, "distance_type": "水平直線距離", "counted_containers": 0,
+        "radius_m": radius_m, "distance_type": "Horizontal straight-line distance", "counted_containers": 0,
         "excluded_containers": 0, "outside_radius": 0, "missing_locations": 0,
         "excluded_inventory_slots": 0, "duplicate_records": 0, "conflicting_records": 0,
         "unknown_stacks": 0, "unknown_items": 0, "empty_slots": 0, "linked_item_inventories": 0,
         "conflicting_slots": 0, "malformed_inventories": 0, "unknown_inventory_ids": [],
         "game_build": catalog["game_build"], "verified_at": catalog["verified_at"],
         "snapshot_time": str(_get(snapshot, "saved_at", "")),
-        "scope": "基地範圍內已部署容器與設備的儲存、加工、燃料、種子、肥料及彈藥槽",
+        "scope": "Storage, processor, fuel, seed, fertilizer and ammunition slots in deployed containers and equipment within the base radius",
         "warnings": [],
     }
     result = {"categories": [], "items": [], "containers": [], "coverage": coverage}
     radius = _number(radius_m)
     if radius is None or radius <= 0:
-        coverage.update(status="invalid_radius", reason="請指定大於零的統計範圍。")
+        coverage.update(status="invalid_radius", reason="Choose a radius greater than zero.")
         return result
     coverage["radius_m"] = radius
     if not isinstance(base, dict) or _number(base.get("x")) is None or _number(base.get("y")) is None:
-        coverage.update(status="base_required", reason="請先在地圖指定基地，再統計家中物資。")
+        coverage.update(status="base_required", reason="Set a base on the map to view home inventory.")
         return result
     if (base.get("world_id") and base["world_id"] != _get(snapshot, "world_id")) or (base.get("map_name") and base["map_name"] != _get(snapshot, "map_name")):
-        coverage.update(status="base_mismatch", reason="基地與目前世界不符，請重新選擇基地。")
+        coverage.update(status="base_mismatch", reason="The base does not match the current world. Select the base again.")
         return result
     actual_build = installed_game_build()
     coverage["installed_game_build"] = actual_build
     if actual_build is not None and actual_build != catalog["game_build"]:
-        coverage.update(status="unsupported_version", reason="遊戲版本已變更；物品數量格式尚待查核。")
+        coverage.update(status="unsupported_version", reason="The game version has changed; item quantity formats have not been verified.")
         return result
 
     records = _get(snapshot, "raw_records", [])
     if not isinstance(records, list):
-        coverage.update(status="unavailable", reason="這份快照沒有可解析的容器記錄。")
+        coverage.update(status="unavailable", reason="This snapshot has no readable container records.")
         return result
     coverage["records_with_inventory"] = sum(isinstance(r, dict) and isinstance(r.get("SavedInventories"), list) and bool(r["SavedInventories"]) for r in records)
     unique = {}
@@ -196,7 +196,7 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
         if not counted_inventories:
             continue
         container_item = str(record.get("StaticItemDataRowName", ""))
-        container = {"id": identity, "name": definitions.get(canonical_ids.get(container_item.casefold(), container_item), {}).get("name", container_item or "未辨識容器"),
+        container = {"id": identity, "name": definitions.get(canonical_ids.get(container_item.casefold(), container_item), {}).get("name", container_item or "Unrecognized Container"),
                      "x": xyz[0], "y": xyz[1], "z": xyz[2], "distance_m": distance,
                      "item_count": 0, "unknown_stacks": 0}
         seen_slots = {}
@@ -289,7 +289,7 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
         forms = {item["form"] for item in members}
         result["categories"].append({"id": category, "label": CATEGORY_LABELS[category],
                                       "rows": sorted(rows, key=lambda row: (0 if category == "resources" and any(item["source_category"] == "metals" for item in row["items"]) else 1, row["key"])),
-                                      "series": [{"id": form, "label": "礦物／燃料" if category == "resources" and form == "other" else label} for form, label in FORM_LABELS.items() if form in forms]})
+                                      "series": [{"id": form, "label": "Minerals / Fuel" if category == "resources" and form == "other" else label} for form, label in FORM_LABELS.items() if form in forms]})
     coverage["counted_containers"] = len(result["containers"])
     coverage["item_types"] = len(result["items"])
     coverage["counted_stacks"] = len(stacks)
@@ -297,18 +297,18 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
     if coverage["unknown_stacks"] or coverage["unknown_items"] or conflicts or coverage["missing_locations"] or coverage["malformed_inventories"] or coverage["unknown_inventory_ids"]:
         coverage["status"] = "partial"
     if not coverage["records_with_inventory"] or not unique:
-        coverage.update(status="unavailable", reason="這份快照沒有容器庫存記錄，無法判定家中物資。")
+        coverage.update(status="unavailable", reason="This snapshot has no container inventory records; home inventory is unavailable.")
     if conflicts or coverage["conflicting_slots"]:
-        coverage["warnings"].append("部分重複記錄內容衝突；衝突容器未計入，衝突槽的候選物品數量保留未知。")
+        coverage["warnings"].append("Some duplicate records conflict. Conflicting containers are excluded; quantities for possible items in conflicting slots remain unknown.")
     if coverage["malformed_inventories"] or coverage["unknown_inventory_ids"]:
-        coverage["warnings"].append("部分庫存格式或槽位類型尚未辨識，未加入數量。")
+        coverage["warnings"].append("Some inventory formats or slot types are unrecognized and are excluded from totals.")
     if coverage["missing_locations"]:
-        coverage["warnings"].append("部分容器缺少可驗證位置，無法確認是否位於基地範圍。")
+        coverage["warnings"].append("Some containers have no verified position and cannot be confirmed inside the base radius.")
     coverage["warnings"] += [
-        "依基地水平範圍統計；未判定建築所有權、樓層或容器是否可取用。",
-        "排除玩家與坐騎背包、掉落物、全域物品池、已裝備物品與設備升級槽。",
-        "數量是實際物品件數，原礦與錠分開顯示，未換算熔煉比例。",
+        "Counts use the horizontal base radius; ownership, floor level and container accessibility are not determined.",
+        "Excludes player and mount inventories, dropped items, global item pools, equipped items and equipment upgrade slots.",
+        "Quantities are actual item counts. Ore and ingots are separate; no smelting conversion is applied.",
     ]
     if coverage["linked_item_inventories"]:
-        coverage["warnings"].append("存放裝備的內嵌配件／袋內物品未展開；全域物品池不重複加總。")
+        coverage["warnings"].append("Attachments and nested bags in stored equipment are not expanded; global item pools are not counted again.")
     return result

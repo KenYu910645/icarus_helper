@@ -118,7 +118,7 @@ def test_growth_gene_and_lineage_truncate_separately_before_single_rank_percent(
     assert result["stamina"]["maximum"] == 42
     assert result["stamina"]["maximum_components"] == {"base": 57, "percent": -25}
     assert result["health"]["maximum_status"] == result["stamina"]["maximum_status"] == "reconstructed"
-    assert "未含" in result["health"]["detail"] and "完整目前上限" in result["health"]["detail"]
+    assert "excludes" in result["health"]["detail"] and "complete current maximum" in result["health"]["detail"]
     assert all(result[key]["maximum"] == 300 and result[key]["maximum_status"] == "verified"
                for key in ("food", "water", "oxygen"))
     assert source == before
@@ -134,7 +134,7 @@ def test_owner_percent_added_before_native_final_truncation(owner_percent, expec
     assert result["stamina"]["maximum"] == expected_stamina
     assert result["health"]["maximum_status"] == "persistent"
     assert result["health"]["maximum_components"]["owner_percent"] == owner_percent
-    assert "未保存" in result["health"]["detail"]
+    assert "unsaved" in result["health"]["detail"]
 
 
 def test_missing_owner_is_not_zero_or_a_complete_persistent_maximum():
@@ -144,7 +144,7 @@ def test_missing_owner_is_not_zero_or_a_complete_persistent_maximum():
     result = reconstruct_capacities(record(), 4, static, effects, owner_info=owner)
     assert result["health"]["maximum"] == 153
     assert result["health"]["maximum_status"] == "reconstructed"
-    assert "不以零" in result["health"]["detail"]
+    assert "not assumed to be zero" in result["health"]["detail"]
 
 
 def test_level_zero_and_zero_rank_are_valid_without_plus_one():

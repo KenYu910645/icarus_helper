@@ -27,10 +27,10 @@ class Resource:
     z: float
     remaining: float | None = None
     remaining_unit: str = ""
-    remaining_status: str = "數量未知"
+    remaining_status: str = "Quantity unknown"
     drill_status: str = ""
-    confidence: str = "已確認"
-    source: str = "遊戲存檔"
+    confidence: str = "Confirmed"
+    source: str = "Game save"
     detail: str = ""
     actor_path: str = ""
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
@@ -67,4 +67,5 @@ class WorldSnapshot:
     base_candidates: list[Resource] = field(default_factory=list)
     cache_path: Path | None = None
     game_state_seed: int | None = None
+    operation_account: dict[str, Any] = field(default_factory=dict, repr=False)
 

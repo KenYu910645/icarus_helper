@@ -18,8 +18,8 @@ from .animal_map import AnimalMapPanel, owner_color
 
 
 STANDARD_STATS = (
-    ("health", "生命"), ("food", "食物"), ("water", "水分"),
-    ("oxygen", "氧氣"), ("stamina", "耐力"), ("experience", "經驗"),
+    ("health", "Health"), ("food", "Food"), ("water", "Water"),
+    ("oxygen", "Oxygen"), ("stamina", "Stamina"), ("experience", "XP"),
 )
 
 
@@ -33,20 +33,20 @@ def _number(value):
 
 def _text(value):
     if value is None or value == "":
-        return "未知"
+        return "Unknown"
     if isinstance(value, bool):
-        return "是" if value else "否"
+        return "Yes" if value else "No"
     if isinstance(value, (int, float)):
         if not math.isfinite(value):
-            return "未知"
+            return "Unknown"
         return f"{value:,.0f}" if float(value).is_integer() else f"{value:,.2f}".rstrip("0").rstrip(".")
     if isinstance(value, (list, tuple)):
-        return "、".join(_text(item) for item in value) or "未知"
+        return ", ".join(_text(item) for item in value) or "Unknown"
     return str(value)
 
 
 def _quantity_text(value):
-    return _text(value) if _number(value) else "未知"
+    return _text(value) if _number(value) else "Unknown"
 
 
 def _time_text(value):
@@ -159,7 +159,11 @@ class AnimalPanel(QWidget):
         self._build_ui()
 
     def _refresh_visible(self):
-        if self.isVisible() and self.snapshot is not None and not self._closed and not self.busy and not self.debounce.isActive():
+        # The main resource map also consumes loaded; a hidden animal tab must
+        # keep sampling the selected world without opening or controlling it.
+        if (self.snapshot is not None and not _value(self.snapshot, "is_shared_map", False)
+                and not _value(self.snapshot, "is_remote", False)
+                and not self._closed and not self.busy and not self.debounce.isActive()):
             self._generation += 1
             self._start()
 
@@ -167,19 +171,19 @@ class AnimalPanel(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 12, 0, 0)
         controls = QGridLayout()
-        self.base_label = QLabel("馴養動物 · 尚未連接存檔")
+        self.base_label = QLabel("Tamed animals · No save connected")
         self.base_label.setWordWrap(True)
         self.base_label.setStyleSheet("font-size:16px;font-weight:600;color:#f2c771")
         controls.addWidget(self.base_label, 0, 0, 1, 5)
         self.scope_combo = QComboBox()
-        self.scope_combo.setAccessibleName("馴養動物範圍")
-        for label, key in (("全部馴養動物", "all"), ("家附近", "home"), ("離家", "away"), ("位置未知", "unknown")):
+        self.scope_combo.setAccessibleName("Tamed animal scope")
+        for label, key in (("All tamed animals", "all"), ("Near home", "home"), ("Away", "away"), ("Position unknown", "unknown")):
             self.scope_combo.addItem(label, key)
         self.scope_combo.currentIndexChanged.connect(self._filter_requested)
         controls.addWidget(self.scope_combo, 1, 0)
-        controls.addWidget(QLabel("家附近水平半徑"), 1, 1)
+        controls.addWidget(QLabel("Home radius (horizontal)"), 1, 1)
         self.radius_spin = QSpinBox()
-        self.radius_spin.setAccessibleName("馴養動物家附近半徑")
+        self.radius_spin.setAccessibleName("Tamed animal home radius")
         self.radius_spin.setRange(10, 5000)
         self.radius_spin.setSingleStep(10)
         self.radius_spin.setSuffix(" m")
@@ -188,18 +192,18 @@ class AnimalPanel(QWidget):
         self.radius_spin.valueChanged.connect(self._radius_changed)
         controls.addWidget(self.radius_spin, 1, 2)
         self.search_edit = QLineEdit()
-        self.search_edit.setAccessibleName("搜尋馴養動物")
-        self.search_edit.setPlaceholderText("搜尋名稱、物種或主人")
+        self.search_edit.setAccessibleName("Search tamed animals")
+        self.search_edit.setPlaceholderText("Search name, species, or owner")
         self.search_edit.textChanged.connect(self._filter_requested)
         controls.addWidget(self.search_edit, 1, 3)
         controls.setColumnStretch(3, 1)
         self.owner_sources_button = QToolButton()
-        self.owner_sources_button.setText("飼養者資料…")
-        self.owner_sources_button.setToolTip("連接隊友的 Characters、Profile 與 BestiaryData 備份資料夾；僅讀取，依角色識別核對。")
+        self.owner_sources_button.setText("Owner data…")
+        self.owner_sources_button.setToolTip("Connect a teammate backup folder containing Characters, Profile, and BestiaryData; read-only and verified by character identity.")
         self.owner_sources_button.clicked.connect(self.ownerSourcesRequested.emit)
         controls.addWidget(self.owner_sources_button, 1, 4)
         layout.addLayout(controls)
-        self.status = QLabel("尚未連接主機存檔，馴養動物狀態未知。")
+        self.status = QLabel("No host save connected; tamed animal status is unknown.")
         self.status.setWordWrap(True)
         self.status.setObjectName("muted")
         layout.addWidget(self.status)
@@ -208,7 +212,7 @@ class AnimalPanel(QWidget):
         board_layout = QVBoxLayout(self.board_host)
         board_layout.setContentsMargins(0, 0, 0, 0)
         self.board_scroll = QScrollArea()
-        self.board_scroll.setAccessibleName("依飼養者分欄的動物卡片")
+        self.board_scroll.setAccessibleName("Animal cards grouped by owner")
         self.board_scroll.setWidgetResizable(True)
         self.board_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.board_content = QWidget()
@@ -218,12 +222,12 @@ class AnimalPanel(QWidget):
         self.board_scroll.setWidget(self.board_content)
         board_layout.addWidget(self.board_scroll, 1)
         self.list_toggle = QToolButton()
-        self.list_toggle.setText("清單數值明細")
+        self.list_toggle.setText("Detailed list")
         self.list_toggle.setCheckable(True)
         self.list_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.list_toggle.setArrowType(Qt.ArrowType.RightArrow)
         board_layout.addWidget(self.list_toggle)
-        self.table = _table(["名稱", "物種", "等級", "狀態", "家／水平距離", "主人"], "馴養動物清單")
+        self.table = _table(["Name", "Species", "Level", "Status", "Home / horizontal distance", "Owner"], "Tamed animal list")
         self.animal_table = self.table
         for column, width in enumerate((150, 130, 75, 150, 160, 120)):
             self.table.setColumnWidth(column, width)
@@ -244,17 +248,17 @@ class AnimalPanel(QWidget):
         self.detail_scroll.setMinimumHeight(160)
         self.detail_content = QWidget()
         detail_layout = QVBoxLayout(self.detail_content)
-        self.detail_title = QLabel("選取一隻動物查看狀態與背包／裝備。")
+        self.detail_title = QLabel("Select an animal to view its status, inventory, and equipment.")
         self.detail_title.setWordWrap(True)
         self.detail_title.setStyleSheet("font-size:16px;font-weight:600")
         detail_layout.addWidget(self.detail_title)
         self.stat_toggle = QToolButton()
-        self.stat_toggle.setText("完整狀態數值")
+        self.stat_toggle.setText("Full stat values")
         self.stat_toggle.setCheckable(True)
         self.stat_toggle.setArrowType(Qt.ArrowType.RightArrow)
         self.stat_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         detail_layout.addWidget(self.stat_toggle)
-        self.stats_table = _table(["狀態", "目前值／來源", "上限／已知基準", "說明"], "動物詳細狀態")
+        self.stats_table = _table(["Status", "Current value / source", "Maximum / known baseline", "Notes"], "Animal stat details")
         for column, width in enumerate((100, 110, 110, 260)):
             self.stats_table.setColumnWidth(column, width)
         detail_layout.addWidget(self.stats_table)
@@ -264,16 +268,16 @@ class AnimalPanel(QWidget):
         self.inventory_layout = QVBoxLayout(self.inventory_host)
         self.inventory_layout.setContentsMargins(0, 0, 0, 0)
         detail_layout.addWidget(self.inventory_host)
-        self.details_label = QLabel("血統、天賦與其他資訊")
+        self.details_label = QLabel("Lineage, talents, and other details")
         self.details_label.setStyleSheet("font-size:15px;font-weight:600")
         self.details_toggle = QToolButton()
-        self.details_toggle.setText("血統、天賦與其他資訊")
+        self.details_toggle.setText("Lineage, talents, and other details")
         self.details_toggle.setCheckable(True)
         self.details_toggle.setArrowType(Qt.ArrowType.RightArrow)
         self.details_toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         detail_layout.addWidget(self.details_toggle)
         self.details_label.hide()
-        self.details_table = _table(["項目", "存檔內容"], "動物血統、天賦與其他存檔資訊")
+        self.details_table = _table(["Item", "Saved data"], "Animal lineage, talents, and other saved details")
         self.details_table.setColumnWidth(0, 140)
         self.details_table.setWordWrap(True)
         self.details_table.setTextElideMode(Qt.TextElideMode.ElideNone)
@@ -294,9 +298,14 @@ class AnimalPanel(QWidget):
         self.splitter.setCollapsible(0, False)
         self.splitter.setCollapsible(1, False)
         layout.addWidget(self.splitter, 1)
-        self.note = QLabel("生命／耐力實心條＝遊戲實際值 · *＝已計飼養者的持續上限，臨時效果待核對 · ≈＝未含完整飼養者加成 · ↑＝超出已知上限 · 斜紋＝資料不足")
+        self.note = QLabel("Game state and positions update every 30s · Hover for source/time · * Persistent maximum · ≈ Individual baseline · ↑ Above denominator · Hatched bars: unknown maximum")
+        self.note.setToolTip("Health, food, water, oxygen, stamina, and positions may use verified game samples; each field shows its actual source and time.\n"
+                             "Unreadable fields retain saved values. XP, inventory, and other data still come from the save.\n"
+                             "Solid bars have a usable denominator; their appearance alone does not indicate a game sample. * means a known persistent maximum with temporary effects unverified; ≈ means an individual baseline.")
         self.note.setWordWrap(True)
         self.note.setObjectName("muted")
+        self._local_note = self.note.text()
+        self._local_note_tooltip = self.note.toolTip()
         layout.addWidget(self.note)
         self._clear_detail()
 
@@ -311,7 +320,17 @@ class AnimalPanel(QWidget):
         if snapshot is None:
             self.clear()
             return
+        if _value(snapshot, "is_shared_map", False):
+            self.set_missing_source()
+            return
         self.snapshot, self.base = snapshot, dict(base) if base else None
+        self.owner_sources_button.setEnabled(not _value(snapshot, "is_remote", False))
+        if _value(snapshot, "is_remote", False):
+            self.note.setText("Public sync checks every 2 min · State, positions, and inventory come from the host save · ≈ Individual baseline · ↑ Above denominator · Hatched bars: unknown maximum")
+            self.note.setToolTip("Only validated public host world saves are downloaded; local game processes and character files are not read. Save times and unknown states are retained.")
+        else:
+            self.note.setText(self._local_note)
+            self.note.setToolTip(self._local_note_tooltip)
         if catalog is not None:
             self._map_catalog = catalog
         context = (_value(snapshot, "world_id"), tuple(self.base.get(axis) for axis in ("id", "x", "y", "z")) if self.base else None, self.radius_spin.value())
@@ -320,10 +339,10 @@ class AnimalPanel(QWidget):
         self._generation += 1
         self.last_error = ""
         if changed:
-            self._clear_contents("正在讀取這個世界的馴養動物…")
-        home = self.base.get("name", "所選基地") if self.base else "尚未指定基地，距離未知"
-        self.base_label.setText(f"馴養動物 · {home}")
-        self.status.setText("正在更新馴養動物…")
+            self._clear_contents("Loading tamed animals for this world…")
+        home = self.base.get("name", "Selected base") if self.base else "No base selected; distance unknown"
+        self.base_label.setText(f"Tamed animals · {home}")
+        self.status.setText("Updating tamed animals…")
         self.debounce.start()
 
     def _radius_changed(self, radius):
@@ -334,7 +353,7 @@ class AnimalPanel(QWidget):
             self._filter_changed()
 
     def _start(self):
-        if self._closed or self.snapshot is None:
+        if self._closed or self.snapshot is None or _value(self.snapshot, "is_shared_map", False):
             return
         if self.busy:
             self._pending = True
@@ -367,13 +386,14 @@ class AnimalPanel(QWidget):
             return
         if generation == self._generation:
             self.last_error = error
-            self.status.setText("動物更新未完成，顯示同一世界與基地上次成功資料。" if self.summary is not None else "動物暫時無法讀取，請稍後重新整理存檔。")
+            self.status.setText("Animal update incomplete; displaying the last valid result for this world and base." if self.summary is not None else "Animals could not be read; refresh the save again later.")
             self.status.setToolTip(error)
             self.failed.emit(error)
         self._restart_pending(generation)
 
     def _restart_pending(self, generation):
-        if self.snapshot is not None and (self._pending or generation != self._generation):
+        if (not self._closed and self.snapshot is not None and not _value(self.snapshot, "is_shared_map", False)
+                and (self._pending or generation != self._generation)):
             self.debounce.start(0)
 
     def clear(self):
@@ -383,14 +403,14 @@ class AnimalPanel(QWidget):
         self.owner_profile_roots = None
         self.last_error = ""
         self.debounce.stop()
-        self.base_label.setText("馴養動物 · 尚未連接存檔")
-        self._clear_contents("尚未連接主機存檔，馴養動物狀態未知。")
+        self.base_label.setText("Tamed animals · No save connected")
+        self._clear_contents("No host save connected; tamed animal status is unknown.")
 
     def set_missing_source(self):
         """Clear dynamic state and invalidate jobs when displaying the shared map."""
         self.clear()
-        self.base_label.setText("馴養動物 · 未連接主機存檔")
-        self.status.setText("尚未連接主機存檔，無法取得馴養動物；請按「選擇主機存檔」。")
+        self.base_label.setText("Tamed animals · No host save connected")
+        self.status.setText("No host save connected; tamed animals are unavailable. Click “Choose host save”.")
 
     def _clear_contents(self, message):
         self.summary = None
@@ -412,32 +432,42 @@ class AnimalPanel(QWidget):
         coverage = summary.get("coverage", {}) if isinstance(summary, dict) else {}
         status = str(coverage.get("status", ""))
         if not isinstance(summary, dict) or not isinstance(summary.get("animals"), list) or status not in ("", "ok", "partial", "empty"):
-            reason = str(coverage.get("reason") or "目前存檔沒有可讀取的馴養動物資料。")
+            reason = str(coverage.get("reason") or "This save has no readable tamed animal data.")
             self.last_error = reason
-            self.status.setText(f"{reason} 顯示上次成功資料。" if self.summary is not None else reason)
+            self.status.setText(f"{reason} Showing the last valid result." if self.summary is not None else reason)
             return False
         self.summary = summary
         self.last_error = ""
         animals = summary["animals"]
         total = coverage.get("total_tamed")
-        text = f"已讀取 {len(animals)} 隻馴養動物"
+        text = f"Loaded {len(animals)} tamed animals"
         if _number(total) and total != len(animals):
-            text += f"／來源共 {_quantity_text(total)} 隻"
+            text += f" / source total: {_quantity_text(total)} animals"
         timestamp = _time_text(saved_at or coverage.get("snapshot_time"))
         if timestamp:
-            text += f" · 存檔 {timestamp}"
+            text += f" · Save {timestamp}"
         if status == "partial":
-            text += " · 部分資料待確認"
+            text += " · Some data needs verification"
         live = summary.get("live_stats", {})
-        applied = coverage.get("live_stats", {}).get("applied_animals", 0)
+        live_keys = {"health", "food", "water", "oxygen", "stamina"}
+        live_fields = [stat for animal in animals for stat in animal.get("stats", [])
+                       if stat.get("id") in live_keys and stat.get("maximum_status") == "live"]
+        applied = sum(any(stat.get("id") in live_keys and stat.get("maximum_status") == "live"
+                          for stat in animal.get("stats", [])) for animal in animals)
         if live.get("world_verified") is True and applied:
-            text += f" · 遊戲狀態 {applied}/{len(animals)} 隻 {_time_text(live.get('sample_time'))}"
-            if applied < len(animals):
-                text += "（其餘保留存檔）"
+            text += f" · Game state {applied}/{len(animals)} animals, {len(live_fields)} fields {_time_text(live.get('sample_time'))}"
         elif live:
-            text += " · 生命／耐力目前使用存檔來源"
+            text += " · Stats use saved data"
+        live_animals = sum(animal.get("position_source") == "live" for animal in animals)
+        live_players = sum(player.get("position_source") == "live" for player in summary.get("players", []))
+        if live_animals or live_players:
+            text += f" · Game positions: animals {live_animals} / players {live_players}"
         self._summary_status = text
-        self.status.setToolTip("\n".join(str(warning) for warning in coverage.get("warnings", [])) + ("\n" + str(live.get("reason")) if live else ""))
+        refresh_note = "Public sync checks every two minutes; all fields and positions come from the host save. The local game process is not read.\n" if _value(self.snapshot, "is_remote", False) else "The connected world updates every 30 seconds, including while this tab is hidden. Fields and positions may come from different samples; hover for sources and times.\n"
+        self.status.setToolTip(refresh_note
+                               + "Fields without game samples retain saved values; XP, inventory, talents, and lineage remain save data.\n"
+                               + "\n".join(str(warning) for warning in coverage.get("warnings", []))
+                               + ("\n" + str(live.get("reason")) if live.get("reason") else ""))
         self.animal_map.set_context(self.snapshot, summary, self.base, catalog=self._map_catalog)
         self._filter_changed()
         return True
@@ -472,10 +502,10 @@ class AnimalPanel(QWidget):
         for row, animal in enumerate(animals):
             distance = animal.get("distance_m")
             state = self._home_state(animal)
-            home = f"{'家附近' if state == 'home' else '離家'} · {_quantity_text(distance)} m" if state != "unknown" else "位置／基地未知"
+            home = f"{'Near home' if state == 'home' else 'Away'} · {_quantity_text(distance)} m" if state != "unknown" else "Position / base unknown"
             level = _quantity_text(animal.get("level"))
-            values = (animal.get("name") or "未命名", animal.get("species") or "Unknown species", level,
-                      animal.get("status_label") or "未知", home, animal.get("owner_name") or "未知")
+            values = (animal.get("name") or "Unnamed", animal.get("species") or "Unknown species", level,
+                      animal.get("status_label") or "Unknown", home, animal.get("owner_name") or "Unknown")
             for column, value in enumerate(values):
                 entry = _put(self.table, row, column, value)
                 if column == 0:
@@ -488,7 +518,7 @@ class AnimalPanel(QWidget):
             self.table.selectRow(index)
         self.table.blockSignals(False)
         self._selection_changed()
-        suffix = f" · 顯示 {len(animals)} 隻" if len(animals) != len(self.summary["animals"]) else ""
+        suffix = f" · Showing {len(animals)} animals" if len(animals) != len(self.summary["animals"]) else ""
         self.status.setText(self._summary_status + suffix)
 
     def _clear_board(self):
@@ -508,16 +538,16 @@ class AnimalPanel(QWidget):
             key = animal.get("owner_key") or animal.get("owner_name") or "unknown"
             groups.setdefault(key, []).append(animal)
         if not groups:
-            empty = QLabel("目前沒有符合的動物" if self.summary else "尚未連接主機存檔")
+            empty = QLabel("No animals match the current filters" if self.summary else "No host save connected")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.board_layout.addWidget(empty)
         for key, members in groups.items():
-            name = str(members[0].get("owner_name") or "飼養者未知")
+            name = str(members[0].get("owner_name") or "Unknown owner")
             color = owner_color(key)
             column = QWidget()
             column.setMinimumWidth(265)
             column.setMaximumWidth(380)
-            column.setAccessibleName(f"飼養者 {name}")
+            column.setAccessibleName(f"Owner {name}")
             lane = QVBoxLayout(column)
             lane.setContentsMargins(0, 0, 0, 0)
             lane.setSpacing(8)
@@ -526,14 +556,14 @@ class AnimalPanel(QWidget):
             bonuses = owner.get("percent", {})
             known = owner.get("known_percent", {})
             lines = []
-            for stat, label in (("health", "生命"), ("stamina", "耐力")):
+            for stat, label in (("health", "Health"), ("stamina", "Stamina")):
                 value = bonuses.get(stat)
-                lines.append(f"{label} +{max(0, value)}%" if isinstance(value, int) else f"{label}加成待核對" + (f"（已知 {known[stat]}%）" if isinstance(known.get(stat), int) else ""))
-            title.setToolTip(" · ".join(lines) + "\n" + str(owner.get("scope", "缺少飼養者角色／帳號資料。")))
+                lines.append(f"{label} +{max(0, value)}%" if isinstance(value, int) else f"{label} bonus unverified" + (f" (known {known[stat]}%)" if isinstance(known.get(stat), int) else ""))
+            title.setToolTip(" · ".join(lines) + "\n" + str(owner.get("scope", "Owner character/account data is missing.")))
             title.setStyleSheet(f"color:{color};font-size:16px;font-weight:600;padding:10px;background:#1b2b38;border-radius:6px")
             lane.addWidget(title)
             live_count = sum(any(stat.get("id") == "health" and stat.get("maximum_status") == "live" for stat in animal.get("stats", [])) for animal in members)
-            owner_note = QLabel("上限取自遊戲 · 包含已套用加成" if live_count == len(members) else " · ".join(lines))
+            owner_note = QLabel("Maximum from game · Includes applied bonuses" if live_count == len(members) else " · ".join(lines))
             owner_note.setWordWrap(True)
             owner_note.setStyleSheet("color:#a7bdcf;font-size:11px")
             lane.addWidget(owner_note)
@@ -584,28 +614,28 @@ class AnimalPanel(QWidget):
     def _selection_changed(self):
         animal = self.selected_animal()
         if animal is None:
-            self._clear_detail("目前篩選沒有符合的馴養動物。")
+            self._clear_detail("No tamed animals match the current filters.")
             return
         self._selected_id = str(animal.get("id", ""))
         for ident, card in self.animal_cards.items():
             card.set_selected(ident == self._selected_id)
         self.animal_map.select_animal(self._selected_id, focus=False)
-        self.detail_title.setText(f"{animal.get('name') or '未命名'} · {animal.get('species') or 'Unknown species'}")
+        self.detail_title.setText(f"{animal.get('name') or 'Unnamed'} · {animal.get('species') or 'Unknown species'}")
         stats = [stat for stat in animal.get("stats", []) if isinstance(stat, dict)]
         present = {stat.get("id") for stat in stats}
-        stats = stats + [{"id": key, "label": label, "value": None, "maximum": None, "detail": "存檔未提供可驗證數值"} for key, label in STANDARD_STATS if key not in present]
+        stats = stats + [{"id": key, "label": label, "value": None, "maximum": None, "detail": "No verifiable value in the save"} for key, label in STANDARD_STATS if key not in present]
         self.stats_table.setRowCount(len(stats))
         for row, stat in enumerate(stats):
             value = _text(stat.get("value"))
             unit = str(stat.get("unit") or "")
-            if value != "未知" and unit:
+            if value != "Unknown" and unit:
                 value += f" {unit}"
-            maximum = _quantity_text(stat.get("maximum")) if _number(stat.get("maximum")) else "未提供"
-            if maximum != "未提供" and stat.get("maximum_status") == "reconstructed":
+            maximum = _quantity_text(stat.get("maximum")) if _number(stat.get("maximum")) else "Not provided"
+            if maximum != "Not provided" and stat.get("maximum_status") == "reconstructed":
                 maximum = "≈ " + maximum
-            elif maximum != "未提供" and stat.get("maximum_status") == "persistent":
+            elif maximum != "Not provided" and stat.get("maximum_status") == "persistent":
                 maximum += "*"
-            values = (stat.get("label") or stat.get("id") or "未辨識狀態", value, maximum, stat.get("detail") or "")
+            values = (stat.get("label") or stat.get("id") or "Unrecognized stat", value, maximum, stat.get("detail") or "")
             for column, text in enumerate(values):
                 entry = _put(self.stats_table, row, column, text)
                 if column == 0:
@@ -614,7 +644,7 @@ class AnimalPanel(QWidget):
         details = [item for item in animal.get("details", []) if isinstance(item, dict)]
         self.details_table.setRowCount(len(details))
         for row, detail in enumerate(details):
-            _put(self.details_table, row, 0, detail.get("label") or "其他資訊")
+            _put(self.details_table, row, 0, detail.get("label") or "Other details")
             _put(self.details_table, row, 1, _text(detail.get("value")))
         self.details_table.setVisible(bool(details) and self.details_toggle.isChecked())
         self.details_toggle.setVisible(bool(details))
@@ -634,28 +664,28 @@ class AnimalPanel(QWidget):
 
     def _show_inventories(self, animal):
         self._clear_inventories()
-        title = QLabel("背包與裝備")
+        title = QLabel("Inventory and equipment")
         title.setStyleSheet("font-size:15px;font-weight:600")
         self.inventory_layout.addWidget(title)
         inventories = animal.get("inventories", [])
         if not inventories:
             empty = animal.get("inventory_status") == "empty"
-            message = "存檔已確認背包／裝備沒有物品。" if empty else "存檔未提供可讀取的背包／裝備，內容未知。"
+            message = "The save confirms the inventory/equipment is empty." if empty else "The save has no readable inventory/equipment; contents are unknown."
             self.inventory_layout.addWidget(QLabel(message))
             return
         for inventory in inventories:
             items = inventory.get("items")
             items = items if isinstance(items, list) else None
             state = inventory.get("status", "unavailable")
-            label = str(inventory.get("label") or "未辨識儲物槽")
+            label = str(inventory.get("label") or "Unrecognized storage slot")
             if items:
-                label += f" · {len(items)} 個物品堆疊"
+                label += f" · {len(items)} item stacks"
                 if state not in ("ok", "empty"):
-                    label += " · 部分內容待確認"
+                    label += " · Some contents need verification"
             elif items == [] and state in ("ok", "empty"):
-                label += " · 已確認空置"
+                label += " · Confirmed empty"
             else:
-                label += " · 內容未知，不能確認是否為空"
+                label += " · Contents unknown; empty state unconfirmed"
             heading = QLabel(label)
             heading.setWordWrap(True)
             self.inventory_layout.addWidget(heading)
@@ -671,11 +701,11 @@ class AnimalPanel(QWidget):
                 tile.setIcon(item_icon(ident))
                 tile.setIconSize(QSize(44, 44))
                 quantity = _quantity_text(item.get("quantity"))
-                tile.setText("× " + (quantity if quantity != "未知" else "?"))
+                tile.setText("× " + (quantity if quantity != "Unknown" else "?"))
                 tile.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
                 tile.setFixedSize(72, 72)
-                name = str(item.get("name") or ident or "未辨識物品")
-                tooltip = f"{name}\n數量 {quantity} · 槽位 {_text(item.get('slot'))}"
+                name = str(item.get("name") or ident or "Unrecognized item")
+                tooltip = f"{name}\nQuantity {quantity} · Slot {_text(item.get('slot'))}"
                 if item.get("warnings"):
                     tooltip += "\n" + "\n".join(map(str, item["warnings"]))
                 tile.setToolTip(tooltip)
@@ -686,12 +716,12 @@ class AnimalPanel(QWidget):
             tiles.setColumnStretch(4, 1)
             self.inventory_layout.addWidget(tiles_host)
             toggle = QToolButton()
-            toggle.setText("物品名稱、數量與槽位")
+            toggle.setText("Item names, quantities, and slots")
             toggle.setCheckable(True)
             toggle.setArrowType(Qt.ArrowType.RightArrow)
             toggle.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.inventory_layout.addWidget(toggle)
-            table = _table(["物品", "數量", "存檔槽位"], label)
+            table = _table(["Item", "Quantity", "Saved slot"], label)
             table.setIconSize(QSize(32, 32))
             table.verticalHeader().setDefaultSectionSize(42)
             table.setColumnWidth(0, 260)
@@ -700,12 +730,12 @@ class AnimalPanel(QWidget):
             table.setRowCount(len(items))
             for row, item in enumerate(items):
                 ident = str(item.get("id", item.get("item_id", "")) or "")
-                entry = _put(table, row, 0, item.get("name") or ident or "未辨識物品")
+                entry = _put(table, row, 0, item.get("name") or ident or "Unrecognized item")
                 entry.setIcon(item_icon(ident))
                 entry.setData(Qt.ItemDataRole.UserRole, ident)
                 warnings = [str(warning) for warning in item.get("warnings", [])]
                 if not has_item_icon(ident):
-                    warnings.append("此物品尚無可用圖示。")
+                    warnings.append("No icon is available for this item.")
                 if warnings:
                     entry.setToolTip(entry.text() + "\n" + "\n".join(warnings))
                 quantity = _put(table, row, 1, _quantity_text(item.get("quantity")))
@@ -717,7 +747,7 @@ class AnimalPanel(QWidget):
             table.hide()
             toggle.toggled.connect(lambda checked, t=table, b=toggle: self._toggle_section(b, t, checked))
 
-    def _clear_detail(self, message="選取一隻動物查看狀態與背包／裝備。"):
+    def _clear_detail(self, message="Select an animal to view its status, inventory, and equipment."):
         self.detail_title.setText(message)
         self.stats_table.setRowCount(0)
         _fit_detail_table(self.stats_table)

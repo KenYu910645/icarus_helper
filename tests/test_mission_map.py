@@ -24,8 +24,8 @@ def panel():
 
 def route(x=0):
     return {"points": [{"id": "one", "label": "領取裝備", "order": 1, "x": x, "y": 100, "z": 0, "status": "active"},
-                       {"id": "two", "label": "後續採集點", "order": 2, "x": 50000, "y": 100, "z": 0, "confidence": "candidate"}],
-            "pending_stages": [{"label": "離開任務區域", "order": 3, "reason": "位置將隨任務進度決定"}], "coverage": {}}
+                       {"id": "two", "label": "Later採集點", "order": 2, "x": 50000, "y": 100, "z": 0, "confidence": "candidate"}],
+            "pending_stages": [{"label": "離開任務區域", "order": 3, "reason": "位置將隨Mission progress決定"}], "coverage": {}}
 
 
 def populate(widget, data):
@@ -39,9 +39,9 @@ def test_route_lists_current_later_and_unresolved_stages(panel):
     assert len(widget.map.points) == 2
     assert widget.stages.count() == 3
     assert "領取裝備" in widget.stages.item(0).text()
-    assert "候選" in widget.stages.item(1).text()
+    assert "Candidate" in widget.stages.item(1).text()
     assert widget.stages.item(2).data(Qt.ItemDataRole.UserRole)["pending"]
-    assert "已定位 1" in widget.summary.text()
+    assert "Confirmed: 1" in widget.summary.text()
 
 
 def test_refresh_rebinds_and_follows_selected_target_when_it_moves(panel):
@@ -81,8 +81,8 @@ def test_route_distance_uses_selected_base_and_refreshes_when_base_changes(panel
     base = {"id": "home", "name": "我們家", "kind": "base", "x": 300, "y": 500, "z": 9000}
     widget.set_mission(None, {"id": "test-mission"}, {"calibrated": True}, [base], route=route(), active_base=base)
     assert widget.map.points[0]["distance_m"] == pytest.approx(5)
-    assert "距我們家 5 m（水平直線）" in widget.stages.item(0).text()
-    assert "候選" in widget.stages.item(1).text()
+    assert "5 m from 我們家 (horizontal straight-line)" in widget.stages.item(0).text()
+    assert "Candidate" in widget.stages.item(1).text()
     moved = dict(base, x=0, y=100)
     widget.set_mission(None, {"id": "test-mission"}, {"calibrated": True}, [moved], route=route(), active_base=moved)
     assert widget.map.points[0]["distance_m"] == 0

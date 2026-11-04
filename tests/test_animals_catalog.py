@@ -24,9 +24,9 @@ def test_native_level_boundaries_and_species_growth(species, xp, expected):
 def test_shipped_catalog_provenance_and_no_personal_source_paths():
     catalog = load_animal_catalog()
     assert catalog["game_build"] == "26313227"
-    assert catalog["enums"]["sex"]["0"] == "未知"
-    assert catalog["enums"]["sex"]["1"] == "雌性"
-    assert catalog["enums"]["sex"]["2"] == "雄性"
+    assert catalog["enums"]["sex"]["0"] == "Unknown"
+    assert catalog["enums"]["sex"]["1"] == "Female"
+    assert catalog["enums"]["sex"]["2"] == "Male"
     assert catalog["species"]["Mount_Horse"]["english"] == "Terrenus"
     for source in catalog["sources"]:
         assert not Path(source["path"]).is_absolute()

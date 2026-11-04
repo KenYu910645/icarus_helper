@@ -18,11 +18,11 @@ ANIMAL_COMPONENTS = frozenset({
     "/Script/Icarus.IcarusCowCharacterRecorderComponent",
     "/Script/Icarus.IcarusJuvenileRecorderComponent",
 })
-INVENTORY_LABELS = {1: "一般物品欄", 17: "鞍具", 19: "動物背包", 20: "重型貨物"}
+INVENTORY_LABELS = {1: "General inventory", 17: "Saddle", 19: "Animal backpack", 20: "Bulky cargo"}
 STAT_FIELDS = (
-    ("health", "生命", "CurrentHealth"), ("food", "食物", "FoodLevel"),
-    ("water", "水分", "WaterLevel"), ("oxygen", "氧氣", "OxygenLevel"),
-    ("stamina", "耐力", "Stamina"), ("experience", "經驗值", "Experience"),
+    ("health", "Health", "CurrentHealth"), ("food", "Food", "FoodLevel"),
+    ("water", "Water", "WaterLevel"), ("oxygen", "Oxygen", "OxygenLevel"),
+    ("stamina", "Stamina", "Stamina"), ("experience", "XP", "Experience"),
 )
 
 
@@ -30,7 +30,7 @@ STAT_FIELDS = (
 def load_animal_catalog() -> dict:
     data = json.loads((Path(__file__).with_name("data") / "animal_catalog.json").read_text(encoding="utf-8"))
     if not isinstance(data, dict):
-        raise ValueError("動物目錄頂層格式錯誤")
+        raise ValueError("Invalid animal catalog root format")
     return data
 
 
@@ -47,26 +47,26 @@ def _number(value: Any) -> int | float | None:
         return None
 
 
-def _name(value: Any, fallback: str = "未知") -> str:
+def _name(value: Any, fallback: str = "Unknown") -> str:
     return value if isinstance(value, str) and value and value.casefold() != "none" else fallback
 
 
 def _label(mapping: dict, key: Any, fallback: str | None = None) -> str:
     if not isinstance(key, (str, int, float)) or isinstance(key, bool):
-        return fallback or "未知"
+        return fallback or "Unknown"
     value = mapping.get(str(key)) if isinstance(mapping, dict) else None
     if value is None and isinstance(mapping, dict) and isinstance(key, (str, int, float)):
         value = mapping.get(key)
     if isinstance(value, dict):
-        value = value.get("name") or value.get("label")
-    return _name(value, fallback or f"未知（{key}）")
+        value = value.get("english") or value.get("name") or value.get("label")
+    return _name(value, fallback or f"Unknown({key})")
 
 
 def _enum(catalog: dict, group: str, value: Any) -> str:
     if not isinstance(value, str):
-        return "未知"
+        return "Unknown"
     mapping = catalog.get("enums", {}).get(group, {})
-    return _label(mapping, value, _label(mapping, str(value).split("::")[-1])) if value is not None else "未知"
+    return _label(mapping, value, _label(mapping, str(value).split("::")[-1])) if value is not None else "Unknown"
 
 
 def _variables(record: dict, key: str, value_key: str) -> dict:
@@ -142,14 +142,14 @@ def _position(record: dict) -> list | None:
 
 
 def _level(record: dict, catalog: dict, species: dict, raw_level: Any) -> tuple[int | None, str]:
-    note = "目前等級尚未驗證；最後等級記錄僅供核對。"
+    note = "Current level has not been verified; the last recorded level is for reference only."
     rule = catalog.get("level_rule") or {}
     if not isinstance(rule, dict) or rule.get("verified") is not True:
         return None, note
     if rule.get("type") == "saved_integer" and rule.get("field") == "LastLevelAchieved" and isinstance(raw_level, int) and not isinstance(raw_level, bool):
         offset = rule.get("offset", 0)
         if isinstance(offset, int) and not isinstance(offset, bool) and raw_level + offset >= 0:
-            return raw_level + offset, str(rule.get("note") or "依已驗證存檔等級規則。")
+            return raw_level + offset, str(rule.get("note") or "Based on verified save level rules.")
     if rule.get("type") != "curve_thresholds":
         return None, note
     curve = _verified_curve(catalog, species)
@@ -158,10 +158,10 @@ def _level(record: dict, catalog: dict, species: dict, raw_level: Any) -> tuple[
     thresholds, display_maximum = curve
     experience = _number(record.get("Experience"))
     if experience is None or experience < 0:
-        return None, "經驗值缺失或不合法，無法核對目前等級。"
+        return None, "XP is missing or invalid; current level cannot be verified."
     # Native GetLevel compares integer-truncated curve thresholds; no +1.
     level = max(index for index, threshold in enumerate(thresholds) if experience >= threshold)
-    return min(level, display_maximum), "依目前版本的動物經驗曲線計算。"
+    return min(level, display_maximum), "Calculated from the current-version animal XP curve."
 
 
 def _verified_curve(catalog: dict, species: dict) -> tuple[list[int], int] | None:
@@ -208,20 +208,20 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
     saved = record.get("SavedInventories")
     if not isinstance(saved, list):
         coverage["unavailable_inventories"] += 1
-        return [], "unavailable", ["背包資料缺失或未解碼；不能判定為空。"]
+        return [], "unavailable", ["Inventory data is missing or undecoded; it cannot be considered empty."]
     canonical = {key.casefold(): key for key in items["items"]}
     dynamic_ids = items["dynamic_properties"]
     collected = {}
     for inv in saved:
         if not isinstance(inv, dict) or not isinstance(inv.get("InventoryID"), int) or isinstance(inv.get("InventoryID"), bool) or not isinstance(inv.get("Slots"), list):
             coverage["malformed_inventories"] += 1
-            warnings.append("部分背包格式無法讀取。")
+            warnings.append("Some inventory formats could not be read.")
             continue
         inventory_id = inv["InventoryID"]
         group = collected.setdefault(inventory_id, {})
         for index, slot in enumerate(inv["Slots"]):
             if not isinstance(slot, dict):
-                warnings.append("部分物品槽格式無法讀取。")
+                warnings.append("Some item slot formats could not be read.")
                 coverage["malformed_inventories"] += 1
                 continue
             location = slot.get("Location")
@@ -233,20 +233,20 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
             else:
                 coverage["duplicate_slots"] += 1
             if not valid_location:
-                warnings.append("部分物品槽沒有有效位置，保留為未知。")
+                warnings.append("Some item slots have no valid index and remain unknown.")
     output = []
     for inventory_id, groups in sorted(collected.items()):
-        label = INVENTORY_LABELS.get(inventory_id, f"未知背包（{inventory_id}）")
+        label = INVENTORY_LABELS.get(inventory_id, f"Unknown inventory ({inventory_id})")
         inv_warnings = []
         if inventory_id not in INVENTORY_LABELS:
-            inv_warnings.append("未驗證的背包類型；僅顯示可辨識物品。")
+            inv_warnings.append("Unverified inventory type; only identifiable items are shown.")
             coverage["unknown_inventory_ids"].append(inventory_id)
         rows = []
         for location, candidates in groups.items():
             conflict = len(candidates) > 1
             if conflict:
                 coverage["conflicting_slots"] += 1
-                inv_warnings.append("相同背包槽有衝突，物品數量保留未知。")
+                inv_warnings.append("Conflicting entries in the same inventory slot; item quantities remain unknown.")
             seen = set()
             for slot in candidates:
                 item_id = _item_id(slot)
@@ -263,16 +263,16 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
                 row_warnings = []
                 if definition is None:
                     coverage["unknown_items"] += 1
-                    row_warnings.append("物品不在目前版本目錄中。")
+                    row_warnings.append("Item is not in the current-version catalog.")
                 if quantity is None:
                     coverage["unknown_stacks"] += 1
-                    row_warnings.append("數量資料缺失或衝突。")
+                    row_warnings.append("Quantity data is missing or conflicting.")
                 dynamic = slot.get("DynamicData", slot.get("ItemDynamicData", []))
                 linked = isinstance(dynamic, list) and any(isinstance(e, dict) and e.get("Index", e.get("Type")) == dynamic_ids["InventoryContainer_LinkedInventoryId"] for e in dynamic)
                 nested = bool(slot.get("LivingItemSlots"))
                 if linked or nested:
                     coverage["unexpanded_item_inventories"] += 1
-                    row_warnings.append("內嵌物品箱／物品槽未展開，內容不計入這份背包清單。")
+                    row_warnings.append("Nested item containers/slots have not been expanded and are excluded from this inventory list.")
                 rows.append({"id": item_id, "name": (definition or {}).get("name", item_id),
                              "quantity": quantity, "slot": location if isinstance(location, int) else None,
                              "warnings": row_warnings, "nested_inventory_status": "unexpanded" if linked or nested else "none"})
@@ -289,13 +289,13 @@ def _animal(record: dict, catalog: dict, item_catalog: dict, base: dict | None, 
     species = catalog.get("species", {}).get(species_id, {})
     warnings = []
     if not species:
-        warnings.append("此動物種類尚未與目前版本目錄對照。")
+        warnings.append("This animal species has not been matched to the current-version catalog.")
         coverage["unknown_species"] += 1
     details = []
     integers = _variables(record, "IntVariables", "iVariable")
     raw_level = integers.get("LastLevelAchieved")
     if _number(raw_level) is not None:
-        details.append({"label": "最後等級記錄（原值）", "value": str(raw_level)})
+        details.append({"label": "Last recorded level (raw)", "value": str(raw_level)})
     level, level_note = _level(record, catalog, species, raw_level)
     health_record = record.get("CharacterRecord")
     health = _number(health_record.get("CurrentHealth")) if isinstance(health_record, dict) else None
@@ -316,75 +316,76 @@ def _animal(record: dict, catalog: dict, item_catalog: dict, base: dict | None, 
                       "maximum_status": capacity_status,
                       "maximum_components": capacity.get("maximum_components"),
                       "maximum_sources": capacity.get("maximum_sources", []),
-                      "unit": "經驗值" if stat_id == "experience" else "存檔數值",
-                      "detail": "資料未知" if value is None else capacity.get("detail", "目前存檔值；未取得可驗證的目前上限。")})
+                      "unit": "XP" if stat_id == "experience" else "Saved value",
+                      "detail": "Data unknown" if value is None else capacity.get("detail", "Current saved value; a verifiable current maximum is unavailable.")})
     if "CurrentMilk" in record:
         value = _number(record.get("CurrentMilk"))
-        stats.append({"id": "milk", "label": "目前乳量", "value": value, "maximum": None,
-                      "unit": "存檔數值", "detail": "未換算為物品件數或容量單位。"})
+        stats.append({"id": "milk", "label": "Current milk", "value": value, "maximum": None,
+                      "unit": "Saved value", "detail": "Not converted to item quantities or volume units."})
     movement = _enum(catalog, "movement", record.get("MovementBehaviourState"))
-    for group, field, label in (("movement", "MovementBehaviourState", "活動行為"),
-                                ("combat", "CombatBehaviourState", "戰鬥行為"),
-                                ("consumption", "ConsumptionBehaviourState", "進食設定"),
-                                ("grazing", "GrazingBehaviourState", "覓食行為")):
+    for group, field, label in (("movement", "MovementBehaviourState", "Movement behavior"),
+                                ("combat", "CombatBehaviourState", "Combat behavior"),
+                                ("consumption", "ConsumptionBehaviourState", "Consumption setting"),
+                                ("grazing", "GrazingBehaviourState", "Grazing behavior")):
         details.append({"label": label, "value": _enum(catalog, group, record.get(field))})
     modifiers = record.get("Modifiers")
     modifier_names = []
     if not isinstance(modifiers, list):
-        warnings.append("狀態效果資料缺失，不能判定沒有異常。")
+        warnings.append("Status effect data is missing; absence of conditions cannot be confirmed.")
     else:
         for modifier in modifiers:
             if not isinstance(modifier, dict):
-                warnings.append("部分狀態效果無法讀取。")
+                warnings.append("Some status effects could not be read.")
                 continue
             row = modifier.get("RowName")
             modifier_names.append(_label(catalog.get("modifiers", {}), row))
     if modifier_names:
-        details.append({"label": "狀態效果", "value": "、".join(modifier_names)})
-    empty = [label for field, label in (("FoodLevel", "食物"), ("WaterLevel", "水分")) if _number(record.get(field)) == 0]
+        details.append({"label": "Status effects", "value": ", ".join(modifier_names)})
+    empty = [label for field, label in (("FoodLevel", "Food"), ("WaterLevel", "Water")) if _number(record.get(field)) == 0]
     if health == 0:
-        status = "生命為 0（存檔）"
+        status = "Health is 0 (save)"
     elif empty:
-        status = "需照料：" + "／".join(empty) + "為 0"
+        status = "Needs care: " + " / ".join(empty) + " is 0"
     elif modifier_names:
-        status = "、".join(modifier_names)
+        status = ", ".join(modifier_names)
     else:
-        status = ("存活・" if health is not None and health > 0 else "生命狀態未知・") + movement
-    for field, group, label in (("Sex", "sex", "性別"), ("Lineage", "lineages", "血統")):
+        status = ("Alive · " if health is not None and health > 0 else "Health state unknown · ") + movement
+    for field, group, label in (("Sex", "sex", "Sex"), ("Lineage", "lineages", "Lineage")):
         value = record.get(field)
         mapping = catalog.get("enums", {}).get(group, {}) if field == "Sex" else catalog.get(group, {})
-        details.append({"label": label, "value": _label(mapping, value) if value is not None else "未知"})
-    for field, label in (("Variation", "外觀變異（原值）"), ("GestationProgress", "妊娠進度（原值）"),
-                         ("MotherName", "母系名稱"), ("FatherName", "父系名稱")):
+        details.append({"label": label, "value": _label(mapping, value) if value is not None else "Unknown"})
+    for field, label in (("Variation", "Appearance variation (raw)"), ("GestationProgress", "Gestation progress (raw)"),
+                         ("MotherName", "Mother name"), ("FatherName", "Father name")):
         value = record.get(field)
         if isinstance(value, (str, int, float)) and not isinstance(value, bool) and value != "":
             details.append({"label": label, "value": str(value)})
-    for field, key, name_field, value_field, label in (("Genetics", "genetics", "GeneticValueName", "Value", "遺傳"),
-                                                      ("Talents", "talents", "TalentRowName", "TalentRank", "天賦")):
+    for field, key, name_field, value_field, label in (("Genetics", "genetics", "GeneticValueName", "Value", "Genetics"),
+                                                      ("Talents", "talents", "TalentRowName", "TalentRank", "Talents")):
         rows = record.get(field)
         if isinstance(rows, list):
-            values = [f"{_label(catalog.get(key, {}), row.get(name_field))}：{row.get(value_field) if _number(row.get(value_field)) is not None else '未知'}" for row in rows if isinstance(row, dict)]
+            values = [f"{_label(catalog.get(key, {}), row.get(name_field))}: {row.get(value_field) if _number(row.get(value_field)) is not None else 'Unknown'}" for row in rows if isinstance(row, dict)]
             if values:
-                details.append({"label": label, "value": "；".join(values)})
+                details.append({"label": label, "value": "; ".join(values)})
     position = _position(record)
     distance = math.hypot(position[0] - base["x"], position[1] - base["y"]) / 100 if position is not None and base is not None else None
     inventories, inventory_status, inv_warnings = _inventories(record, item_catalog, coverage)
     warnings.extend(inv_warnings)
     unsupported = record.get("_unsupported_fields", [])
     if unsupported:
-        warnings.append("部分動物欄位未解碼；顯示內容可能缺漏。")
+        warnings.append("Some animal fields are undecoded; displayed information may be incomplete.")
     if _ownership(record) == "explicit_tamed":
-        warnings.append("存檔明確記錄已馴服，但未記錄主人；主人顯示未知。")
-    return {"id": _identity(record), "name": _name(record.get("MountName"), "未命名動物"),
+        warnings.append("The save explicitly records a tamed animal but no owner; owner is shown as unknown.")
+    return {"id": _identity(record), "name": _name(record.get("MountName"), "Unnamed animal"),
             "species": _name(species.get("english"), species_id or "Unknown species"),
-            "species_zh": _label(catalog.get("species", {}), species_id), "species_id": species_id,
-            "owner_name": _name(record.get("OwnerName")) if _owner_identity(record) is not None else "未知",
+            "species_zh": species.get("name_zh") or species.get("name") or species_id, "species_id": species_id,
+            "owner_name": _name(record.get("OwnerName")) if _owner_identity(record) is not None else "Unknown",
             "owner_key": _owner_key(record), "level": level, "level_note": level_note,
             "owner_capacity": owner_info or {},
             "experience": _number(record.get("Experience")),
             "experience_progress": _experience_progress(record, catalog, species), "status_label": status,
             "distance_m": distance, "at_home": distance <= radius if distance is not None else None,
-            "position": position, "stats": stats, "details": details, "inventories": inventories,
+            "position": position, "position_source": "save", "position_sample_time": coverage.get("snapshot_time"),
+            "stats": stats, "details": details, "inventories": inventories,
             "inventory_status": inventory_status, "warnings": list(dict.fromkeys(warnings))}
 
 
@@ -397,38 +398,41 @@ def summarize_animals(snapshot: Any, base: dict | None = None, radius_m: float =
                 "unsupported_records": 0, "unknown_species": 0, "unknown_stacks": 0, "unknown_stats": 0,
                 "unknown_items": 0, "unknown_inventory_ids": [], "duplicate_slots": 0,
                 "conflicting_slots": 0, "malformed_inventories": 0, "unavailable_inventories": 0,
-                "unexpanded_item_inventories": 0, "distance_type": "水平直線距離", "radius_m": radius_m}
-    result = {"animals": [], "coverage": coverage}
+                "unexpanded_item_inventories": 0, "distance_type": "Horizontal straight-line distance", "radius_m": radius_m}
+    result = {"animals": [], "coverage": coverage, "players": [],
+              "world_id": _get(snapshot, "world_id"), "snapshot_sha256": _get(snapshot, "sha256")}
     if _get(snapshot, "is_shared_map", False):
-        coverage.update(status="unavailable", reason="尚未連接主機存檔，無法讀取馴服動物。")
+        coverage.update(status="unavailable", reason="No host save is connected; tamed animals cannot be read.")
         return result
     radius = _number(radius_m)
     if radius is None or radius <= 0:
-        coverage.update(status="invalid_radius", reason="基地範圍必須大於零。")
+        coverage.update(status="invalid_radius", reason="Base radius must be greater than zero.")
         return result
     try:
         catalog = load_animal_catalog() if catalog is None else catalog
         item_catalog = load_item_catalog()
         if not isinstance(catalog, dict) or not isinstance(item_catalog, dict):
-            raise ValueError("目錄格式錯誤")
+            raise ValueError("Invalid catalog format")
     except (OSError, ValueError, TypeError):
-        coverage.update(status="unavailable", reason="動物或物品目錄無法讀取。")
+        coverage.update(status="unavailable", reason="Animal or item catalog could not be read.")
         return result
     actual_build = installed_game_build()
     coverage.update(game_build=catalog.get("game_build"), installed_game_build=actual_build)
     if not catalog.get("game_build") or (actual_build is not None and str(actual_build) != str(catalog["game_build"])) or str(item_catalog.get("game_build")) != str(catalog["game_build"]):
-        coverage.update(status="unsupported_version", reason="遊戲或資料目錄版本不符；動物狀態暫不推算。")
+        coverage.update(status="unsupported_version", reason="Game and data catalog versions do not match; animal states are not reconstructed.")
         return result
     snapshot_coverage = _get(snapshot, "coverage", {})
     source_version = _get(snapshot, "save_format_version", snapshot_coverage.get("save_format_version") if isinstance(snapshot_coverage, dict) else None)
     source_warnings = _get(snapshot, "warnings", [])
-    if (source_version is not None and source_version != 2) or (isinstance(source_warnings, list) and any("存檔世界格式版本" in str(w) and "尚未驗證" in str(w) for w in source_warnings)):
-        coverage.update(status="unsupported_version", reason="存檔世界格式版本尚未驗證；動物狀態暫不推算。")
+    if (source_version is not None and source_version != 2) or (isinstance(source_warnings, list) and any("World save format version" in str(w) and "not verified" in str(w) for w in source_warnings)):
+        coverage.update(status="unsupported_version", reason="World save format version has not been verified; animal states are not reconstructed.")
         return result
     records = _get(snapshot, "raw_records")
     if not isinstance(records, list):
-        coverage.update(status="unavailable", reason="目前快照沒有可辨識的動物紀錄。")
+        coverage.update(status="unavailable", reason="This snapshot has no identifiable animal records.")
         return result
+    from .live_positions import saved_players
+    result["players"] = saved_players(snapshot)
     owner_summary = {}
     if catalog.get("owner_capacity_rule", {}).get("verified") is True:
         from .owner_stats import summarize_owner_stats
@@ -438,7 +442,7 @@ def summarize_animals(snapshot: Any, base: dict | None = None, radius_m: float =
     if not isinstance(base, dict) or _number(base.get("x")) is None or _number(base.get("y")) is None:
         base = None
     elif (base.get("world_id") and base["world_id"] != _get(snapshot, "world_id")) or (base.get("map_name") and base["map_name"] != _get(snapshot, "map_name")):
-        coverage["warnings"].append("基地與目前世界不符，距離及在家狀態保留未知。")
+        coverage["warnings"].append("Base does not belong to the current world; distance and home status remain unknown.")
         base = None
     versions = catalog.get("supported_recorder_versions", [3])
     unique, conflicts = {}, set()
@@ -479,41 +483,61 @@ def summarize_animals(snapshot: Any, base: dict | None = None, radius_m: float =
         coverage["outside_home"] += animal["at_home"] is False
         coverage["home_unknown"] += animal["at_home"] is None
     result["animals"].sort(key=lambda a: (a["name"].casefold(), a["id"]))
-    if catalog.get("live_capacity_rule", {}).get("verified") is True:
+    if _get(snapshot, "is_remote", False):
+        result["live_stats"] = {"status": "unavailable", "world_verified": False,
+                                "reason": "Public sync uses only the host save; the local game process is not read."}
+    elif catalog.get("live_capacity_rule", {}).get("verified") is True:
         from .live_animal_stats import read_live_animal_stats
-        _apply_live_stats(result, read_live_animal_stats(snapshot))
+        _apply_live_stats(result, read_live_animal_stats(snapshot), base=base, radius_m=radius)
     coverage["total_tamed"] = len(result["animals"])
     coverage["unknown_inventory_ids"] = sorted(set(coverage["unknown_inventory_ids"]))
     if coverage["warnings"] or any(coverage[k] for k in ("conflicting_records", "missing_identity", "unsupported_records", "uncertain_ownership", "unknown_species", "unknown_stacks", "unknown_stats", "unknown_location", "unknown_items", "unknown_inventory_ids", "conflicting_slots", "malformed_inventories", "unavailable_inventories", "unexpanded_item_inventories")) or any(a["warnings"] for a in result["animals"]):
-        coverage.update(status="partial", reason="部分動物資料缺失、未驗證或有衝突，請查看明細警告。")
+        coverage.update(status="partial", reason="Some animal data is missing, unverified, or conflicting; see detail warnings.")
     return result
 
 
-def _apply_live_stats(summary, live):
+def _apply_live_stats(summary, live, base=None, radius_m=100):
     """Never splice a live denominator with an old saved numerator."""
     summary["live_stats"] = live
     coverage = summary["coverage"]
     coverage["live_stats"] = {key: live.get(key) for key in ("status", "reason", "sample_time", "world_verified", "coverage")}
     if live.get("world_verified") is not True or live.get("status") not in ("ok", "partial"):
         return
-    applied_animals, applied_pairs = set(), 0
+    from .live_positions import apply_player_positions, position
+    applied_animals, applied_pairs, applied_positions = set(), 0, 0
     for animal in summary["animals"]:
         sampled = live.get("animals", {}).get(str(animal["id"]), {})
+        xyz = position(sampled.get("position"))
+        if xyz is not None:
+            animal.update(saved_position=animal.get("position"), position=xyz, position_source="live",
+                          position_sample_time=sampled.get("position_sample_time") or live.get("sample_time"))
+            animal["distance_m"] = math.hypot(xyz[0] - base["x"], xyz[1] - base["y"]) / 100 if base else None
+            animal["at_home"] = animal["distance_m"] <= radius_m if animal["distance_m"] is not None else None
+            applied_positions += 1
         for stat in animal["stats"]:
             key = stat.get("id")
             values = sampled.get(key, {})
-            if key not in ("health", "stamina") or _number(values.get("value")) is None or _number(values.get("maximum")) is None or values["maximum"] <= 0 or values["value"] < 0:
+            if key not in ("health", "stamina", "food", "water", "oxygen") or _number(values.get("value")) is None or _number(values.get("maximum")) is None or values["maximum"] <= 0 or values["value"] < 0:
                 continue
             stat["saved_value"], stat["persistent_maximum"] = stat["value"], stat["maximum"]
-            stat.update(value=values["value"], maximum=values["maximum"], maximum_status="live", unit="遊戲目前值",
+            stat.update(value=values["value"], maximum=values["maximum"], maximum_status="live", unit="Current game value",
                         sample_time=live.get("sample_time"),
-                        detail="所選世界／動物識別已核對；目前值與上限一起唯讀取得自遊戲狀態，包含遊戲已套用的飼養者與臨時效果。地圖位置仍為存檔位置。",
-                        maximum_sources=["遊戲原生 CharacterState 目前值／最大值快取"])
+                        detail="Selected world and animal identities are verified; current value and maximum are read together from game state, including applied bonuses. Position source and sample time are shown separately.",
+                        maximum_sources=["Native game CharacterState current/maximum cache"])
             applied_animals.add(str(animal["id"]))
             applied_pairs += 1
             if key == "health":
-                animal["status_label"] = "生命為 0（遊戲）" if values["value"] == 0 else "存檔：" + animal.get("status_label", "")
-    coverage["live_stats"].update(applied_animals=len(applied_animals), applied_pairs=applied_pairs)
+                animal["status_label"] = "Health is 0 (game)" if values["value"] == 0 else "Save: " + animal.get("status_label", "")
+    coverage["live_stats"].update(applied_animals=len(applied_animals), applied_pairs=applied_pairs,
+                                  applied_animal_positions=applied_positions,
+                                  applied_player_positions=apply_player_positions(summary.get("players", []), live))
+    for key in ("at_home", "outside_home", "unknown_location", "home_unknown"):
+        coverage[key] = 0
+    for animal in summary["animals"]:
+        coverage["at_home"] += animal.get("at_home") is True
+        coverage["outside_home"] += animal.get("at_home") is False
+        coverage["unknown_location"] += animal.get("position") is None
+        coverage["home_unknown"] += animal.get("at_home") is None
     counts = {}
     for animal in summary["animals"]:
         for stat in animal["stats"]:

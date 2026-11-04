@@ -23,7 +23,7 @@ def app():
 def summary(quantity=320, label="銅"):
     ore = {"id": "CopperOre", "name": f"{label}礦", "category": "metals", "material": "copper", "form": "ore", "quantity": quantity, "containers": ["box"]}
     ingot = {"id": "CopperIngot", "name": f"{label}錠", "category": "metals", "material": "copper", "form": "ingot", "quantity": 70, "containers": ["box"]}
-    return {"categories": [{"id": "metals", "label": "金屬", "rows": [{"key": "copper", "label": label, "values": {"ore": quantity, "ingot": 70}, "items": [ore, ingot]}], "series": [{"id": "ore", "label": "原礦"}, {"id": "ingot", "label": "錠"}]}], "items": [ore, ingot], "containers": [{"id": "box", "name": "木製儲物箱"}], "coverage": {"status": "ok", "counted_containers": 1}}
+    return {"categories": [{"id": "metals", "label": "金屬", "rows": [{"key": "copper", "label": label, "values": {"ore": quantity, "ingot": 70}, "items": [ore, ingot]}], "series": [{"id": "ore", "label": "Ore"}, {"id": "ingot", "label": "錠"}]}], "items": [ore, ingot], "containers": [{"id": "box", "name": "木製儲物箱"}], "coverage": {"status": "ok", "counted_containers": 1}}
 
 
 def wait_for(app, predicate, timeout=3):
@@ -35,7 +35,7 @@ def wait_for(app, predicate, timeout=3):
     assert predicate()
 
 
-def test_material_groups_keep_ore_and_ingots_separate(app):
+def test_material_groups_stack_ore_below_ingots_without_converting_counts(app):
     panel = InventoryPanel()
     panel.resize(1000, 750)
     panel.set_summary(summary(), datetime(2026, 11, 1, tzinfo=timezone.utc))
@@ -44,6 +44,11 @@ def test_material_groups_keep_ore_and_ingots_separate(app):
     assert len(panel.chart.rows) == 1
     assert panel.chart.rows[0]["values"] == {"ore": 320, "ingot": 70}
     assert len(panel.chart.bar_targets) == 2
+    ore_bar, ingot_bar = [target[0] for target in panel.chart.bar_targets]
+    assert ore_bar.center().x() == ingot_bar.center().x()
+    assert ore_bar.width() == ingot_bar.width()
+    assert ingot_bar.bottom() == pytest.approx(ore_bar.top())
+    assert ore_bar.height() / ingot_bar.height() == pytest.approx(320 / 70)
     assert len(panel.chart.icon_targets) == 2
     assert len({series["color"] for series in panel.chart.series}) == 2
     assert [panel.table.item(i, 3).text() for i in range(2)] == ["320", "70"]
@@ -61,9 +66,9 @@ def test_unknown_quantity_keeps_known_partial_and_never_draws_zero(app):
     panel.show()
     app.processEvents()
     assert panel.table.item(0, 3).text() == "70"
-    assert panel.table.item(1, 3).text() == "未知（已確認 45）"
+    assert panel.table.item(1, 3).text() == "Unknown (confirmed: 45)"
     assert panel.chart.rows[0]["values"]["ore"] is None
-    assert "數量：未知" in panel.chart.bar_targets[0][1]
+    assert "Quantity: Unknown" in panel.chart.bar_targets[0][1]
     assert not panel.table.item(0, 0).icon().isNull()
     assert panel.chart.icon_targets[0]["item_id"] == "CopperOre"
     panel.close()
@@ -88,7 +93,7 @@ def test_missing_base_and_unreadable_inventory_are_not_zero(app):
     panel = InventoryPanel()
     panel.set_snapshot({"world_id": "one"}, None)
     assert panel.summary is None and not panel.chart.rows
-    assert "指定" in panel.chart.message
+    assert "set your home" in panel.chart.message
     panel.set_summary({"coverage": {"status": "unsupported", "reason": "目前存檔格式尚未支援庫存讀取。"}})
     assert "尚未支援" in panel.chart.message
     assert not panel.chart.rows and panel.table.rowCount() == 0
@@ -120,23 +125,63 @@ def test_old_world_worker_cannot_overwrite_new_base_and_radius(app):
     panel.close()
 
 
-def test_same_base_refresh_failure_retains_successful_chart(app):
+@pytest.mark.parametrize("failure_mode", ["exception", "unsupported_version", "unavailable"])
+def test_same_base_refresh_failure_retains_successful_chart(app, failure_mode):
     fail = False
     def compute(snapshot, base, radius_m):
         if fail:
-            raise ValueError("unreadable snapshot")
+            if failure_mode == "exception":
+                raise ValueError("unreadable snapshot")
+            return {"coverage": {"status": failure_mode, "reason": "Inventory source is unavailable."}}
         return summary()
     panel = InventoryPanel(compute)
-    snapshot, base = {"world_id": "one"}, {"id": "home", "name": "我們家", "x": 0, "y": 0}
+    saved_at = datetime(2026, 11, 1, tzinfo=timezone.utc)
+    snapshot = {"world_id": "one", "saved_at": saved_at}
+    base = {"id": "home", "name": "我們家", "x": 0, "y": 0}
+    loaded, failed = [], []
+    panel.loaded.connect(loaded.append)
+    panel.failed.connect(failed.append)
     panel.set_snapshot(snapshot, base)
     wait_for(app, lambda: panel.summary is not None and not panel.busy)
     previous = panel.summary
+    panel.search.setText("copper")
+    loaded.clear()
     fail = True
     panel.set_snapshot(snapshot, base)
     wait_for(app, lambda: bool(panel.last_error) and not panel.busy)
     assert panel.summary is previous
     assert panel.chart.rows[0]["values"]["ore"] == 320
-    assert "上次成功" in panel.status.text()
+    assert panel.table.rowCount() == 2 and panel.search.text() == "copper"
+    assert "last successful" in panel.status.text()
+    assert saved_at.astimezone().strftime("%m/%d %H:%M:%S") in panel.status.text()
+    assert panel.status.toolTip() == panel.last_error
+    assert loaded == [] and failed == [panel.last_error]
+    fail = False
+    panel.set_snapshot(snapshot, base)
+    wait_for(app, lambda: bool(loaded) and not panel.busy)
+    assert not panel.last_error and "last successful" not in panel.status.text()
+    panel.close()
+
+
+@pytest.mark.parametrize("changed_context", ["world", "base"])
+def test_rejected_inventory_does_not_reuse_another_world_or_base(app, changed_context):
+    reject = False
+    def compute(snapshot, base, radius_m):
+        if reject:
+            return {"coverage": {"status": "unsupported_version", "reason": "Inventory format is unsupported."}}
+        return summary()
+    panel = InventoryPanel(compute)
+    snapshot, base = {"world_id": "one"}, {"id": "home", "name": "Home", "x": 0, "y": 0}
+    panel.set_snapshot(snapshot, base)
+    wait_for(app, lambda: panel.summary is not None and not panel.busy)
+    reject = True
+    snapshot = {"world_id": "two"} if changed_context == "world" else snapshot
+    base = dict(base, id="outpost", x=100) if changed_context == "base" else base
+    panel.set_snapshot(snapshot, base)
+    wait_for(app, lambda: bool(panel.last_error) and not panel.busy)
+    assert panel.summary is None and not panel.chart.rows and panel.table.rowCount() == 0
+    assert "Inventory format is unsupported." == panel.chart.message
+    assert "last successful" not in panel.status.text()
     panel.close()
 
 
@@ -217,6 +262,6 @@ def test_quantity_order_is_numeric_descending_for_chart_and_details(app, items_i
     assert [panel.table.item(i, 0).data(Qt.ItemDataRole.UserRole) for i in range(panel.table.rowCount())] == [
         "Coal", "IronOre", "CopperIngot", "CopperOre", "IronIngot", "Zero", "UnknownOre"]
     assert [panel.table.item(i, 3).text() for i in range(panel.table.rowCount())] == [
-        "4,000", "300", "200", "200", "5", "0", "未知（已確認 9,000）"]
+        "4,000", "300", "200", "200", "5", "0", "Unknown (confirmed: 9,000)"]
     assert data == before
     panel.close()

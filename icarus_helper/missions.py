@@ -12,13 +12,14 @@ import re
 from typing import Any
 
 from .catalog import installed_game_build
+from .operation_eligibility import operation_talent_gate, operation_retry_gate, operation_start_block
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "missions.json"
-STATUS = {"active": "進行中", "available": "可接取", "locked": "尚未解鎖", "completed": "已完成", "unknown": "待確認"}
+STATUS = {"active": "In progress", "available": "Available", "locked": "Locked", "completed": "Completed", "unknown": "Unconfirmed"}
 STATUS_ORDER = {"active": 0, "available": 1, "unknown": 2, "locked": 3, "completed": 4}
 MAP_ALIASES = {"Terrain_016": "Olympus", "Terrain_017": "Styx", "Terrain_019": "Prometheus", "Terrain_021": "Elysium"}
 # Verified from the installed executable's reflected EMissionState enumerator table.
-HISTORY_STATES = {0: "進行中", 1: "已完成", 2: "已放棄", 3: "失敗"}
+HISTORY_STATES = {0: "In progress", 1: "Completed", 2: "Abandoned", 3: "Failed"}
 
 
 @lru_cache(maxsize=1)
@@ -32,10 +33,10 @@ def _dict(value: Any) -> dict:
     return value if isinstance(value, dict) else {}
 
 
-def _mission_state(world: dict) -> tuple[list, list, dict, list]:
+def _mission_state(world: dict) -> tuple[list | None, list, dict, list]:
     state = world.get("mission_state") or {}
     records = state.get("records") or world.get("mission_records") or []
-    history = state.get("mission_history") or []
+    history = state.get("mission_history")
     manager = state.get("quest_manager") or {}
     quests = list(state.get("quests") or [])
     for record in records:
@@ -49,6 +50,13 @@ def _mission_state(world: dict) -> tuple[list, list, dict, list]:
     return history, records, manager, quests
 
 
+def _mission_name(value: Any) -> str | None:
+    """Unreal's FName None sentinel is not a currently selected mission."""
+    if not isinstance(value, str) or value.strip().casefold() in {"", "none", "null"}:
+        return None
+    return value.strip()
+
+
 def _progress(quest: dict, catalog: dict) -> dict:
     """Expose evidence without treating a persisted actor as an active objective."""
     qid = quest.get("QuestName", "")
@@ -56,7 +64,7 @@ def _progress(quest: dict, catalog: dict) -> dict:
     by_name = {v.get("VariableName"): v for v in variables}
     explicit_done = any(by_name.get(k, {}).get("bVariable") for k in ("Complete", "Completed", "bComplete", "bCompleted"))
     reached = bool(by_name.get("LocationReached", {}).get("bVariable"))
-    state = "已完成（明確完成旗標）" if explicit_done else "已到達（位置旗標）" if reached else "記錄存在，完成狀態未確認"
+    state = "Completed (explicit completion flag)" if explicit_done else "Reached (location flag)" if reached else "Record exists; completion unconfirmed"
     details = []
     for var in variables:
         name = var.get("VariableName", "")
@@ -64,16 +72,16 @@ def _progress(quest: dict, catalog: dict) -> dict:
             current = float(var.get("fVariable", 0) or var.get("iVariable", 0))
             if qid == "PRO_Story_5_Outpost_Progress":
                 current = min(600.0, max(0.0, current))
-                details.append(f"傳輸進度 {current:.0f}／600 秒（{current / 6:.1f}%），剩餘有效傳輸 {600-current:.0f} 秒")
-                state = "傳輸中" if current < 600 else "傳輸進度達目標"
+                details.append(f"Transmission {current:.0f}/600 s ({current / 6:.1f}%); {600-current:.0f} s of effective transmission remaining")
+                state = "Transmitting" if current < 600 else "Transmission target reached"
             else:
-                details.append(f"{name}：{current:g} 秒（欄位原值）")
+                details.append(f"{name}: {current:g} s (raw field value)")
         elif any(key in name.lower() for key in ("count", "amount", "health", "durability", "progress")):
             number = var.get("fVariable") or var.get("iVariable")
             if number is not None:
-                details.append(f"{name}：{number:g}（未驗證目標值時不換算百分比）")
+                details.append(f"{name}: {number:g} (no percentage without a verified target)")
     if qid == "PRO_Story_5_Outpost_Progress" and not details:
-        details.append("目前快照未保存可讀的傳輸計時，無法顯示倒數")
+        details.append("This snapshot has no readable transmission timer; a countdown is unavailable")
     return {"id": qid, "text": catalog.get("quest_texts", {}).get(qid, qid), "state": state,
             "complete": bool(explicit_done), "reached": reached, "details": details, "variables": variables}
 
@@ -81,31 +89,31 @@ def _progress(quest: dict, catalog: dict) -> dict:
 def _next_step(mission: dict) -> str:
     progress = {q["id"]: q for q in mission.get("progress", [])}
     if mission["status_key"] == "completed":
-        return "此任務已完成，可依解鎖清單選擇下一個任務。"
+        return "This mission is complete. Choose another mission from the unlock list."
     if mission["status_key"] != "active":
-        return "先核對可接條件，再按準備清單備妥物品。"
+        return "Verify availability, then prepare the items in the checklist."
     if mission["id"] == "PRO_Story_5":
         if "PRO_Story_5_Run" in progress or "PRO_Story_5_Run_Timer" in progress:
-            return "存檔已有撤離階段記錄：立即在遊戲內確認摧毀倒數，優先遠離前哨；精確倒數以遊戲畫面為準。"
+            return "The save contains evacuation-stage records. Check the destruction countdown in the game immediately and leave the outpost; the game displays the exact timer."
         if "PRO_Story_5_Beacon_Place" in progress:
-            return "核對傳輸已完成，將任務信標放在前哨內；基地摧毀警告出現後優先撤離。"
+            return "Verify that transmission is complete and place the mission Beacon inside the outpost. Evacuate when the destruction warning appears."
         if "PRO_Story_5_Beacon_Craft" in progress:
-            return "在 Machining Bench 製作任務 Beacon，再依遊戲標記帶回前哨。"
+            return "Craft the mission Beacon at the Machining Bench, then return it to the outpost using the game marker."
         transmission = progress.get("PRO_Story_5_Outpost_Progress")
         if transmission and not transmission["complete"]:
-            return "確認供電與通訊器耐久，在約 38 m 內防守以推進傳輸；" + ("；".join(transmission["details"]) or "目前快照未提供可讀倒數。")
+            return "Check power and communicator durability. Defend within approximately 38 m to advance transmission; " + ("; ".join(transmission["details"]) or "This snapshot has no readable countdown.")
         if "PRO_Story_5_Outpost_Trasmit" in progress:
-            return "在遊戲確認 10000 W 供電與防守準備完成後，與資料通訊器互動開始傳輸。"
+            return "Verify 10000 W of power and defense preparations in the game, then interact with the data communicator to start transmission."
         if "PRO_Story_5_Outpost_Power" in progress:
-            return "已保存供電階段記錄：到通訊器檢查 10000 W 供電；存檔未提供足夠資料判斷此刻是否達標。完成戰備後依遊戲目標啟動傳輸。"
+            return "The save contains a power-stage record. Check 10000 W at the communicator; the save cannot establish whether the requirement is currently met. Prepare for combat before starting transmission."
         if progress.get("PRO_Story_5_Investigate_Enter", {}).get("reached"):
-            return "已到達前哨內部；前往資料通訊器，注意爆炸地雷並準備 10000 W 電力。"
-        return "依遊戲標記調查前哨位置，進入前先檢查地雷、供電與防守補給。"
+            return "The outpost interior has been reached. Find the data communicator, watch for explosive mines and prepare 10000 W of power."
+        return "Investigate the marked outpost. Check mines, power and defense supplies before entering."
     completed = {q["id"] for q in mission.get("progress", []) if q.get("complete")}
     remaining = [q.get("text", "") for q in mission.get("objectives", []) if q.get("id") not in completed]
     if remaining:
-        return "依遊戲任務清單確認下一項：" + remaining[0] + "。目前快照不足以判斷所有階段先後／完成條件。"
-    return "查看遊戲目前標示的目標；已保存的任務物件不代表所有階段仍在進行。"
+        return "Check the next objective in the game: " + remaining[0] + ". This snapshot cannot establish every stage's order or completion conditions."
+    return "Follow the current in-game objective. Saved quest actors do not prove that every recorded stage is still active."
 
 
 def _terminal_level(world: dict) -> tuple[int | None, str]:
@@ -115,7 +123,7 @@ def _terminal_level(world: dict) -> tuple[int | None, str]:
     if not devices:
         devices = [r.get("raw", r) for r in world.get("deployables", []) if isinstance(r, dict) and (r.get("item_id") == "Mission_Device" or r.get("StaticItemDataRowName") == "Mission_Device")]
     if not devices:
-        return None, "尚未從存檔確認 C0NT4CT 裝置及其升級模組"
+        return None, "C0NT4CT and its upgrade modules have not been confirmed in this save"
     level = 1
     for device in devices:
         for inventory in device.get("SavedInventories", []):
@@ -125,7 +133,7 @@ def _terminal_level(world: dict) -> tuple[int | None, str]:
                     level = max(level, 2)
                 elif name == "Mission_Communication_Device_T4":
                     level = max(level, 3)
-    return level, ["", "已確認 C0NT4CT 基礎裝置", "已確認 C0NT4CT 的 T3 升級模組", "已確認 C0NT4CT 的 T4 升級模組"][level]
+    return level, ["", "C0NT4CT base device confirmed", "C0NT4CT T3 upgrade module confirmed", "C0NT4CT T4 upgrade module confirmed"][level]
 
 
 def _map_name(world: dict) -> str:
@@ -162,23 +170,23 @@ def _distance(mission: dict, world: dict, context: dict) -> float:
     mission.pop("distance_position", None)
     mission.pop("distance_target_id", None)
     mission["base_known"] = bool(base_xyz)
-    mission["base_name"] = str(base.get("name") or "所選基地") if base_xyz else None
+    mission["base_name"] = str(base.get("name") or "Selected base") if base_xyz else None
     mission["distance_status"] = "base_missing"
-    mission["distance_note"] = "尚未指定基地，請先在地圖設定我們家。"
+    mission["distance_note"] = "No base selected. Set Home on the map first."
     if not base_xyz:
         return 0.0
     if base.get("world_id") and base["world_id"] != world.get("world_id"):
         mission["base_known"] = False
         mission["distance_status"] = "base_world_mismatch"
-        mission["distance_note"] = "基地與目前世界不符，未計算距離。"
+        mission["distance_note"] = "The base belongs to another world; distance was not calculated."
         return 0.0
     if base.get("map_name") and base["map_name"] != _map_name(world):
         mission["base_known"] = False
         mission["distance_status"] = "base_map_mismatch"
-        mission["distance_note"] = "基地與目前地圖不符，未計算距離。"
+        mission["distance_note"] = "The base belongs to another map; distance was not calculated."
         return 0.0
     verified_goal = mission.get("position_reliable") is True and mission.get("position_scope") == "objective"
-    label = "任務目標" if verified_goal else "任務記錄點"
+    label = "Mission objective" if verified_goal else "Mission record point"
     mission["distance_status"] = "known_point" if point else "target_pending"
     if point is None:
         # Newly generated operation targets are represented by the route model,
@@ -193,25 +201,25 @@ def _distance(mission: dict, world: dict, context: dict) -> float:
                 continue
             if item.get("confidence") == "known":
                 known.append((item, xyz))
-            elif item.get("confidence") in ("candidate", "inferred", "estimated", "候選", "推定", "估計"):
+            elif item.get("confidence") in ("candidate", "inferred", "estimated", "Candidate", "Inferred", "Estimated", "\u5019\u9078", "\u63a8\u5b9a", "\u4f30\u8a08"):
                 candidates.append((item, xyz))
         options = known or candidates
         if options:
             target, point = min(options, key=lambda entry: math.hypot(entry[1][0] - base_xyz[0], entry[1][1] - base_xyz[1]))
-            label = "最近任務區域" if known else "最近候選地點"
+            label = "Nearest mission area" if known else "Nearest candidate site"
             mission["distance_status"] = "known_area" if known else "candidate_area"
             mission["distance_position"] = list(point)
             mission["distance_target_id"] = target.get("id")
             verified_goal = False
     if point is None:
-        mission["distance_note"] = f"已指定基地「{mission['base_name']}」；此任務位置尚未確定，定位後顯示距離。"
+        mission["distance_note"] = f"Base selected: {mission['base_name']}. The mission location is unresolved; distance will appear once located."
         return 0.0
     distance = math.hypot(point[0] - base_xyz[0], point[1] - base_xyz[1]) / 100.0
     mission["horizontal_distance_m"] = distance
-    mission["distance_note"] = f"距離{base.get('name', '所選基地')}的水平直線距離：約 {distance:,.0f} m（至{label}，非步行路線）。"
+    mission["distance_note"] = f"Horizontal straight-line distance from {base.get('name', 'Selected base')}: approximately {distance:,.0f} m to {label}; this is not a walking route."
     mission["distance_affects_ranking"] = verified_goal
     if not verified_goal:
-        mission["distance_note"] += "此座標未證實為實際目標／入口，因此不套用距離排序。"
+        mission["distance_note"] += "These coordinates are not verified as an actual objective or entrance, so distance does not affect ranking."
         return 0.0
     # Maximum twenty points: only a small preference within a status/goal group.
     return max(0.0, 20.0 - distance / 500.0)
@@ -226,15 +234,15 @@ def _party_note(world: dict) -> tuple[int | None, str]:
         players = world.get("players") or []
         count = len({str(p.get("id") or p.get("name") or i) for i, p in enumerate(players) if isinstance(p, dict)})
     if not count:
-        return None, "尚未確認隊伍人數；準備數量請按實際參與人數與難度調整。"
-    return count, f"存檔名單記錄 {count} 人，不代表即時在場人數；補給數量請按本次實際隊伍調整。"
+        return None, "Party size is unconfirmed. Adjust preparation quantities for your actual party and difficulty."
+    return count, f"The save roster records {count} players; this is not a live participant count. Adjust supplies for your actual party."
 
 
 def build_missions(world: Any, goal: str = "story", context: dict | None = None) -> list[dict]:
     """Join only the selected world's history/quests to its map's catalogue.
 
-    Missing history is unknown, not a completed or unlocked mission. Account/DLC
-    conditions remain visible when no authoritative profile data is available.
+    Account talent evidence and world history have independent scopes and times.
+    Missing source-account evidence never becomes an unlocked operation.
     """
     world = _dict(world)
     context = context or {}
@@ -246,19 +254,24 @@ def build_missions(world: Any, goal: str = "story", context: dict | None = None)
         source_build = match.group(1) if match else ""
     version_compatible = (current_build == source_build) if current_build and source_build else None
     if version_compatible is True:
-        version_note = f"目前遊戲 build {current_build} 與任務資料版本相符。"
+        version_note = f"Game build {current_build} matches the mission catalog."
     elif version_compatible is False:
-        version_note = f"版本不符：目前遊戲 build {current_build}，任務資料 build {source_build}。攻略機制與解鎖規則需重新查核。"
+        version_note = f"Version mismatch: game build {current_build}, mission catalog build {source_build}. Guide mechanics and unlock rules need verification."
     else:
-        version_note = f"版本未驗證：目前遊戲 build {current_build or '未知'}，任務資料 build {source_build or '未知'}；不能假設相同。"
+        version_note = f"Version unverified: game build {current_build or 'Unknown'}, mission catalog build {source_build or 'Unknown'}. Compatibility cannot be assumed."
     map_name = _map_name(world)
     info = world.get("prospect_info") or world.get("info") or {}
     history, records, manager, quests = _mission_state(world)
-    current = manager.get("FactionMissionName") or manager.get("DynamicMissionProspectName")
-    completed = {h.get("Mission") for h in history if h.get("Status") == 1}
-    past = {h.get("Mission"): h for h in history}
+    known_history = history if isinstance(history, list) else []
+    current = _mission_name(manager.get("FactionMissionName")) or _mission_name(manager.get("DynamicMissionProspectName"))
+    active_current = current if not manager.get("bMissionComplete") else None
+    completed = {h.get("Mission") for h in known_history if h.get("Status") == 1}
+    past = {h.get("Mission"): h for h in known_history}
+    start_block = operation_start_block(world)
+    if active_current and not start_block:
+        start_block = "Complete or end the current Operation before accepting another mission"
     level, terminal_reason = _terminal_level(world)
-    difficulty = info.get("Difficulty", world.get("difficulty", "未知"))
+    difficulty = info.get("Difficulty", world.get("difficulty", "Unknown"))
     party_count, party_note = _party_note(world)
     results = []
     all_by_id = {m["id"]: m for m in catalog["missions"]}
@@ -268,45 +281,54 @@ def build_missions(world: Any, goal: str = "story", context: dict | None = None)
         mission = deepcopy(original)
         mid = mission["id"]
         requirements = mission.get("prerequisite_ids", [])
-        unmet = [pid for pid in requirements if pid not in completed]
+        talent_state, talent_reason = operation_talent_gate(world, mid)
         required_level = mission.get("terminal_level", 0)
-        state_key, reason = "unknown", "缺少可確認的世界任務與裝置資料"
-        if mid == current and not manager.get("bMissionComplete"):
-            state_key, reason = "active", "目前世界的 QuestManager 正在執行此任務"
-        elif mid in completed or (mid == current and manager.get("bMissionComplete")):
-            state_key, reason = "completed", "此世界 MissionHistory／QuestManager 明確記錄完成"
+        state_key, reason = "unknown", "Verified world mission and device data is missing"
+        if world.get("is_shared_map"):
+            reason = "No host save connected; mission state and account unlocks cannot be confirmed"
+        elif mid == active_current:
+            state_key, reason = "active", "This world's QuestManager is running this mission"
         elif mission.get("kind") == "SMPL3":
             state_key = "unknown"
-            reason = "SMPL3 隨機委派類型；目前抽選名單與難度尚未從裝置還原，不能保證此刻可接"
-        elif unmet:
-            if history:
-                state_key, reason = "locked", "尚未確認完成前置：" + "、".join(all_by_id.get(pid, {}).get("title", pid) for pid in unmet)
-            else:
-                reason = "需確認前置：" + "、".join(requirements)
+            reason = "SMPL3 random assignment type; the current selection and difficulty have not been recovered from the device, so availability is unconfirmed"
+        elif mid in completed or (mid == current and manager.get("bMissionComplete")):
+            state_key, reason = "completed", "This world's MissionHistory / QuestManager explicitly records completion"
+        elif level is not None and level < required_level:
+            state_key, reason = "locked", f"Requires C0NT4CT upgrade level {required_level - 1}; {terminal_reason}"
+        elif talent_state != "available":
+            state_key = "locked" if talent_state in {"locked", "unlisted"} else "unknown"
+            reason = talent_reason
         elif level is None:
             reason = terminal_reason
-        elif level < required_level:
-            state_key, reason = "locked", f"需要 C0NT4CT 升級階段 {required_level - 1}；{terminal_reason}"
         else:
-            state_key, reason = "available", terminal_reason + "，世界前置條件符合"
-        # Entitlements are not present in a world snapshot; never imply verified DLC ownership.
-        if mission.get("feature") == "DangerousHorizons" and state_key == "available":
-            state_key = "unknown"
-            reason += "；另需確認 Dangerous Horizons 使用權限"
+            state_key, reason = operation_retry_gate(world, mid, history)
+            reason = terminal_reason + "; " + talent_reason + "; " + reason
+        # RequiredFeatureLevel is the shipped content stage. The validated
+        # build's UFeatureLevelLibrary compares its row index with the current
+        # release stage; it does not check Steam DLC ownership. In particular,
+        # the cross-map NPC operations shipped in the free Kepler update.
         if (mission.get("required_flags") or mission.get("required_level")) and state_key == "available":
             state_key = "unknown"
-            reason += "；角色等級／帳號標記需求仍待核對"
-        if mid in past and past[mid].get("Status") in (2, 3):
-            reason += "；上次紀錄：" + HISTORY_STATES[past[mid]["Status"]] + "，重試冷卻需在裝置確認"
-            if state_key == "available":
-                state_key, reason = "unknown", reason
-        if current and state_key == "available":
-            reason += "；須先完成或在遊戲內結束目前操作，再接下一個"
+            reason += "; character-level / account-flag requirements still need verification"
+        if state_key == "available" and start_block:
+            reason += "; " + start_block
         if version_compatible is not True:
             if state_key not in {"active", "completed"}:
                 state_key = "unknown"
-            reason += "；" + version_note
+            reason += "; " + version_note
         mission.update(status=STATUS[state_key], status_key=state_key, status_reason=reason, difficulty=difficulty)
+        mission.update(prerequisite_evidence_scope="source_account_talents", talent_gate=talent_state,
+                       prerequisite_gate_reason=talent_reason,
+                       can_start_now=state_key == "available" and not start_block,
+                       start_block_reason=start_block if state_key == "available" else "")
+        if state_key == "available" and start_block:
+            mission["status"] = "Unlocked, waiting"
+        elif talent_state == "unlisted" and state_key == "locked":
+            mission["status"] = "Unavailable in this version"
+        last_history_status = past.get(mid, {}).get("Status")
+        mission.update(history_completion_count=sum(h.get("Mission") == mid and h.get("Status") == 1 for h in known_history),
+                       history_last_status=last_history_status,
+                       history_last_state=HISTORY_STATES.get(last_history_status, "Not recorded"))
         mission.update(version_compatible=version_compatible, version_note=version_note,
                        installed_build=current_build, source_build=source_build or None)
         mission["prerequisites"] = [all_by_id.get(pid, {}).get("title", pid) for pid in requirements]
@@ -322,37 +344,37 @@ def build_missions(world: Any, goal: str = "story", context: dict | None = None)
                 mission["position"] = xyz
                 mission["position_scope"] = "record_point"
                 mission["position_reliable"] = False
-                mission["position_note"] = "任務記錄物件座標，非保證目標入口／路線"
+                mission["position_note"] = "Mission-record actor coordinates; objective entrance / route not guaranteed"
         mission["next_step"] = _next_step(mission)
         score = {"active": 1000, "available": 500, "unknown": 100, "locked": -100, "completed": -500}[state_key]
         if state_key == "active":
-            rec = "優先完成目前操作，避免另起準備造成物資分散。"
+            rec = "Finish the current Operation first to avoid splitting preparation supplies."
         elif state_key == "available":
-            rec = "世界前置與裝置升級已符合；出發前仍須依清單核對角色科技與庫存。"
+            rec = "Account prerequisites and device upgrades are satisfied. Verify character technology and inventory against the checklist before leaving."
         elif state_key == "locked":
-            rec = "先完成列出的前置或升級裝置。"
+            rec = "Complete the listed prerequisites or upgrade the device first."
         elif state_key == "completed":
-            rec = "此世界已完成，可保留攻略供重玩參考。"
+            rec = "Completed in this world; keep the guide for replay reference."
         else:
-            rec = "先在遊戲裝置確認可接狀態與缺少條件，再投入物資。"
+            rec = "Check availability and missing requirements at the game device before committing supplies."
         story = "_Story_" in mid or "_Story" in mid
-        if goal in ("story", "主線", "推進主線") and story:
+        if goal in ("story", "Story", "Advance the story", "\u4e3b\u7dda", "\u63a8\u9032\u4e3b\u7dda") and story:
             score += 70
-            rec += "此任務會推進故事／區域解鎖。"
-        elif goal in ("safe", "低風險"):
+            rec += " This mission advances the story or regional unlocks."
+        elif goal in ("safe", "Low risk", "\u4f4e\u98a8\u96aa"):
             score -= mission.get("risk_rank", 2) * 30
-            rec += "排序偏好較少防守與首領戰的任務。"
-        elif goal in ("resources", "資源", "取得資源／解鎖"):
+            rec += " Ranking favors missions with fewer defense and boss encounters."
+        elif goal in ("resources", "Resources", "Resources / unlocks", "\u8cc7\u6e90", "\u53d6\u5f97\u8cc7\u6e90\uff0f\u89e3\u9396"):
             score += 30 if mission.get("kind") in ("NPC", "SMPL3") else 0
-            rec += "排序偏好交易與補給用途。"
+            rec += " Ranking favors trading and supply benefits."
         score += _distance(mission, world, context)
         if mission.get("horizontal_distance_m") is not None:
-            rec += mission["distance_note"]
+            rec += " " + mission["distance_note"]
         else:
-            rec += "已指定基地；任務位置尚未確定，距離未參與排序。" if mission.get("base_known") else "尚未指定目前世界的基地，距離未參與排序。"
+            rec += " A base is selected, but the mission location is unresolved; distance does not affect ranking." if mission.get("base_known") else " No base is selected for this world; distance does not affect ranking."
         mission.update(recommendation_score=score, recommendation_reason=rec, recommendation=rec)
-        mission["inventory_note"] = "清單由使用者手動確認；尚未核對基地或角色庫存。"
-        mission["technology_note"] = (f"任務表的科技需求／建議：{mission['tech']}；尚未確認目前角色已解鎖。" if mission.get("tech") not in (None, "None", "") else "角色科技解鎖狀態尚未確認，請依清單核對。")
+        mission["inventory_note"] = "Checklist confirmation is manual; base and character inventory have not been checked."
+        mission["technology_note"] = (f"Mission-table technology requirement / recommendation: {mission['tech']}; the current character's unlock is unconfirmed." if mission.get("tech") not in (None, "None", "") else "Character technology unlocks are unconfirmed. Verify them against the checklist.")
         mission["party_size_recorded"] = party_count
         mission["party_note"] = party_note
         mission["source_version"] = catalog["source_version"]
@@ -370,23 +392,23 @@ def mission_html(mission: dict) -> str:
         return escape(str(value))
     def bullets(items):
         return "<ul>" + "".join(f"<li>{esc(x)}</li>" for x in items) + "</ul>"
-    parts = ["<html><head><style>body{font-family:'Microsoft JhengHei',sans-serif;color:#e8ecf2;} h1{font-size:23px;color:#ffffff;}h2{font-size:16px;color:#f6c25b;}p,li{line-height:1.6;} .muted{color:#aeb7c5;}table{border-collapse:collapse;}td,th{padding:7px;border-bottom:1px solid #384452;text-align:left;}</style></head><body>",
+    parts = ["<html><head><style>body{font-family:'Segoe UI',sans-serif;color:#e8ecf2;} h1{font-size:23px;color:#ffffff;}h2{font-size:16px;color:#f6c25b;}p,li{line-height:1.6;} .muted{color:#aeb7c5;}table{border-collapse:collapse;}td,th{padding:7px;border-bottom:1px solid #384452;text-align:left;}</style></head><body>",
              f"<h1>{esc(mission['title'])}</h1>",
-             f"<p>{esc(mission.get('map_name'))} · {esc(mission.get('kind'))} · <b>{esc(mission.get('status','待確認'))}</b></p>",
+             f"<p>{esc(mission.get('map_name'))} · {esc(mission.get('kind'))} · <b>{esc(mission.get('status','Unconfirmed'))}</b></p>",
              f"<p>{esc(mission.get('summary',''))}</p>"]
-    parts += ["<h2>出發前準備</h2>", "<table><tr><th>性質</th><th>物品／條件</th><th>數量</th><th>說明</th></tr>"]
+    parts += ["<h2>Preparation</h2>", "<table><tr><th>Type</th><th>Item / requirement</th><th>Quantity</th><th>Notes</th></tr>"]
     for item in mission.get("checklist", []):
-        parts.append(f"<tr><td>{'必備' if item.get('required') else '建議'}</td><td>{esc(item.get('item',''))}</td><td>{esc(item.get('quantity','依階段'))}</td><td>{esc(item.get('note',''))}</td></tr>")
-    parts += ["</table>", "<h2>任務攻略</h2>"]
-    if "個別細節待補" in str(mission.get("guide_coverage", "")):
-        parts.append("<p class='muted'>個別細節待補。</p>")
+        parts.append(f"<tr><td>{'Required' if item.get('required') else 'Recommended'}</td><td>{esc(item.get('item',''))}</td><td>{esc(item.get('quantity','Per stage'))}</td><td>{esc(item.get('note',''))}</td></tr>")
+    parts += ["</table>", "<h2>Mission guide</h2>"]
+    if "mission details are incomplete" in str(mission.get("guide_coverage", "")):
+        parts.append("<p class='muted'>Mission-specific details are incomplete.</p>")
     parts.append("<ol>" + "".join(f"<li>{esc(x)}</li>" for x in mission.get("guide", [])) + "</ol>")
     if mission.get("mechanics"):
-        parts += ["<h2>任務機制</h2>", bullets(mission["mechanics"])]
+        parts += ["<h2>Mission mechanics</h2>", bullets(mission["mechanics"])]
     if mission.get("progress"):
-        parts += ["<h2>任務進度</h2>", bullets(f"{q['text']}：{q['state']}" + ("；" + "；".join(q.get("details", [])) if q.get("details") else "") for q in mission["progress"])]
-    parts += ["<h2>風險與補給</h2>", bullets(mission.get("risks", [])), "<h2>獎勵與解鎖</h2>", bullets(mission.get("rewards", []))]
+        parts += ["<h2>Mission progress</h2>", bullets(f"{q['text']}: {q['state']}" + ("; " + "; ".join(q.get("details", [])) if q.get("details") else "") for q in mission["progress"])]
+    parts += ["<h2>Risks and supplies</h2>", bullets(mission.get("risks", [])), "<h2>Rewards and unlocks</h2>", bullets(mission.get("rewards", []))]
     if mission.get("source_objectives") or mission.get("objectives"):
-        parts += ["<h2>任務目標</h2>", bullets(x.get("text", "") if isinstance(x, dict) else x for x in (mission.get("source_objectives") or mission.get("objectives", [])))]
+        parts += ["<h2>Objectives</h2>", bullets(x.get("text", "") if isinstance(x, dict) else x for x in (mission.get("source_objectives") or mission.get("objectives", [])))]
     parts.append("</body></html>")
     return "".join(parts)

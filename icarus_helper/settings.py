@@ -45,27 +45,27 @@ def legacy_settings_paths() -> list[Path]:
 
 def _validate(data):
     if not isinstance(data, dict):
-        raise ValueError("設定檔頂層必須是物件")
+        raise ValueError("Settings root must be an object")
     worlds = data.get("worlds", {})
     if not isinstance(worlds, dict):
-        raise ValueError("worlds 設定格式錯誤")
+        raise ValueError("Invalid worlds settings format")
     for world in worlds.values():
         if not isinstance(world, dict) or not isinstance(world.get("bases", []), list):
-            raise ValueError("基地設定格式錯誤")
+            raise ValueError("Invalid base settings format")
         ids = set()
         for base in world.get("bases", []):
             if not isinstance(base, dict) or not isinstance(base.get("id"), str) or not base["id"] or base["id"] in ids:
-                raise ValueError("基地識別碼缺失或重複")
+                raise ValueError("Base ID is missing or duplicated")
             ids.add(base["id"])
             for axis in ("x", "y", "z"):
                 if axis in base and (isinstance(base[axis], bool) or not isinstance(base[axis], (int, float)) or not math.isfinite(base[axis])):
-                    raise ValueError("基地座標格式錯誤")
+                    raise ValueError("Invalid base coordinate format")
     return data
 
 
 def _read_settings(path: Path):
     if path.stat().st_size > 16 * 1024 * 1024:
-        raise ValueError("設定檔超過支援大小")
+        raise ValueError("Settings file exceeds the supported size")
     return _validate(json.loads(path.read_text(encoding="utf-8-sig")))
 
 
@@ -90,7 +90,7 @@ def _file_lock(path: Path, timeout=5):
                 acquired = True
             except OSError:
                 if time.monotonic() >= deadline:
-                    raise OSError("其他助手正在儲存設定，請稍後重試")
+                    raise OSError("Another Helper is saving settings. Try again shortly")
                 time.sleep(0.02)
         yield
     finally:
@@ -144,7 +144,7 @@ def _merge(base, local, disk, path=()):
             latest.pop(ident, None)
         for ident, item in current.items():
             if ident in before and ident not in latest and item != before[ident]:
-                raise OSError("此基地已由其他助手視窗刪除；未覆蓋磁碟設定，請重新載入後確認")
+                raise OSError("Another Helper window deleted this base. Disk settings were preserved; reload before continuing")
             merged = _merge(before.get(ident, _MISSING), item, latest.get(ident, _MISSING), path + (ident,))
             if merged is _MISSING:
                 latest.pop(ident, None)
@@ -211,12 +211,12 @@ def _migrate(path: Path):
                     handle.write(raw)
             except FileExistsError:
                 if backup.read_bytes() != raw:
-                    raise OSError("舊設定備份內容衝突，已停止遷移")
+                    raise OSError("Legacy settings backup conflict; migration stopped")
             entry = {"source": str(source), "resolved_source": str(source.resolve()),
                      "sha256": digest, "backup": str(backup)}
             try:
                 if len(raw) > 16 * 1024 * 1024:
-                    raise ValueError("設定檔超過支援大小")
+                    raise ValueError("Settings file exceeds the supported size")
                 data = _validate(json.loads(raw.decode("utf-8-sig")))
                 combined = _legacy_merge(combined, data, conflicts)
                 payloads.append(data)
@@ -225,7 +225,7 @@ def _migrate(path: Path):
                 invalid.append(str(source))
             sources.append(entry)
         if not payloads:
-            raise OSError("舊設定無法解析，原檔與備份已保留；未建立空設定覆蓋基地")
+            raise OSError("Legacy settings could not be parsed. Original and backup were preserved; bases were not replaced with empty settings")
         # Keep an existing valid selection; use a recovered source's valid active
         # base only if the preferred source did not have one.
         for world_id, world in combined.get("worlds", {}).items():
@@ -250,7 +250,7 @@ class Settings:
             self.data = _read_settings(self.path) if self.path.exists() else {}
         except (ValueError, OSError) as exc:
             self.data = {}
-            self.error = f"設定未能載入：{exc}；原檔保留，請先確認再儲存設定。"
+            self.error = f"Could not load settings: {exc}. Original file preserved; check it before saving settings."
         self._baseline = deepcopy(self.data)
 
     def save(self):
@@ -259,12 +259,12 @@ class Settings:
         try:
             _validate(self.data)
         except (TypeError, ValueError) as exc:
-            raise OSError(f"設定格式無效，未覆蓋原檔：{exc}") from exc
+            raise OSError(f"Invalid settings format; original file preserved: {exc}") from exc
         with _file_lock(self.path):
             try:
                 disk = _read_settings(self.path) if self.path.exists() else {}
             except (ValueError, OSError) as exc:
-                raise OSError(f"磁碟設定無法讀取，未覆蓋原檔：{exc}") from exc
+                raise OSError(f"Could not read disk settings; original file preserved: {exc}") from exc
             merged = _merge(self._baseline, self.data, disk)
             for world in merged.get("worlds", {}).values():
                 if world.get("active_base") and world["active_base"] not in {base["id"] for base in world.get("bases", [])}:
@@ -272,7 +272,7 @@ class Settings:
             try:
                 _atomic_write(self.path, merged)
             except (TypeError, ValueError) as exc:
-                raise OSError(f"設定格式無效，未覆蓋原檔：{exc}") from exc
+                raise OSError(f"Invalid settings format; original file preserved: {exc}") from exc
             self.data = merged
             self._baseline = deepcopy(merged)
 

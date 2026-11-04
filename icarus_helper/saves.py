@@ -29,14 +29,14 @@ DRILL_CORE_FIELDS = {"StaticItemDataRowName", "ActorClassName", "IcarusActorGUID
                      "FoundationActorIcarusUID", "ActorTransform", "Translation"}
 MAP_NAMES = {"Terrain_016": "Olympus", "Terrain_019": "Prometheus"}
 RESOURCE_NAMES = {
-    "Iron": "鐵", "Iron_Ore": "鐵", "Copper": "銅", "Copper_Ore": "銅",
-    "Gold": "金", "Gold_Ore": "金", "Aluminium": "鋁", "Aluminum": "鋁",
-    "Aluminium_Ore": "鋁", "Bauxite": "鋁土礦", "Titanium": "鈦",
-    "Titanium_Ore": "鈦", "Platinum": "鉑", "Platinum_Ore": "鉑",
-    "Coal": "煤", "Sulfur": "硫", "Silica": "矽石", "Oxite": "氧礦",
-    "Stone": "石材", "Obsidian": "黑曜石", "Scoria": "火山渣",
-    "Exotic": "異質礦", "Exotic_Raw_Uranium": "鈾／異質資源",
-    "Ice": "冰", "Salt": "鹽", "Clay": "黏土", "Super_Cooled_Ice": "超冷冰",
+    "Iron": "Iron", "Iron_Ore": "Iron", "Copper": "Copper", "Copper_Ore": "Copper",
+    "Gold": "Gold", "Gold_Ore": "Gold", "Aluminium": "Aluminium", "Aluminum": "Aluminium",
+    "Aluminium_Ore": "Aluminium", "Bauxite": "Bauxite", "Titanium": "Titanium",
+    "Titanium_Ore": "Titanium", "Platinum": "Platinum", "Platinum_Ore": "Platinum",
+    "Coal": "Coal", "Sulfur": "Sulfur", "Silica": "Silica", "Oxite": "Oxite",
+    "Stone": "Stone", "Obsidian": "Obsidian", "Scoria": "Scoria",
+    "Exotic": "Exotics", "Exotic_Raw_Uranium": "Uranium / exotic resource",
+    "Ice": "Ice", "Salt": "Salt", "Clay": "Clay", "Super_Cooled_Ice": "Supercooled ice",
 }
 
 
@@ -59,7 +59,7 @@ class Reader:
 
     def take(self, size: int) -> bytes:
         if size < 0 or self.p + size > self.n:
-            raise SaveError("UE 屬性資料不完整或長度不合法")
+            raise SaveError("UE property data is incomplete or has an invalid length")
         out = self.b[self.p:self.p + size]
         self.p += size
         return out
@@ -79,15 +79,15 @@ class Reader:
         if length == 0:
             return ""
         if abs(length) > MAX_BLOB_BYTES // 2:
-            raise SaveError("UE 字串長度超過限制")
+            raise SaveError("UE string length exceeds the limit")
         if length < 0:
             raw = self.take(-length * 2)
             if not raw.endswith(b"\0\0"):
-                raise SaveError("UE UTF-16 字串未完整結束")
+                raise SaveError("Unterminated UE UTF-16 string")
             return raw[:-2].decode("utf-16-le")
         raw = self.take(length)
         if not raw.endswith(b"\0"):
-            raise SaveError("UE 字串未完整結束")
+            raise SaveError("Unterminated UE string")
         try:
             return raw[:-1].decode("utf-8")
         except UnicodeDecodeError:
@@ -117,12 +117,12 @@ def read_value(reader: Reader, ptype: str, size: int, struct_type: str | None,
     if ptype == "ArrayProperty":
         count = reader.i32()
         if count < 0 or count > MAX_ARRAY_ITEMS:
-            raise SaveError("UE 陣列項目數不合法")
+            raise SaveError("Invalid UE array element count")
         if inner_type == "StructProperty":
             reader.fstr()
             element_type = reader.fstr()
             if element_type != "StructProperty":
-                raise SaveError("不支援的 UE 結構陣列格式")
+                raise SaveError("Unsupported UE struct array format")
             reader.i32()
             reader.i32()
             element_struct = reader.fstr()
@@ -145,7 +145,7 @@ def read_props(reader: Reader, depth: int = 0) -> dict[str, Any]:
     # Every property body has a size: bounded sub-readers keep unknown types
     # from desynchronising subsequent properties, unlike a heuristic scanner.
     if max(depth, reader.depth) > 64:
-        raise SaveError("UE 屬性巢狀層級超過限制")
+        raise SaveError("UE property nesting exceeds the limit")
     result: dict[str, Any] = {}
     while reader.p < reader.n:
         name = reader.fstr()
@@ -153,7 +153,7 @@ def read_props(reader: Reader, depth: int = 0) -> dict[str, Any]:
         ptype = reader.fstr()
         size, array_index = reader.i32(), reader.i32()
         if size < 0 or size > MAX_BLOB_BYTES:
-            raise SaveError("UE 屬性長度不合法")
+            raise SaveError("Invalid UE property length")
         struct_type = inner_type = None
         bool_value = None
         if ptype == "StructProperty":
@@ -189,59 +189,59 @@ def read_props(reader: Reader, depth: int = 0) -> dict[str, Any]:
 
 def _json_bytes(data: bytes) -> dict[str, Any]:
     if len(data) > MAX_SAVE_BYTES:
-        raise SaveError("存檔超過支援大小")
+        raise SaveError("Save exceeds the supported size")
     try:
         # json.loads(bytes) detects UTF-8/UTF-16/UTF-32 BOM and zero patterns.
         result = json.loads(data)
     except (UnicodeError, json.JSONDecodeError) as exc:
-        raise SaveError("存檔不是完整、可辨識的 JSON 封裝") from exc
+        raise SaveError("Save is not a complete, recognizable JSON envelope") from exc
     if not isinstance(result, dict):
-        raise SaveError("存檔頂層必須是物件")
+        raise SaveError("Save root must be an object")
     return result
 
 
 def _read_stable(path: Path) -> tuple[bytes, os.stat_result]:
     before = path.stat()
     if before.st_size > MAX_SAVE_BYTES:
-        raise SaveError("存檔超過支援大小")
+        raise SaveError("Save exceeds the supported size")
     data = path.read_bytes()
     after = path.stat()
     signature = lambda s: (s.st_size, s.st_mtime_ns, s.st_ino)
     if signature(before) != signature(after) or len(data) != after.st_size:
-        raise SaveChangedError("存檔仍在寫入，稍後重新讀取")
+        raise SaveChangedError("Save is still being written; retry shortly")
     return data, after
 
 
 def _unpack(data: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]], list[str]]:
     blob = data.get("ProspectBlob")
     if not isinstance(blob, dict) or not isinstance(blob.get("BinaryBlob"), str):
-        raise SaveError("找不到 ProspectBlob.BinaryBlob；不是支援的世界存檔")
+        raise SaveError("ProspectBlob.BinaryBlob missing; unsupported world save")
     try:
         compressed = base64.b64decode(blob["BinaryBlob"], validate=True)
         decoder = zlib.decompressobj()
         raw = decoder.decompress(compressed, MAX_BLOB_BYTES + 1)
         if len(raw) > MAX_BLOB_BYTES or decoder.unconsumed_tail:
-            raise SaveError("解壓縮資料超過限制")
+            raise SaveError("Decompressed data exceeds the limit")
         if not decoder.eof or decoder.unused_data:
-            raise SaveError("壓縮封裝不完整或包含不支援的尾端資料")
+            raise SaveError("Compressed envelope is incomplete or has unsupported trailing data")
     except (binascii.Error, zlib.error) as exc:
-        raise SaveError("存檔壓縮封裝無法解碼") from exc
+        raise SaveError("Could not decode the compressed save envelope") from exc
     expected_length = blob.get("UncompressedLength")
     if expected_length is not None and expected_length != len(raw):
-        raise SaveError("存檔解壓縮長度驗證失敗")
+        raise SaveError("Save decompressed length verification failed")
     expected_hash = str(blob.get("Hash") or "").lower()
     if expected_hash and hashlib.sha1(raw).hexdigest() != expected_hash:
-        raise SaveError("存檔內容雜湊驗證失敗")
+        raise SaveError("Save content hash verification failed")
     reader = Reader(raw)
     top = read_props(reader)
     blobs = top.get("StateRecorderBlobs")
     if not isinstance(blobs, list):
-        raise SaveError("世界狀態紀錄格式不受支援")
+        raise SaveError("Unsupported world state record format")
     records, warnings = [], []
     skipped = reader.skipped.copy()
     for index, item in enumerate(blobs):
         if not isinstance(item, dict) or not isinstance(item.get("BinaryData"), list):
-            raise SaveError(f"世界狀態紀錄 {index} 缺少 BinaryData")
+            raise SaveError(f"World state record {index} is missing BinaryData")
         component = str(item.get("ComponentClassName", ""))
         try:
             component_reader = Reader(bytes(item["BinaryData"]))
@@ -249,15 +249,15 @@ def _unpack(data: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]],
             skipped.update(component_reader.skipped)
         except (SaveError, UnicodeError, ValueError, struct.error) as exc:
             # Do not claim no drill if one of the actors could not be read.
-            raise SaveError(f"世界狀態紀錄 {index}（{component}）解碼失敗：{exc}") from exc
+            raise SaveError(f"World state record {index} ({component}) could not be decoded: {exc}") from exc
         record["_component"] = component
         if component_reader.unsupported_fields:
             record["_unsupported_fields"] = sorted(component_reader.unsupported_fields)
         records.append(record)
     if skipped:
-        warnings.append("部分 UE 屬性未解碼，相關資料可能缺漏：" + ", ".join(sorted(skipped)))
+        warnings.append("Some UE properties were not decoded; related data may be incomplete: " + ", ".join(sorted(skipped)))
     if top.get("Version") != 2:
-        warnings.append(f"存檔世界格式版本 {top.get('Version')!r} 尚未驗證；僅呈現可辨識欄位，不能確認鑽機不存在。")
+        warnings.append(f"World save format version {top.get('Version')!r} not verified; showing recognized fields only. Absence of drills cannot be confirmed.")
     return top, records, warnings
 
 
@@ -265,7 +265,7 @@ def map_name_for(prospect_key: str, map_key: str = "") -> str:
     for name in ("Prometheus", "Olympus", "Styx", "Elysium"):
         if name.lower() in prospect_key.lower(): return name
     if map_key in MAP_NAMES: return MAP_NAMES[map_key]
-    return map_key or prospect_key or "地圖未知"
+    return map_key or prospect_key or "Unknown map"
 
 
 def discover_saves(root: str | Path | None = None) -> list[SaveDescriptor]:
@@ -306,7 +306,9 @@ def _resource(record: dict[str, Any], kind: str, name: str, resource_type: str =
 
 def _resource_name(key: str) -> str:
     name = RESOURCE_NAMES.get(key)
-    return f"{name} ({key})" if name else key or "礦種未知"
+    if name and name.casefold() == key.casefold():
+        return name
+    return f"{name} ({key})" if name else key or "Unknown mineral"
 
 
 def _is_number(value):
@@ -321,21 +323,21 @@ def _mineral_state(item: Resource, record: dict[str, Any]):
         item.name = _resource_name(str(key))
     if state.get("bIsVoxelFullyMined"):
         item.remaining = 0
-        item.remaining_status = "已耗盡"
-        item.remaining_unit = "基礎資源單位"
-        item.detail = "存檔明確記錄礦體已完全採集。"
+        item.remaining_status = "Depleted"
+        item.remaining_unit = "Base resource units"
+        item.detail = "The save explicitly records this mineral as fully mined."
         return
     total, granted = state.get("TotalResourceCount"), state.get("NumResourcesGranted")
     if _is_number(total) and total > 0 and _is_number(granted) and granted >= 0:
         item.remaining = max(0.0, float(total) - float(granted))
-        item.remaining_unit = "基礎資源單位（估計）"
-        item.remaining_status = "估計"
-        item.detail = f"TotalResourceCount={total:g}，NumResourcesGranted={granted:g}；差值不是保證物品產出，採集工具與加成可能影響結果。"
+        item.remaining_unit = "Base resource units (estimated)"
+        item.remaining_status = "Estimated"
+        item.detail = f"TotalResourceCount={total:g}, NumResourcesGranted={granted:g}; the difference is not guaranteed item yield. Tools and bonuses may affect output."
     elif state.get("MinedSpheres"):
-        item.remaining_status = "部分採集，數量未知"
-        item.detail = "有採集幾何紀錄；缺少可驗證的剩餘資源計數。"
+        item.remaining_status = "Partially mined; quantity unknown"
+        item.detail = "Mining geometry is recorded; no verifiable remaining resource count is available."
     else:
-        item.detail = "存檔未提供可驗證的剩餘量；無採集記錄不代表未採集。"
+        item.detail = "The save provides no verifiable remaining amount; no mining record does not mean unmined."
 
 
 def _drill_compatible(drill: Resource, deposit: Resource) -> bool:
@@ -350,7 +352,7 @@ def associate_drills(resources: list[Resource], drills: list[Resource], complete
         actor_id = deposit.raw.get("IcarusActorGUID")
         if isinstance(actor_id, int) and actor_id > 0:
             ids.setdefault(actor_id, []).append(deposit)
-        deposit.drill_status = "未放置" if complete else "無法確認"
+        deposit.drill_status = "Not installed" if complete else "Cannot confirm"
     claimed: set[str] = set()
     pending = []
     for drill in drills:
@@ -358,15 +360,15 @@ def associate_drills(resources: list[Resource], drills: list[Resource], complete
         target_id = foundation.get("FoundationActorIcarusUID")
         candidates = [d for d in ids.get(target_id, []) if _drill_compatible(drill, d)] if isinstance(target_id, int) and target_id > 0 else []
         if len(candidates) == 1 and candidates[0].id not in claimed:
-            _attach_drill(candidates[0], drill, "已確認", "FoundationActorIcarusUID")
+            _attach_drill(candidates[0], drill, "Confirmed", "FoundationActorIcarusUID")
             claimed.add(candidates[0].id)
         elif candidates:
             for deposit in candidates:
-                deposit.drill_status = "無法確認"
-                deposit.detail += " 鑽機識別關聯衝突，不能判定一對一配對。"
+                deposit.drill_status = "Cannot confirm"
+                deposit.detail += " Drill ID links conflict; a one-to-one match cannot be established."
         elif isinstance(target_id, int) and target_id > 0:
             # A recorded explicit target must never be overridden by proximity.
-            drill.detail += " 原始礦床識別關聯未找到；未以附近其他礦床替代。"
+            drill.detail += " Original deposit ID link not found; nearby deposits were not substituted."
         else:
             pending.append(drill)
     # Conservative fallback only with no explicit target. Both directions must
@@ -378,19 +380,19 @@ def associate_drills(resources: list[Resource], drills: list[Resource], complete
     for drill in pending:
         candidates = possible[drill.id]
         if len(candidates) == 1 and count[candidates[0].id] == 1:
-            _attach_drill(candidates[0], drill, "推定", "三維距離 ≤ 2.5m，雙向唯一相容候選")
+            _attach_drill(candidates[0], drill, "Inferred", "3D distance ≤ 2.5 m; mutually unique compatible candidates")
         else:
             for deposit in candidates:
-                deposit.drill_status = "無法確認"
-                deposit.detail += " 附近鑽機有多個可能關聯。"
+                deposit.drill_status = "Cannot confirm"
+                deposit.detail += " Nearby drill has multiple possible matches."
 
 
 def _attach_drill(deposit: Resource, drill: Resource, confidence: str, evidence: str):
-    deposit.drill_status = "已放置" if confidence == "已確認" else "已放置（推定）"
+    deposit.drill_status = "Installed" if confidence == "Confirmed" else "Installed (inferred)"
     state = drill.raw.get("DrillSaveData") or {}
     active = state.get("bDrillActive")
-    operation = "正在採礦" if active is True or active == 1 else "未運轉" if active is False or active == 0 else "運轉未知"
-    deposit.detail += f" 鑽機：{drill.name}；{operation}；關聯依據：{evidence}。"
+    operation = "Mining" if active is True or active == 1 else "Not running" if active is False or active == 0 else "Operating status unknown"
+    deposit.detail += f" Drill: {drill.name}; {operation}; Match evidence: {evidence}."
     deposit.raw = dict(deposit.raw, _drill={"id": drill.id, "item": drill.resource_type,
                                              "active": active, "confidence": confidence,
                                              "evidence": evidence})
@@ -412,7 +414,7 @@ def load_snapshot(path: str | Path, cache_dir: str | Path | None = None) -> Worl
     envelope = _json_bytes(data)
     top, records, warnings = _unpack(envelope)
     info = envelope.get("ProspectInfo") or top.get("ProspectInfo") or {}
-    if not isinstance(info, dict): raise SaveError("ProspectInfo 格式錯誤")
+    if not isinstance(info, dict): raise SaveError("Invalid ProspectInfo format")
     key = str(info.get("ProspectDTKey") or "")
     map_key = str(top.get("ProspectMapName") or "")
     game_seed = next(((r.get("GameModeRecord") or {}).get("GameStateSeed") for r in records
@@ -426,7 +428,7 @@ def load_snapshot(path: str | Path, cache_dir: str | Path | None = None) -> Worl
                              prospect_info=info, raw_records=records, warnings=warnings,
                              map_key=map_key, prospect_key=key, difficulty=str(info.get("Difficulty") or ""),
                              game_state_seed=game_seed if isinstance(game_seed, int) else None)
-    members = {str(m.get("UserID")): str(m.get("CharacterName") or m.get("AccountName") or "玩家")
+    members = {str(m.get("UserID")): str(m.get("CharacterName") or m.get("AccountName") or "Player")
                for m in info.get("AssociatedMembers", []) if isinstance(m, dict)}
     drills, game_mode, manager = [], {}, {}
     for record in records:
@@ -440,20 +442,20 @@ def load_snapshot(path: str | Path, cache_dir: str | Path | None = None) -> Worl
             if item:
                 remaining = record.get("ResourceRemaining")
                 if _is_number(remaining) and remaining >= 0:
-                    item.remaining, item.remaining_unit = float(remaining), "存檔資源單位"
-                    item.remaining_status = "已耗盡" if remaining == 0 else "已確認"
+                    item.remaining, item.remaining_unit = float(remaining), "Saved resource units"
+                    item.remaining_status = "Depleted" if remaining == 0 else "Confirmed"
                 else:
-                    item.detail = f"ResourceRemaining={remaining!r}；負值／缺漏未解讀為無限或零。"
+                    item.detail = f"ResourceRemaining={remaining!r}; negative or missing values are not treated as infinite or zero."
         elif component.endswith("CaveEntranceRecorderComponent"):
-            item = _resource(record, "cave", str(record.get("ObjectFName") or "地穴入口"), "地穴")
-            if item: item.detail = "存檔記錄的入口；不等於完整洞穴範圍。"
+            item = _resource(record, "cave", str(record.get("ObjectFName") or "Cave entrance"), "Cave")
+            if item: item.detail = "Saved entrance location; does not describe the full cave extent."
         elif component.endswith("VoxelRecorderComponent"):
-            item = _resource(record, "ore", "礦種未知", "未知")
+            item = _resource(record, "ore", "Unknown mineral", "Unknown")
             if item: _mineral_state(item, record)
         elif component.endswith("OilGeyserRecorderComponent"):
-            item = _resource(record, "oil", "原油噴泉", "Oil")
+            item = _resource(record, "oil", "Crude oil geyser", "Oil")
         elif component.endswith("EnzymeGeyserRecorderComponent"):
-            item = _resource(record, "geyser", "酵素噴泉", "Enzyme")
+            item = _resource(record, "geyser", "Enzyme geyser", "Enzyme")
         if item: snapshot.resources.append(item)
         if record.get("StaticItemDataRowName") and location_of(record):
             name = str(record["StaticItemDataRowName"])
@@ -463,13 +465,13 @@ def load_snapshot(path: str | Path, cache_dir: str | Path | None = None) -> Worl
                 snapshot.deployables.append(deployable)
                 if is_drill: drills.append(deployable)
                 if "Bed" in name or "Bedroll" in name:
-                    deployable.detail = "基地候選：床／睡袋位置，需由使用者確認。"
+                    deployable.detail = "Base candidate: bed / bedroll location; requires user confirmation."
                     snapshot.base_candidates.append(deployable)
         if component.endswith("PlayerStateRecorderComponent"):
             pid = str((record.get("PlayerCharacterID") or {}).get("PlayerID") or "")
-            player = _resource(record, "player", members.get(pid, "玩家"), "玩家存檔位置")
+            player = _resource(record, "player", members.get(pid, "Player"), "Saved player position")
             if player:
-                player.detail = "上次存檔的位置，非即時位置。"
+                player.detail = "Position at the last save; not a live position."
                 snapshot.players.append(player)
         if "Quest" in component or component.endswith("GameModeStateRecorderComponent"):
             snapshot.mission_records.append(record)
@@ -477,16 +479,18 @@ def load_snapshot(path: str | Path, cache_dir: str | Path | None = None) -> Worl
         if component.endswith("IcarusQuestManagerRecorderComponent"): manager = record
     deployments_complete = top.get("Version") == 2 and _deployments_complete(records)
     associate_drills(snapshot.resources, drills, complete=deployments_complete)
+    from .drill_inventory import attach_drill_inventories
+    attach_drill_inventories(snapshot, save_version=top.get("Version"))
     if not deployments_complete:
-        snapshot.warnings.append("部分部署物／鑽機核心欄位無法讀取，未配對礦床的鑽機狀態維持「無法確認」。")
+        snapshot.warnings.append("Some core deployable / drill fields could not be read. Unmatched deposits retain an unknown drill status.")
     counts = Counter(r.kind for r in snapshot.resources)
-    snapshot.coverage = {"source": "所選世界有效存檔快照", "record_count": len(records),
+    snapshot.coverage = {"source": "Valid snapshot of the selected world", "record_count": len(records),
                          "resource_counts": dict(counts), "drill_count": len(drills),
                          "deployment_collection_complete": deployments_complete,
                          "all_map_resources_complete": False,
-                         "limitations": ["存檔動態記錄不等於全地圖靜態資源目錄", "植物、樹木與水源未由存檔完整列舉"]}
+                         "limitations": ["Dynamic save records do not form a complete static resource catalog", "Plants, trees and water sources are not fully listed in the save"]}
     snapshot.mission_state = {"records": snapshot.mission_records,
-                              "mission_history": game_mode.get("MissionHistory", []),
+                              "mission_history": game_mode.get("MissionHistory"),
                               "session_flags": (game_mode.get("GameModeRecord") or {}).get("SessionFlagRecords", []),
                               "quest_manager": manager,
                               "quests": [r for r in snapshot.mission_records if r.get("QuestName")]}

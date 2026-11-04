@@ -214,7 +214,7 @@ def test_edit_of_base_deleted_by_another_writer_is_reported_without_resurrection
     deleting.save()
     previous = path.read_bytes()
     editing.world("world")["bases"][0]["name"] = "stale rename"
-    with pytest.raises(OSError, match="刪除"):
+    with pytest.raises(OSError, match="deleted"):
         editing.save()
     assert path.read_bytes() == previous
     assert Settings(path).world("world")["bases"] == []

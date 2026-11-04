@@ -31,33 +31,33 @@ class MarkerStyle:
 
 
 _MINERALS = {
-    "gold": MarkerStyle("金", "#ffd34f", "Au", "rock", "gold"),
-    "iron": MarkerStyle("鐵", "#c4cfdf", "Fe", "rock", "iron"),
-    "copper": MarkerStyle("銅", "#f3a06a", "Cu", "rock", "copper"),
-    "aluminium": MarkerStyle("鋁", "#d4f1f4", "Al", "rock", "aluminium"),
-    "platinum": MarkerStyle("鉑", "#ebe3ff", "Pt", "rock", "platinum"),
-    "titanium": MarkerStyle("鈦", "#9cbaff", "Ti", "rock", "titanium"),
-    "coal": MarkerStyle("煤", "#a7b5ca", "C", "coal", "coal"),
-    "sulfur": MarkerStyle("硫", "#f5ed55", "S", "crystal", "sulfur"),
-    "silica": MarkerStyle("矽石", "#def9ff", "Si", "crystal", "silica"),
-    "oxite": MarkerStyle("氧礦", "#53d5ff", "O₂", "crystal", "oxite"),
-    "stone": MarkerStyle("石材", "#bfb7a9", "石", "rock", "stone"),
-    "ice": MarkerStyle("冰", "#9eeaff", "Ice", "cube", "ice"),
-    "supercooledice": MarkerStyle("超冷冰", "#5ff4f0", "SC", "cube", "supercooledice"),
-    "salt": MarkerStyle("鹽", "#ffffff", "NaCl", "cube", "salt"),
-    "clay": MarkerStyle("黏土", "#d99776", "Clay", "clay", "clay"),
-    "obsidian": MarkerStyle("黑曜石", "#b99aff", "Ob", "gem", "obsidian"),
-    "scoria": MarkerStyle("火山渣", "#ff9b78", "Sc", "porous", "scoria"),
-    "bauxite": MarkerStyle("鋁土礦", "#e3aa82", "Bau", "rock", "bauxite"),
-    "limestone": MarkerStyle("石灰石", "#e6e5ca", "Ca", "rock", "limestone"),
-    "lithium": MarkerStyle("鋰", "#e2b9f5", "Li", "crystal", "lithium"),
-    "ruby": MarkerStyle("紅寶石", "#ff647e", "Rb", "gem", "ruby"),
-    "lead": MarkerStyle("鉛", "#a3b2ce", "Pb", "rock", "lead"),
-    "uranium": MarkerStyle("鈾", "#bcf373", "U", "crystal", "uranium"),
-    "exotic": MarkerStyle("異質", "#f595e4", "Ex", "gem", "exotic"),
-    "frozenore": MarkerStyle("冰封礦", "#a9e6f4", "FRZ", "cube", "frozenore"),
-    "frozenwood": MarkerStyle("凍木", "#b5e9f0", "木", "wood", "frozenwood"),
-    "unknown": MarkerStyle("未知", "#c3ccd6", "?", "unknown", "unknown"),
+    "gold": MarkerStyle("Gold", "#ffd34f", "Au", "rock", "gold"),
+    "iron": MarkerStyle("Iron", "#c4cfdf", "Fe", "rock", "iron"),
+    "copper": MarkerStyle("Copper", "#f3a06a", "Cu", "rock", "copper"),
+    "aluminium": MarkerStyle("Aluminium", "#d4f1f4", "Al", "rock", "aluminium"),
+    "platinum": MarkerStyle("Platinum", "#ebe3ff", "Pt", "rock", "platinum"),
+    "titanium": MarkerStyle("Titanium", "#9cbaff", "Ti", "rock", "titanium"),
+    "coal": MarkerStyle("Coal", "#a7b5ca", "C", "coal", "coal"),
+    "sulfur": MarkerStyle("Sulfur", "#f5ed55", "S", "crystal", "sulfur"),
+    "silica": MarkerStyle("Silica", "#def9ff", "Si", "crystal", "silica"),
+    "oxite": MarkerStyle("Oxite", "#53d5ff", "O₂", "crystal", "oxite"),
+    "stone": MarkerStyle("Stone", "#bfb7a9", "St", "rock", "stone"),
+    "ice": MarkerStyle("Ice", "#9eeaff", "Ice", "cube", "ice"),
+    "supercooledice": MarkerStyle("Supercooled ice", "#5ff4f0", "SC", "cube", "supercooledice"),
+    "salt": MarkerStyle("Salt", "#ffffff", "NaCl", "cube", "salt"),
+    "clay": MarkerStyle("Clay", "#d99776", "Clay", "clay", "clay"),
+    "obsidian": MarkerStyle("Obsidian", "#b99aff", "Ob", "gem", "obsidian"),
+    "scoria": MarkerStyle("Scoria", "#ff9b78", "Sc", "porous", "scoria"),
+    "bauxite": MarkerStyle("Bauxite", "#e3aa82", "Bau", "rock", "bauxite"),
+    "limestone": MarkerStyle("Limestone", "#e6e5ca", "Ca", "rock", "limestone"),
+    "lithium": MarkerStyle("Lithium", "#e2b9f5", "Li", "crystal", "lithium"),
+    "ruby": MarkerStyle("Ruby", "#ff647e", "Rb", "gem", "ruby"),
+    "lead": MarkerStyle("Lead", "#a3b2ce", "Pb", "rock", "lead"),
+    "uranium": MarkerStyle("Uranium", "#bcf373", "U", "crystal", "uranium"),
+    "exotic": MarkerStyle("Exotics", "#f595e4", "Ex", "gem", "exotic"),
+    "frozenore": MarkerStyle("Frozen ore", "#a9e6f4", "FRZ", "cube", "frozenore"),
+    "frozenwood": MarkerStyle("Frozen wood", "#b5e9f0", "Wd", "wood", "frozenwood"),
+    "unknown": MarkerStyle("Unknown", "#c3ccd6", "?", "unknown", "unknown"),
 }
 
 _ALIASES = {
@@ -142,18 +142,18 @@ def marker_item_id(kind: str, resource_type: str = "", candidate: bool = False) 
 
 
 _KIND_STYLES = {
-    "cave": MarkerStyle("地穴", "#d7b7ff", "洞", "cave", "cave"),
-    "drill": MarkerStyle("鑽機", "#7ef2bd", "鑽", "drill", "drill"),
-    "geyser": MarkerStyle("噴泉", "#ffab86", "泉", "geyser", "geyser"),
-    "oil": MarkerStyle("石油", "#e7cb7d", "油", "oil", "oil"),
-    "exotic": MarkerStyle("異質", "#f595e4", "Ex", "gem", "exotic"),
-    "player": MarkerStyle("玩家", "#ffffff", "人", "player", "player"),
-    "base": MarkerStyle("基地", "#83f5b8", "家", "base", "base"),
-    "water": MarkerStyle("水源", "#81caff", "水", "water", "water"),
-    "plant": MarkerStyle("植物", "#a4e895", "葉", "plant", "plant"),
-    "tree": MarkerStyle("樹木", "#9be0aa", "樹", "tree", "tree"),
-    "deployable": MarkerStyle("部署物", "#c8d5e5", "箱", "deployable", "deployable"),
-    "resource": MarkerStyle("資源", "#abddeb", "?", "unknown", "resource"),
+    "cave": MarkerStyle("Cave", "#d7b7ff", "C", "cave", "cave"),
+    "drill": MarkerStyle("Drill", "#7ef2bd", "D", "drill", "drill"),
+    "geyser": MarkerStyle("Geyser", "#ffab86", "G", "geyser", "geyser"),
+    "oil": MarkerStyle("Oil", "#e7cb7d", "Oil", "oil", "oil"),
+    "exotic": MarkerStyle("Exotics", "#f595e4", "Ex", "gem", "exotic"),
+    "player": MarkerStyle("Player", "#ffffff", "P", "player", "player"),
+    "base": MarkerStyle("Base", "#83f5b8", "H", "base", "base"),
+    "water": MarkerStyle("Water", "#81caff", "W", "water", "water"),
+    "plant": MarkerStyle("Plants", "#a4e895", "L", "plant", "plant"),
+    "tree": MarkerStyle("Trees", "#9be0aa", "T", "tree", "tree"),
+    "deployable": MarkerStyle("Deployable", "#c8d5e5", "Box", "deployable", "deployable"),
+    "resource": MarkerStyle("Resource", "#abddeb", "?", "unknown", "resource"),
 }
 
 
@@ -498,17 +498,17 @@ def render_icon_sheet(output_path: str | Path):
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     painter.setFont(QFont("Microsoft JhengHei",16,QFont.Weight.Bold))
     painter.setPen(QColor("#e8f4ff"))
-    painter.drawText(QRectF(18,12,1000,30),"地圖圖標：洞穴、礦種、候選與鑽機")
+    painter.drawText(QRectF(18,12,1000,30),"Map icons: caves, minerals, candidates and drills")
     painter.setFont(QFont("Microsoft JhengHei",10))
     painter.setPen(QColor("#a9c1d4"))
-    painter.drawText(QRectF(18,42,1000,24),"每格左：28 px實際大小　右：56 px細節；?為候選，綠色鑽機角標為已放置")
+    painter.drawText(QRectF(18,42,1000,24),"Left: 28 px actual size. Right: 56 px detail. ? = candidate; green drill badge = installed")
     for index,(kind,mineral,candidate,drilled) in enumerate(items):
         x,y=(index%columns)*cell_w,(index//columns)*cell_h+70
         painter.fillRect(QRectF(x+5,y+5,cell_w-10,cell_h-10),QColor("#1d3542"))
         painter.drawPixmap(x+30,y+28,marker_pixmap(kind,mineral,28,candidate,drilled))
         painter.drawPixmap(x+80,y+13,marker_pixmap(kind,mineral,56,candidate,drilled))
         style=marker_style(kind,mineral)
-        label=style.label+("候選" if candidate else "")+("＋鑽機" if drilled else "")
+        label=style.label+("Candidate" if candidate else "")+(" + Drill" if drilled else "")
         painter.setPen(QColor("#f4f8ff"))
         painter.setFont(QFont("Microsoft JhengHei",11,QFont.Weight.Bold))
         painter.drawText(QRectF(x+5,y+76,cell_w-10,25),Qt.AlignmentFlag.AlignCenter,label)

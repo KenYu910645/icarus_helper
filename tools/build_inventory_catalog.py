@@ -16,34 +16,16 @@ from catalog_inventory import CACHE, GAME, REPAK, require_validated_build
 
 TABLES = ["Items/D_ItemsStatic.json", "Traits/D_Itemable.json", "Inventory/D_InventoryID.json"]
 METALS = {
-    "Metal_Ore": ("iron", "鐵", "ore"), "Refined_Metal": ("iron", "鐵", "ingot"),
-    "Copper_Ore": ("copper", "銅", "ore"), "Refined_Copper": ("copper", "銅", "ingot"),
-    "Gold_Ore": ("gold", "金", "ore"), "Refined_Gold": ("gold", "金", "ingot"),
-    "Bauxite": ("aluminium", "鋁", "ore"), "Aluminium": ("aluminium", "鋁", "ingot"),
-    "Platinum_Ore": ("platinum", "鉑", "ore"), "Platinum_Ingot": ("platinum", "鉑", "ingot"),
-    "Titanium_Ore": ("titanium", "鈦", "ore"), "Titanium_Ingot": ("titanium", "鈦", "ingot"),
-    "Steel_Ingot": ("steel", "鋼", "ingot"), "Steel_Bloom": ("steel", "鋼", "processed"),
-    "Cold_Steel_Ingot": ("cold_steel", "冷鋼", "ingot"),
-    "Cold_Steel_Bloom": ("cold_steel", "冷鋼", "processed"),
-    "Lithium_Ore": ("lithium", "鋰", "ore"),
-}
-ZH = {
-    "Stone": "石材", "Wood": "木材", "Wood_Refined": "精製木材", "Stick": "木棍",
-    "Fiber": "纖維", "Leather": "皮革", "Fur": "毛皮", "Bone": "骨頭", "Rope": "繩索",
-    "Sulfur": "硫磺", "Oxite": "氧礦", "Silica": "矽礦", "Coal_Ore": "煤礦", "Charcoal": "木炭",
-    "Clay": "黏土", "Scoria": "火山渣", "Obsidian": "黑曜石", "Ice": "冰", "Salt": "鹽",
-    "Sand": "沙", "Glass": "玻璃", "Concrete_Mix": "混凝土混合物", "Clay_Brick": "黏土磚",
-    "Tree_Sap": "樹液", "Epoxy": "環氧樹脂", "Steel_Screw": "鋼螺絲", "Steel_Rebar": "鋼筋",
-    "Iron_Nail": "鐵釘", "Copper_Nail": "銅釘", "Copper_Wire": "銅線", "Gold_Wire": "金線",
-    "Carbon_Fiber": "碳纖維", "Composites": "複合材料", "Advanced_Leather": "高級皮革",
-    "Raw_Iron_Wood": "結晶瘴氣", "Refined_Iron_Wood": "蒸餾瘴氣塗層", "Dirt": "泥土",
-    "MetaResource": "異質", "Exotic_Red": "紅色異質", "Ruby_Ore": "結晶紅寶石",
-    "Spoiled_Meat": "腐肉", "Spoiled_Plants": "腐敗植物", "Animal_Fat": "動物脂肪",
-    "Honey": "蜂蜜", "Flour": "麵粉", "Basic_Fertilizer": "基礎肥料", "Animal_Silage": "動物青貯飼料",
-    "Kit_Metal_Cupboard": "金屬櫃", "Metal_Crate_Small": "小型金屬箱",
-    "Concrete_Furnace_V2": "混凝土熔爐", "Electric_Furnace_Large": "大型電熔爐",
-    "Fabricator": "製造機", "Material_Processor": "材料處理機", "Refrigerator": "冰箱",
-    "Cement_Mixer": "水泥攪拌機", "Rustic_Wardrobe": "鄉村衣櫃",
+    "Metal_Ore": ("iron", "Iron", "ore"), "Refined_Metal": ("iron", "Iron", "ingot"),
+    "Copper_Ore": ("copper", "Copper", "ore"), "Refined_Copper": ("copper", "Copper", "ingot"),
+    "Gold_Ore": ("gold", "Gold", "ore"), "Refined_Gold": ("gold", "Gold", "ingot"),
+    "Bauxite": ("aluminium", "Aluminium", "ore"), "Aluminium": ("aluminium", "Aluminium", "ingot"),
+    "Platinum_Ore": ("platinum", "Platinum", "ore"), "Platinum_Ingot": ("platinum", "Platinum", "ingot"),
+    "Titanium_Ore": ("titanium", "Titanium", "ore"), "Titanium_Ingot": ("titanium", "Titanium", "ingot"),
+    "Steel_Ingot": ("steel", "Steel", "ingot"), "Steel_Bloom": ("steel", "Steel", "processed"),
+    "Cold_Steel_Ingot": ("cold_steel", "Cold Steel", "ingot"),
+    "Cold_Steel_Bloom": ("cold_steel", "Cold Steel", "processed"),
+    "Lithium_Ore": ("lithium", "Lithium", "ore"),
 }
 
 
@@ -77,7 +59,7 @@ def classify(row: dict, english: str) -> tuple[str, str, str, str]:
         category = "building"
     else:
         category = "other"
-    return category, key, ZH.get(key, english), "other"
+    return category, key, english, "other"
 
 
 def main() -> None:
@@ -120,9 +102,7 @@ def main() -> None:
             continue
         english = display_name(trait.get("DisplayName", ""), key)
         category, material, label, form = classify(row, english)
-        name = ZH.get(key, english)
-        if key in METALS:
-            name = label + {"ore": "礦", "ingot": "錠", "processed": "坯"}[form]
+        name = english
         items[key] = {"name": name, "english": english, "category": category,
                       "material": material, "material_label": label, "form": form,
                       "max_stack": trait.get("MaxStack", default_stack)}

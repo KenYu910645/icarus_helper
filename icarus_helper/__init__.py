@@ -1,3 +1,3 @@
-"""ICARUS Helper: a read-only desktop companion."""
+"""ICARUS desktop companion with explicitly confirmed world restoration."""
 
 __version__ = "0.1.0"

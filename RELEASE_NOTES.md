@@ -1,63 +1,73 @@
+# Unreleased source changes — 2026-11-04
+
+- The interface, resource/item labels, messages, mission guides and operating guide use English. User-created world, base, character and animal names are preserved.
+- Base inventory supports item/material search with a clear button, case-insensitive matching and queries retained across save refreshes. Each material uses one stacked bar with orange lower segments and teal upper segments, preserving actual counts, separate form icons, details and unknown quantities.
+- Mission lists and the overview show all confirmed unlocked or active Operations/NPC missions, excluding completed, locked, unconfirmed and SIMPLE/SMPL3 entries. Account evidence is bound to the selected host/world. A busy Operation slot leaves other unlocked missions waiting; nearby groups retain candidate and unresolved-stage distinctions.
+- Same-context inventory refresh failures retain the last valid chart and details with a stale/error message. Invalid results are not emitted as successful loads, and world/base/radius changes remain isolated.
+- Code cleanup removes unused imports and corrects the symbolic-link rejection test to expect the English error.
+
+The retained local build is `dist/inventory-search-20261103/ICARUS Helper/ICARUS Helper.exe`. This source update does not publish a new Windows ZIP or replace existing desktop/background processes. Earlier builds and public release history remain available.
+
 # v0.2.1
 
-資源地圖的圖示下方補齊中文名稱，異質、噴泉及其他類型皆可辨識；縮小地圖後仍保留標籤，點選名稱可查看對應地點。標記沿用原位座標、候選狀態與基地／鑽機優先順序。
+Added Chinese labels beneath every resource icon, including Exotics and geysers. Labels remain visible when zoomed out and can be clicked for details. Coordinates, candidate status and base/drill drawing priority are unchanged. The English update above supersedes this display language.
 
-- 包含 v0.2.0 的馴養動物頁、Null Sector 完整底圖、基地保存修正與物資排序。
-- 首次空設定仍預設開啟 Prometheus 共用地圖與「我們家」，基地座標與 v0.1.0／v0.2.0 完全相同；已有設定不重設。
-- 下載 `ICARUS-Helper-v0.2.1-Windows-x64.zip`，完整解壓縮後開啟 `ICARUS Helper.exe`，並保留 `_internal`。
-- 實際世界礦量、庫存、動物與任務進度仍需要主機存檔；動物頁的英文物種名稱規則維持。
+- Includes v0.2.0's animals, full Null Sector map, base persistence and inventory sorting.
+- Empty settings open the Prometheus shared map and Home, with coordinates identical to v0.1.0/v0.2.0; existing settings are not reset.
+- Download `ICARUS-Helper-v0.2.1-Windows-x64.zip`, extract completely, open `ICARUS Helper.exe`, and retain `_internal`.
+- Actual resources, inventory, animals and mission progress require a host save. Species continue to use native English names.
 
-第三方來源及權利說明見隨附 `DATA_SOURCES.md`、`THIRD_PARTY_NOTICES.md` 與 `licenses/`。ZIP 內含逐檔 SHA-256 manifest，下載旁附 `SHA256SUMS.txt`。
+Sources/rights are in `DATA_SOURCES.md`, `THIRD_PARTY_NOTICES.md` and `licenses/`. The ZIP has a per-file SHA-256 manifest, with `SHA256SUMS.txt` beside the download.
 
 # v0.2.0
 
-新增馴養動物管理，補上 Prometheus Null Sector 完整地形，並修正基地保存與圖示顯示。
+Added tamed-animal management, complete Prometheus Null Sector terrain, base-persistence fixes and icon fixes.
 
-## 下載與更新
+## Download and update
 
-1. 下載 `ICARUS-Helper-v0.2.0-Windows-x64.zip`，完整解壓縮至新的資料夾。
-2. 開啟 `ICARUS Helper.exe`，請保留旁邊的 `_internal`。不需安裝 Python 或另外下載圖資。
-3. 首次空設定仍預設開啟 Prometheus 共用地圖與「我們家」，位置與 v0.1.0 相同。已有設定的使用者保留自己的世界、基地與圖層選擇。
+1. Download `ICARUS-Helper-v0.2.0-Windows-x64.zip` and extract completely into a new folder.
+2. Open `ICARUS Helper.exe` and retain `_internal`. Python and separate map downloads are not required.
+3. Empty settings open the Prometheus shared map and Home at v0.1.0's coordinates. Existing users retain their world, bases and layers.
 
-## 本版更新
+## Changes
 
-- **馴養動物頁**：依飼養者分欄，整合原生動物圖示、等級／經驗、生命及補給狀態條、背包物品，以及卡片與動物地圖雙向定位。物種名稱使用遊戲英文，保留中文別名搜尋。
-- **容量與來源**：依目前版本的種類、遺傳、血統、天賦及可核對的飼養者資料計算。遊戲執行且版本／世界／動物識別吻合時，唯讀取得原生介面使用的生命與適用耐力目前值及上限；來源不足時顯示已知基準或未知。
-- **完整地圖**：Prometheus 底圖包含 Null Sector 的南方冰原與東南灰燼地形，資源、任務及動物地圖共用；舊快取不會遮蓋新版完整底圖。所有標記座標與共用基地位置保持不變。
-- **基地保存**：設定固定保存於 `%USERPROFILE%/.icarus-helper/settings.json`，首次遷移保留舊設定與備份，多視窗合併各自變更，避免基地因啟動方式或舊視窗覆蓋而遺失。
-- **顯示調整**：異質候選使用原生類別圖搭配小問號，保留候選狀態；家中物資圖表與明細依實際件數由多到少排列；修正桌面捷徑圖示來源。
+- **Animals:** owner columns with native images, level/experience, health/supply bars, inventory and two-way card/map selection. English species names retain Chinese search aliases.
+- **Capacities/sources:** current species, genetics, bloodlines, talents and verified owner evidence. When running-game version/world/animal checks succeed, read-only health/applicable stamina current/max values use native UI sources. Incomplete evidence retains known baselines or unknown values.
+- **Complete map:** Null Sector's southern Ice Sheet and southeastern Ashlands appear in resource/mission/animal maps. Old caches cannot hide the full map. All coordinates and shared-base locations are unchanged.
+- **Base persistence:** fixed `%USERPROFILE%/.icarus-helper/settings.json`, initial migration with originals/backups retained, and per-window change merging prevent losses caused by launch methods or stale windows.
+- **Display:** exotic candidates use category images with small question marks, preserving candidate status. Inventory charts/details sort by descending actual counts. Shortcut icon sources were fixed.
 
-## 資料與適用範圍
+## Data and scope at this release
 
-- 共用地圖沒有私人動物、帳號、存檔、庫存或任務進度；實際世界資料仍需選擇有效主機存檔。APP 不跨電腦自動同步存檔。
-- 動物地圖位置來自存檔；只有通過身分核對的生命／耐力來源才另外顯示遊戲讀取時間。未知數值不當成零，牛的氧氣／耐力及乳量容量仍未完整驗證。
-- 靜態資產與原生規則目前對應 Steam build 26313227，未支援版本會提示並保守回退。主要完整支援 Prometheus，其他地圖覆蓋較少。
-- 原始遊戲檔與存檔維持唯讀；沒有控制角色、寫入遊戲程序或啟動原世界。
+- Shared maps contain no private animals, accounts, saves, inventory or progress. Actual-world data needs a host save. This release did not synchronize saves between computers; later public sync is documented in the current README.
+- Animal positions use saves. Only verified health/stamina game sources show separate reading times. Unknown values are not zero. Cow oxygen/stamina and milk capacity were not fully verified.
+- Assets/native rules target Steam build 26313227. Unsupported versions warn and fall back conservatively. Prometheus has the most complete support.
+- Original game files/saves are read-only in this release; the app does not control characters, write to game processes or launch original worlds. Later explicitly confirmed restoration is documented in the README.
 
-完整來源及第三方權利說明見隨附 `DATA_SOURCES.md`、`THIRD_PARTY_NOTICES.md` 與 `licenses/`。下載旁附 `SHA256SUMS.txt`，ZIP 內含逐檔 SHA-256 manifest。
+Sources/rights are in `DATA_SOURCES.md`, `THIRD_PARTY_NOTICES.md` and `licenses/`. `SHA256SUMS.txt` accompanies the download, with a per-file manifest inside the ZIP.
 
 # v0.1.0
 
-ICARUS Helper 首個公開 Windows x64 可攜版本。
+The first public portable Windows x64 release.
 
-## 下載與開啟
+## Download and open
 
-1. 下載 `ICARUS-Helper-v0.1.0-Windows-x64.zip`。
-2. 完整解壓縮至可寫入的資料夾，開啟 `ICARUS Helper.exe`；請保留旁邊的 `_internal`。
-3. 第一次開啟預設顯示 Prometheus 共用地圖及「我們家」。不需安裝 Python，不需另外下載圖資。
+1. Download `ICARUS-Helper-v0.1.0-Windows-x64.zip`.
+2. Extract into a writable folder, open `ICARUS Helper.exe`, and retain `_internal`.
+3. First launch shows the Prometheus shared map and Home, without Python or separate map downloads.
 
-## 共用地圖與主機存檔
+## Shared map and host saves
 
-- 共用地圖只隨附靜態圖資與基地位置，不包含私人存檔、Steam 帳號、玩家、庫存或任務進度。
-- 未連接主機存檔時，剩餘礦量與鑽機狀態維持未知，任務僅供攻略預覽，家中物資不顯示假造數字。
-- 要追蹤實際世界，使用上方「選擇主機存檔…」選取有效來源。一次複製的存檔不會自動同步主機；只會追蹤所選檔案後續的有效變更。
-- 共用基地與實際世界基地分開保存，不會把預設位置自動套到其他世界。
+- Static map data/base location exclude private saves, Steam accounts, players, inventory and progress.
+- Without host data, resources/drill placement remain unknown. This release offered guide previews and never invented inventory counts.
+- **Choose host save…** selects a valid source. A one-time copy does not automatically synchronize; subsequent valid changes to the selected file are tracked.
+- Shared/actual-world bases are separate. Default coordinates are not assigned to other worlds.
 
-## 已知範圍
+## Known scope
 
-- 已驗證開發／封裝環境為 Windows x64、Python 3.12、PySide6 6.11.1；尚未在所有使用者電腦上驗證。
-- 地圖資產對應 Steam build 26313227；遊戲更新後部分礦種還原／判定可能停用，直到重新查核。
-- 主要完整支援 Prometheus；Olympus 與 Styx 的資料覆蓋與校準範圍較少。
-- 原始遊戲檔與存檔維持唯讀。APP 不控制或啟動遊戲。
+- Verified development/packaging: Windows x64, Python 3.12 and PySide6 6.11.1; not tested on every user's computer.
+- Assets target Steam build 26313227. Updates may disable mineral reconstruction/eligibility rules until reverified.
+- Prometheus has the most complete support; Olympus/Styx have less coverage/calibration.
+- Original game files/saves remain read-only in this release. The app does not control or launch the game.
 
-第三方資料來源與權利說明見隨附 `THIRD_PARTY_NOTICES.md` 及 `licenses/`。`SHA256SUMS.txt` 可用來核對下載的 ZIP。
+Third-party sources/rights are in `THIRD_PARTY_NOTICES.md` and `licenses/`. `SHA256SUMS.txt` verifies the downloaded ZIP.

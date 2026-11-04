@@ -35,10 +35,10 @@ def spin(app, condition, timeout=5):
 def map_catalog(*args, **kwargs):
     return {"map": "Prometheus", "map_key": "prometheus", "calibrated": True,
             "bounds": {"min_x": -403200, "min_y": -403200, "max_x": 403200, "max_y": 403200},
-            "caves": [{"id": "cave", "kind": "cave", "name": "測試入口", "resource_type": "地穴",
-                       "x": -30000, "y": -190000, "z": 100, "confidence": "已確認"}],
-            "resources": [{"id": "deep", "kind": "deep_candidate", "name": "候選礦床", "resource_type": "未知",
-                           "x": -35000, "y": -180000, "z": 0, "confidence": "候選", "drill_status": "無法確認"}]}
+            "caves": [{"id": "cave", "kind": "cave", "name": "測試入口", "resource_type": "Cave",
+                       "x": -30000, "y": -190000, "z": 100, "confidence": "Confirmed"}],
+            "resources": [{"id": "deep", "kind": "deep_candidate", "name": "Candidate礦床", "resource_type": "Unknown",
+                           "x": -35000, "y": -180000, "z": 0, "confidence": "Candidate", "drill_status": "Cannot confirm"}]}
 
 
 def test_public_profile_only_contains_map_and_base_coordinates():
@@ -58,7 +58,7 @@ def test_profile_filters_unapproved_identifiers_and_paths(tmp_path):
     path = tmp_path / "profile.json"
     path.write_text(json.dumps({"schema_version": 1, "map_name": "Prometheus", "world_id": "private-world",
                                "source": "C:/private/PlayerData/account", "bases": [
-                                   {"id": "private-base", "name": "共用基地", "x": 0, "y": 0, "z": 0, "account": "private"}]}))
+                                   {"id": "private-base", "name": "共用Base", "x": 0, "y": 0, "z": 0, "account": "private"}]}))
     loaded = load_shared_profile(path)
     encoded = json.dumps(loaded)
     assert all(secret not in encoded for secret in ("private-world", "private-base", "C:/private", '"account"'))
@@ -91,7 +91,7 @@ def test_shared_payload_does_not_read_or_merge_private_save(monkeypatch):
     payload = shared_profile.build_shared_payload()
     assert payload["snapshot"].is_shared_map
     assert len(payload["points"]) == 2
-    assert payload["points"][1]["drill_status"] == "無法確認"
+    assert payload["points"][1]["drill_status"] == "Cannot confirm"
     assert all(mission["status_key"] == "unknown" and not mission["progress"] for mission in payload["missions"])
 
 
@@ -104,7 +104,7 @@ def qt_app():
 def shared_window(qt_app, tmp_path, monkeypatch):
     other = tmp_path / "other.json"
     other.write_text("{}")
-    monkeypatch.setattr(saves, "discover_saves", lambda: [SaveDescriptor(other, "自己的世界", "Prometheus", other.stat().st_mtime)])
+    monkeypatch.setattr(saves, "discover_saves", lambda: [SaveDescriptor(other, "自己的World", "Prometheus", other.stat().st_mtime)])
     monkeypatch.setattr(catalog, "load_catalog", map_catalog)
     widget = MainWindow(settings=Settings(tmp_path / "settings.json"))
     widget.controller.poll.stop()
@@ -119,18 +119,19 @@ def test_first_launch_opens_shared_map_even_with_unrelated_local_saves(shared_wi
     widget, _ = shared_window
     assert widget.world_combo.currentData() == SHARED_SOURCE
     assert widget.snapshot.is_shared_map
-    assert widget.current_base()["name"] == "我們家"
+    assert widget.current_base()["name"] == "Home"
     assert widget.current_base()["world_id"] == SHARED_SOURCE
-    assert "未連接主機存檔" in widget.world_label.text()
+    assert "no host save connected" in widget.world_label.text()
     assert widget.controller.path is None
     assert not widget.controller.watcher.files() and not widget.controller.watcher.directories()
     assert widget.inventory_panel.snapshot is None and widget.inventory_panel.summary is None
-    assert "未連接主機存檔" in widget.inventory_panel.status.text()
+    assert "host save" in widget.inventory_panel.status.text().lower()
     assert widget.animal_panel.snapshot is None and widget.animal_panel.summary is None
-    assert "未連接主機存檔" in widget.animal_panel.status.text()
-    assert widget.mission_list.count() > 0
+    assert "host save" in widget.animal_panel.status.text().lower()
+    assert widget.mission_list.count() == 0
     assert all(m["status_key"] == "unknown" and not m["progress"] for m in widget.missions)
-    assert "攻略預覽" in widget.mission_list.item(0).text()
+    assert not widget.operation_overview.map.points
+    assert "save" in widget.mission_summary.text().lower()
 
 
 def test_real_world_selection_is_remembered_and_does_not_inherit_shared_home(shared_window, qt_app, monkeypatch):
@@ -143,11 +144,11 @@ def test_real_world_selection_is_remembered_and_does_not_inherit_shared_home(sha
     assert widget.current_base() is None
     assert Settings(widget.settings.path).data["selected_source"] == str(other)
     now = datetime.now(timezone.utc)
-    real = WorldSnapshot(other, "real-world", "自己的世界", "Prometheus", now, now, "synthetic")
+    real = WorldSnapshot(other, "real-world", "自己的World", "Prometheus", now, now, "synthetic")
     widget.loaded({"snapshot": real, "catalog": map_catalog(), "points": [], "missions": []})
     assert widget.current_base() is None
     assert widget.settings.world("real-world")["bases"] == []
-    assert widget.settings.world(SHARED_SOURCE)["bases"][0]["name"] == "我們家"
+    assert widget.settings.world(SHARED_SOURCE)["bases"][0]["name"] == "Home"
     widget.populate_worlds()
     qt_app.processEvents()
     assert widget.world_combo.currentData() == str(other)
@@ -156,10 +157,10 @@ def test_real_world_selection_is_remembered_and_does_not_inherit_shared_home(sha
 def test_shared_refresh_recovers_from_failure_without_fake_save_time(shared_window):
     widget, _ = shared_window
     widget.failed("temporary shared asset read failure")
-    assert "圖資更新失敗" in widget.world_label.text()
+    assert "map update failed" in widget.world_label.text()
     widget.loaded(shared_profile.build_shared_payload())
     assert not widget.data_stale
-    assert "圖資更新失敗" not in widget.world_label.text()
+    assert "map update failed" not in widget.world_label.text()
     assert widget.snapshot.saved_at is None
 
 
@@ -168,7 +169,7 @@ def test_old_real_save_job_cannot_replace_new_shared_map(qt_app, tmp_path, monke
     controller.poll.stop()
     started, release = threading.Event(), threading.Event()
     now = datetime.now(timezone.utc)
-    old = WorldSnapshot(tmp_path / "old.json", "old", "舊世界", "Prometheus", now, now, "synthetic")
+    old = WorldSnapshot(tmp_path / "old.json", "old", "舊World", "Prometheus", now, now, "synthetic")
 
     def gated(*_args, **_kwargs):
         started.set()
@@ -209,7 +210,7 @@ def test_old_shared_map_job_cannot_replace_new_real_save(qt_app, tmp_path, monke
     source = tmp_path / "real.json"
     source.write_text("{}")
     stat = source.stat()
-    real = WorldSnapshot(source, "real", "選定的世界", "Prometheus", now, now, "synthetic",
+    real = WorldSnapshot(source, "real", "選定的World", "Prometheus", now, now, "synthetic",
                          source_mtime=stat.st_mtime, source_mtime_ns=stat.st_mtime_ns, source_size=stat.st_size)
     monkeypatch.setattr(shared_profile, "build_shared_payload", gated)
     monkeypatch.setattr(saves, "load_snapshot", lambda *_args, **_kwargs: real)

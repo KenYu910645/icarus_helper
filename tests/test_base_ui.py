@@ -18,13 +18,13 @@ from icarus_helper.settings import Settings
 from icarus_helper.ui import MainWindow
 
 
-def base(ident="home", name="我們家", x=0, y=0, z=125):
+def base(ident="home", name="Home", x=0, y=0, z=125):
     return {"id": ident, "name": name, "kind": "base", "x": x, "y": y, "z": z}
 
 
 def snapshot(tmp_path, world="one", map_name="Prometheus"):
     now = datetime.now(timezone.utc)
-    return WorldSnapshot(tmp_path / (world + "-synthetic.json"), world, "合成測試世界", map_name, now, now, "synthetic-sha256")
+    return WorldSnapshot(tmp_path / (world + "-synthetic.json"), world, "合成測試World", map_name, now, now, "synthetic-sha256")
 
 
 @pytest.fixture
@@ -98,7 +98,7 @@ def test_animal_tab_uses_same_world_and_home_as_other_panels(window, monkeypatch
     monkeypatch.setattr(widget.animal_panel, "set_snapshot", lambda snap, selected, catalog=None: calls.append((snap, deepcopy(selected))))
     configure(window, base())
     widget.update_inventory()
-    assert widget.tabs.tabText(widget.tabs.indexOf(widget.animal_panel)) == "馴養動物"
+    assert widget.tabs.tabText(widget.tabs.indexOf(widget.animal_panel)) == "Tamed animals"
     assert calls == [(widget.snapshot, widget.current_base())]
     configure(window, base("outpost", "前哨", 25000, 30000), active="outpost")
     widget.update_inventory()
@@ -111,7 +111,7 @@ def test_right_menu_add_and_edit_persist_coordinates_and_sync_dependents(window,
     configure(window)
     accept_base_dialog(monkeypatch, "湖邊家", (12345.6, -23456.7, 987.6))
     menu = widget.build_map_menu(12345.6, -23456.7)
-    action(menu, "新增基地（此處）…").trigger()
+    action(menu, "Add base here…").trigger()
     selected = widget.current_base()
     assert selected["name"] == "湖邊家"
     assert (selected["x"], selected["y"], selected["z"]) == pytest.approx((12345.6, -23456.7, 987.6))
@@ -123,25 +123,25 @@ def test_right_menu_add_and_edit_persist_coordinates_and_sync_dependents(window,
     assert saved["bases"][0]["name"] == "湖邊家"
 
     app.processEvents()
-    accept_base_dialog(monkeypatch, "新基地名", (-1000, 2000, 3000))
+    accept_base_dialog(monkeypatch, "新Base名", (-1000, 2000, 3000))
     menu = widget.build_map_menu(selected["x"], selected["y"])
-    action(menu, "編輯「湖邊家」…").trigger()
+    action(menu, "Edit “湖邊家”…").trigger()
     updated = widget.current_base()
     assert updated["id"] == selected["id"]
-    assert updated["name"] == "新基地名"
+    assert updated["name"] == "新Base名"
     assert (updated["x"], updated["y"], updated["z"]) == (-1000, 2000, 3000)
     assert len(widget.bases()) == 1
     assert inventory_calls[-1] == ("one", updated)
     assert mission_bases[-1] == updated
-    assert Settings(widget.settings.path).world("one")["bases"][0]["name"] == "新基地名"
+    assert Settings(widget.settings.path).world("one")["bases"][0]["name"] == "新Base名"
 
 
 def test_right_menu_switch_uses_each_action_id_and_updates_home_distances(window):
     _, widget, inventory_calls, mission_bases = window
     configure(window, base(), base("outpost", "前哨", 100000, 0), active="home")
     menu = widget.build_map_menu(200000, 150000)
-    submenu = action(menu, "切換基地").menu()
-    assert action(submenu, "我們家").isChecked()
+    submenu = action(menu, "Switch base").menu()
+    assert action(submenu, "Home").isChecked()
     assert not action(submenu, "前哨").isChecked()
     action(submenu, "前哨").trigger()
     selected = widget.current_base()
@@ -150,10 +150,10 @@ def test_right_menu_switch_uses_each_action_id_and_updates_home_distances(window
     assert inventory_calls[-1] == ("one", selected)
     assert mission_bases[-1] == selected
     widget.show_point({"kind": "cave", "name": "測試洞穴", "x": 100000, "y": 40000, "z": 0})
-    assert "距 前哨：400 m" in widget.point_detail.toPlainText()
-    action(submenu, "我們家").trigger()
+    assert "From 前哨: 400 m" in widget.point_detail.toPlainText()
+    action(submenu, "Home").trigger()
     assert widget.current_base()["id"] == "home"
-    assert "距 我們家：1,077 m" in widget.point_detail.toPlainText()
+    assert "From Home: 1,077 m" in widget.point_detail.toPlainText()
     assert inventory_calls[-1][1]["id"] == "home"
     assert Settings(widget.settings.path).world("one")["active_base"] == "home"
 
@@ -162,9 +162,9 @@ def test_right_menu_move_preserves_base_identity_height_and_refreshes(window):
     _, widget, inventory_calls, mission_bases = window
     configure(window, base(z=777), active="home")
     menu = widget.build_map_menu(200000, -150000)
-    action(menu, "將「我們家」移到此處").trigger()
+    action(menu, "Move “Home” here").trigger()
     selected = widget.current_base()
-    assert (selected["id"], selected["name"], selected["z"]) == ("home", "我們家", 777)
+    assert (selected["id"], selected["name"], selected["z"]) == ("home", "Home", 777)
     assert (selected["x"], selected["y"]) == (200000, -150000)
     assert inventory_calls[-1] == ("one", selected)
     assert mission_bases[-1] == selected
@@ -176,13 +176,13 @@ def test_right_menu_move_preserves_base_identity_height_and_refreshes(window):
 def test_right_menu_delete_active_selects_remaining_then_clears_last_base(window):
     app, widget, inventory_calls, mission_bases = window
     configure(window, base(), base("outpost", "前哨", 100000, 0), active="home")
-    action(widget.build_map_menu(0, 0), "刪除「我們家」").trigger()
+    action(widget.build_map_menu(0, 0), "Delete “Home”").trigger()
     assert widget.current_base()["id"] == "outpost"
     assert len(widget.bases()) == 1
     assert inventory_calls[-1][1]["id"] == "outpost"
     assert mission_bases[-1]["id"] == "outpost"
     app.processEvents()
-    action(widget.build_map_menu(100000, 0), "刪除「前哨」").trigger()
+    action(widget.build_map_menu(100000, 0), "Delete “前哨”").trigger()
     assert widget.bases() == [] and widget.current_base() is None
     assert widget.map.base is None
     assert inventory_calls[-1] == ("one", None)
@@ -198,15 +198,15 @@ def test_old_world_menu_cannot_add_delete_move_or_switch_current_world(window, m
     empty_menu = widget.build_map_menu(200000, -150000)
     old_bases = deepcopy(widget.bases())
     widget.snapshot = snapshot(tmp_path, "two", "Olympus")
-    config = configure(window, base("home", "其他世界的家", -100000), active="home")
+    config = configure(window, base("home", "其他World的家", -100000), active="home")
     current = deepcopy(config)
     monkeypatch.setattr(widget, "base_dialog", lambda *_args, **_kw: pytest.fail("Old-world action opened a dialog"))
-    for menu, label in ((clicked_menu, "新增基地（此處）…"), (clicked_menu, "刪除「我們家」"), (empty_menu, "將「我們家」移到此處")):
+    for menu, label in ((clicked_menu, "Add base here…"), (clicked_menu, "Delete “Home”"), (empty_menu, "Move “Home” here")):
         action(menu, label).trigger()
-    action(action(clicked_menu, "切換基地").menu(), "前哨").trigger()
+    action(action(clicked_menu, "Switch base").menu(), "前哨").trigger()
     assert config == current
     assert widget.settings.world("one")["bases"] == old_bases
-    assert widget.current_base()["name"] == "其他世界的家"
+    assert widget.current_base()["name"] == "其他World的家"
     assert widget.current_base()["world_id"] == "two"
     assert widget.current_base()["map_name"] == "Olympus"
     assert not inventory_calls
@@ -217,14 +217,14 @@ def test_dialog_accepted_after_world_switch_cannot_save_old_coordinates(window, 
     configure(window, base(), active="home")
     before = deepcopy(widget.settings.world("one"))
     def switch_while_open(dialog):
-        dialog.findChild(QLineEdit).setText("不應寫入的舊世界基地")
+        dialog.findChild(QLineEdit).setText("不應寫入的舊WorldBase")
         widget.snapshot = snapshot(tmp_path, "two", "Olympus")
         return QDialog.DialogCode.Accepted
     monkeypatch.setattr(QDialog, "exec", switch_while_open)
-    action(widget.build_map_menu(200000, 150000), "新增基地（此處）…").trigger()
+    action(widget.build_map_menu(200000, 150000), "Add base here…").trigger()
     assert widget.settings.world("one") == before
     assert widget.settings.world("two")["bases"] == []
-    assert "世界已變更" in widget.last_status
+    assert "world has changed" in widget.last_status
     assert not inventory_calls
 
 

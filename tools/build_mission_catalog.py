@@ -1,7 +1,7 @@
 """Build a small derived mission catalogue from the installed, read-only data.pak.
 
 Extracted raw tables stay in the user's local cache. This repository stores only
-selected gameplay metadata and original Traditional Chinese preparation guides.
+selected gameplay metadata and original English preparation guides.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def text(value):
     match = re.match(r'NSLOCTEXT\("[^"\\]*",\s*"[^"\\]*",\s*"(.*)"\)$', value, re.S)
     result = match.group(1) if match else value
     result = result.replace(r"\'", "'").replace(r'\"', '"').replace(r"\n", "\n")
-    return re.sub(r"<[^>]*>", "", result).replace("[Map]", "地圖標記")
+    return re.sub(r"<[^>]*>", "", result).replace("[Map]", "map marker")
 
 
 def prep(item, quantity="1", required=True, note=""):
@@ -32,193 +32,193 @@ def prep(item, quantity="1", required=True, note=""):
 
 
 COMMON = [
-    prep("氧氣、水與耐久足夠的容器", "每人 1 組", False, "建議；出發前補滿，按路程增加備量"),
-    prep("食物、繃帶與恢復藥品", "依人數與難度", False, "建議；APP 尚未核對實際庫存"),
-    prep("武器、備用彈藥／箭與修理用品", "依裝備配置", False, "建議；防守與首領任務需增加儲備"),
+    prep("Oxygen, water and sufficiently durable containers", "1 set per person", False, "Recommended; fill before leaving and carry reserves for the journey"),
+    prep("Food, Bandages and healing medicine", "Adjust for party size and difficulty", False, "Recommended; the app has not checked actual inventory"),
+    prep("Weapons, spare ammunition / arrows and repair supplies", "According to equipment configuration", False, "Recommended; defense and boss missions need extra reserves"),
 ]
 
 
-def guide(title, summary, steps, equipment=(), risks=(), time="依路程與目前階段；尚無可靠總耗時", risk=2, mechanics=()):
+def guide(title, summary, steps, equipment=(), risks=(), time="Depends on travel and current stage; no verified total duration", risk=2, mechanics=()):
     return {"title": title, "summary": summary, "guide": list(steps), "checklist": list(equipment) + COMMON,
-            "risks": list(risks) or ["依目前難度與地形安排補給、床點與撤離方向；任務目標地點以遊戲實際標記為準。"],
+            "risks": list(risks) or ["Plan supplies, bedrolls and evacuation for the current difficulty and terrain. Follow the game's actual mission markers."],
             "time_estimate": time, "risk_rank": risk, "mechanics": list(mechanics)}
 
 
 GUIDES = {
-"PRO_Story_1": guide("NOMAD｜建立聯絡據點", "調查求救訊號，建立基地與聯絡設備，開始 Prometheus 故事。", [
-    "依地圖與任務對話調查求救位置，建立小型據點，逐一放置 Bedroll、Oxidizer、Crafting Bench 與 Campfire。",
-    "解鎖 T2 的 C0NT4CT 裝置，在 Crafting Bench 製作並放置。",
-    "前往 Sinotai 補給艙，收集 SMPL3 晶片／升級物並與 C0NT4CT 互動；守衛生物為可選擊殺目標。",
-    "完成 SMPL3 種植教學：領取番茄種子與種植床、種下番茄、等候成熟、採收、交付收穫並領獎。",
-    "完成救援：前往 Daisy 最後出現位置，一路引導並保護牠返回飼主基地，留意 Daisy 血量；再依提示搜索飼主基地。"],
-    [prep("C0NT4CT Device", "1", True, "T2 科技；Crafting Bench 製作"), prep("Bedroll、Oxidizer、Crafting Bench、Campfire", "依任務檢查表", True, "建立基地的指定設施"), prep("番茄種子、種植床與 SMPL3 晶片", "依補給艙", True, "在任務中領取")], risk=2),
-"PRO_Story_2": guide("OFFENDER｜追查竊賊", "調查傳聞中的基地並回收嫌疑人相關證據。", [
-    "先確認 T3 製作能力與補給，再從 C0NT4CT 接取任務。",
-    "前往傳聞基地所在洞穴，先清除洞內威脅，再搜索遭竊科技與文件。",
-    "把遭竊物資交付 Sinotai Retrieval Pod；任務文件不要丟棄或投入一般生產設備。",
-    "前往新的補給艙領取 Infrasonic Relay Upgrade，將升級模組放進 C0NT4CT 裝置，確認升級目標完成。"],
-    [prep("T3 製作能力", "1 套", True, "目前版本任務表 RequiredTech=Tier3"), prep("任務證據的背包空間", "預留數格", False, "依實際取得物品調整")]),
-"PRO_Story_3": guide("SHADOWED｜追蹤隱藏基地", "利用線索三角定位嫌疑人的隱藏基地，繼續回收情報。", [
-    "完成 OFFENDER 並升級 C0NT4CT，準備 T4 科技及較長途的補給。",
-    "先從 Sinotai 補給艙領取專用設備，再於 Alpha、Beta、Delta 三點完成掃描，定位隱藏基地。",
-    "前往基地搜索遭竊科技與文件，並將任務 Beacon 放在基地內。",
-    "按新標記領取 Encrypted Satellite Upgrade，安裝進 C0NT4CT，確認後續任務解鎖。任務設備遺失時，遊戲 Escape 選單可請求 Mission Resupply。"],
-    [prep("T4 製作能力", "1 套", True, "任務表 RequiredTech=Tier4"), prep("掃描設備與 Beacon", "依補給與任務提示", True, "先領取專用設備再前往掃描點"), prep("長途臨時床點與建材", "1 組", False, "建議")]),
-"PRO_Story_4": guide("TEMPEST｜尋找失聯探員", "尋找失聯的 Group 15 探員並交付取得的資料。", [
-    "確認 SHADOWED 已完成，且 C0NT4CT 已安裝 T4 升級模組。",
-    "從最後廣播位置開始搜尋，檢查第一位探員屍體取得下一段訊號，再依序追蹤第二與第三位。",
-    "清除守護最後一具屍體的生物，檢查遺體並取走 Audio Recording。",
-    "依當下出現的交付分支回報：前往 Sol 舊補給點與設備互動上傳，或將錄音交給 Sinotai Retrieval Pod／Group 15；不要把不同分支都當成必走步驟。"],
-    [prep("任務資料存放空間", "數格", False, "建議預留")]),
-"PRO_Story_5": guide("DISPATCH｜前哨資料傳輸與撤離", "進入布有地雷的前哨，供電、防守傳輸、放置信標並及時撤離。", [
-    "先攜帶可提供合計至少 10000 W 的發電設備、對應燃料及電線工具；在開啟傳輸前完成供電與防守補給。",
-    "調查前哨位置，進入時注意爆炸地雷；到達資料儲存通訊器。",
-    "將設備接上 10000 W 電力，先檢查維修、補給、逃生方向，再互動開始傳輸。",
-    "傳輸期間留在設備附近並防守；保護通訊器，持續檢查其耐久。",
-    "傳輸完成後在 Machining Bench 製作任務要求的信標，帶回前哨內放置並回報 Group 15。",
-    "出現基地即將摧毀警告時優先撤離；搜刮為可選目標，不要為額外物資錯過撤離。"],
-    [prep("合計 10000 W 的可靠電力與配線", "≥10000 W", True, "電力需求由目前 D_Quests 確認；設備組合自行選擇"),
-     prep("發電燃料／備援電力", "覆蓋傳輸及準備時間", False, "建議額外留備量；不假定全天日照"),
-     prep("任務信標 Beacon", "1", True, "依任務階段在 Machining Bench 製作"),
-     prep("防守建材、修理錘、備用武器彈藥", "依隊伍與難度", False, "建議；先安排補給點與撤離通道")],
-    ["前哨有爆炸地雷；傳輸會引來敵潮，且通訊器有耐久條件。", "附近有玩家才能推進傳輸；任務時間不是整段旅行的耗時。", "不可把同時敵人上限當成整場擊殺總數。"],
-    time="傳輸進度 600 秒；旅行、供電、戰鬥與撤離另計", risk=4,
-    mechanics=["已解碼的本機 Story5 藍圖：傳輸目標時間 600 秒，玩家接近範圍約 38 m。",
-               "Medium／Normal 藍圖設定：Ubis 14 秒／上限 5、Drac 15 秒／5、Viscid 27 秒／2、Dreadwing 35 秒／5；屬配置而非實測出怪保證。",
-               "傳輸進度 0–5%、35–40%、65–70% 時，Ubis／Drac／Viscid 間隔減半；Dreadwing 不套用此加速。"]),
-"PRO_Story_6": guide("FRACTURE｜追查叛徒", "領取 Group 15 補給並追蹤叛徒。", [
-    "完成 DISPATCH 後接取，依標記取回 Group 15 補給，先檢查領取物品及任務提示。",
-    "前往最後已知位置，檢查死亡探員並沿足跡進入洞穴、穿過洞穴，再前往附近營地。",
-    "檢查營地、清除生物並搜索情報；依遊戲當下分支處理嫌犯／等待指令。出現人臉辨識交付目標時，將指定任務物件送入 OES；不要把所有分支視為同時必做。",
-    "依駭取資料找到基地，搜索更多錄音；啟動資料儲存設備駭入並防守，進度完成後離開區域。",
-    "依 Mo 的提示尋找證據，迎戰 Giant Lava Creature 後找出洞穴入口，深入洞穴探索聚落並與 Sol 討論證據。"],
-    [prep("Group 15 任務補給", "依補給艙", True, "接取後先領取，非出發前自行購買"), prep("洞穴照明、防守彈藥、耐熱與首領戰補給", "依隊伍與難度", False, "建議；後段包含駭入防守與大型熔岩生物")], risk=4),
-"PRO_A_Extraction": guide("CRYSTAL｜超冷冰開採", "領取鑽探設備，在冰脈開採 Super Cooled Ice，建立小型營地。", [
-    "準備 T3 科技與極寒地區補給，前往 Sinotai 投放艙領取鑽探設備。",
-    "依任務標記找到冰脈，放置 Ice Borer 並確認設備供應需求及可運作狀態。",
-    "營地須按檢查表放置 Cement Mixer、Concrete Furnace 與 Forge；採集任務要求的 Super Cooled Ice。",
-    "可選準備包括製作 Cold Steel Pickaxe 採 Frozen Ore、鏟子採冰與 Cocoa 保暖。",
-    "依 Sinotai Retrieval Pod 清單交付 Ice、Super Cooled Ice、Frozen Ore、Cold Steel Ingots，逐項核對數量；不要把 Ice Borer 放到一般礦床。"],
-    [prep("Ice Borer 與任務設備", "依投放艙", True, "任務提供，依提示領取"), prep("Cement Mixer、Concrete Furnace、Forge", "依營地檢查表", True, "可預製或攜帶材料"), prep("保暖衣物、熱源及營地建材", "每隊 1 組", False, "建議；冰區需要保暖"), prep("Cold Steel Pickaxe、鏟子、Cocoa", "依採集計畫", False, "來源目標列為可選製作；交付項目仍須核對")], risk=3),
-"PRO_B_Extermination": guide("MAGMATIC｜火山區狩獵與釣魚", "在指定火山區清除生物並捕捉魚類。", [
-    "準備 T2 科技、狩獵武器與釣魚裝備，先領取 Sinotai 補給艙提供的任務裝備。",
-    "在指定火山區核對 Lava Broodling、Drifter、Ashen Drake、Stonejaw 的獵殺目標；範圍外擊殺不保證計入。",
-    "到指定水域捕捉 Sunset Ripjaw、Void Triggerfish、Coral Darter、Neon Dory，依遊戲清單核對各項數量後回報。"],
-    [prep("釣竿與對應釣具", "1 組", True, "任務含指定區域釣魚目標"), prep("耐熱、防護與醫療用品", "依人數", False, "建議；避免直接跨越危險地形")], risk=3),
-"PRO_C_Construction": guide("TREEHUT｜樹頂住宅", "在指定樹頂建造符合條件的住宅。", [
-    "先確認所選位置在任務指定區域，攜帶 T2 建築與高處施工所需工具。",
-    "在指定樹頂搭建支撐與可返回地面的通路，再逐一完成任務檢查的房屋條件。",
-    "放置 Beds、Anvil Bench、Textiles Bench、Skinning Bench、Oxidizer、Potbelly Stove 與 Stone Furnace，逐項確認房屋檢查進度。所有條件確認前不要拆除支撐。"],
-    [prep("床、鐵砧台、紡織台、剝皮台、氧化器、腹爐、石爐", "各項數量依遊戲檢查表", True, "包含所有已辨識的設施種類；不猜測表中文字佔位符數量"), prep("梯子、平台、修理錘與建材", "1 組", False, "建議，防止墜落與結構損壞")], risk=1),
-"PRO_C_Research": guide("MIASMIC｜沼澤瘴氣研究", "建立研究站，提煉瘴氣塗層並製作瘴氣工具。", [
-    "準備 T4 科技、沼澤防護與工作站運輸材料；確認 Chemistry Bench 可使用。",
-    "在指定地點建立研究站，按清單放置 Organic Residue Cleanser、Solar Panel、Foundry、Electric Furnace、Advanced Alteration Bench 與 Chemistry Bench。",
-    "在沼澤獵殺並剝皮生物，採集 Crystallised Miasma。",
-    "在 Chemistry Bench 將結晶提煉為 Distilled Miasmic Coating，先確認配方與需求數量再批次處理。",
-    "使用塗層製作 Miasmic Sickle、Knife、Axe、Pickaxe；遊戲部分目標 ID 與顯示名稱對調時，以顯示物品與實際完成判定為準。",
-    "用相應瘴氣工具測試採集，將 Acidic Glands、Thorned Plants、Infected Bark、Noxious Crust 交到 Sinotai Retrieval Pod，逐項核對數量。"],
-    [prep("研究站指定六種設施與 T4 製作能力", "各項依檢查表", True, "清潔器、太陽能板、鑄造爐、電爐、進階改裝台、化學台"), prep("瘴氣工具原料與塗層", "依四種工具配方", True, "刀、鐮刀、斧、鎬均需核對")], risk=3),
-"PRO_A_Stockpile": guide("CELEBRITY CHEF｜冷藏食材交付", "將列出的食材投入冷藏貨艙，完成指定的補給清單。", [
-    "先查看 Alpine／Marshlands 冷藏貨艙清單；已辨識項目包含水果沙拉、莓果醬、啤酒、麵包麵團、黃豆炒菜、魚派、淡水魚咖哩、裹粉鹹水魚片、葡萄酒及鹹水魚生魚片，按當下清單分配。",
-    "準備 T3 加工／保存能力，優先處理易腐食材；分批運輸時保留足夠氧氣與回程補給。",
-    "把指定成品投入任務冷藏貨艙，逐項核對進度；不要把原料當作成品交付。"],
-    [prep("任務指定食材／成品", "以接取後貨艙清單為準", True, "實際需求量尚未從靜態表還原"), prep("冷藏保存與運輸空間", "依批次", False, "建議，降低腐敗與超重風險")], risk=1),
-"PRO_Ashlands_Story": guide("ASHLANDS｜灰燼地信標鏈", "用連續信標標記 Null Sector 入口與區域探索路線。", [
-    "先完成 DISPATCH，準備 T3 製作能力、Trail Beacon Tool 與長途補給。",
-    "找到 Null Sector 入口並摧毀阻擋的路障；工具與 Trail Beacons 都在 T3 科技樹，需同時準備。該區資源稀少，先帶足補給。",
-    "在入口放置第一個 Trail Beacon，確認遊戲接受位置。",
-    "按任務要求延伸信標鏈，逐段檢查範圍與地圖進度；不要只憑直線距離越過危險地形。",
-    "依訊號強度找到失落前哨，清除周圍 Stonejaw，再搜索科學隊證據。",
-    "在 Icesheet 入口附近放置最後一個信標，確認解鎖與回程標記。"],
-    [prep("Trail Beacon Tool 與 Trail Beacons", "工具 1；信標依路線", True, "兩者均需 T3 科技"), prep("破除路障工具、耐熱裝備與長途補給", "依路程", False, "建議；Null Sector 資源稀少")], risk=3),
-"PRO_Icesheet_Story": guide("ICE SHEET｜冰原信標鏈", "從冰原入口延伸信標，找到科學家前哨。", [
-    "完成 ASHLANDS，攜帶 Trail Beacon Tool、保暖裝備與冰區補給。",
-    "從 Ashlands 找到 Icesheet 入口，用鎬打通阻擋入口的塌方，放置第一個信標。",
-    "持續延伸至科學家前哨，隨時確認保暖、氧氣與可回程的連接路線。",
-    "依訊號強度找到前哨，搜索科學隊證據，再調查附近洞穴尋找失去理智的科學家去向。"],
-    [prep("Trail Beacon Tool、Trail Beacons 與鎬", "各 1 組；信標依路線", True, "鎬用於打通入口塌方"), prep("保暖衣物、熱源與臨時床點", "每隊 1 組", False, "建議")], risk=3),
-"PRO_D_Transport": guide("CARAVAN｜灰燼地物資運輸", "先儲備大量物資，再把容器與物資送至灰燼地指定位置。", [
-    "接取後先讀取起點儲備清單：Wood、Fiber、Oxite 與多種種子；按種類、重量安排容器與隊伍分工。",
-    "在任務要求的儲存設備中備足物資，確認第一階段被接受。",
-    "把設備與物資運到灰燼地指定地點，放置儲存容器並投入清單物品。",
-    "途中遇到任務伏擊時先處理威脅，再核對目的地物資條件；不要在遊戲確認完成前拆掉設備。"],
-    [prep("容器、木材、纖維、氧礦與多種類種子", "依兩階段清單", True, "數量以接取後任務／容器要求為準"), prep("運輸坐騎／載具與修理戰鬥補給", "依重量", False, "建議；需防範伏擊")], risk=3),
-"PRO_D_Research": guide("COMPOSITION｜灰燼地環境測試", "完成 Alpha、Beta 位置測試，並消滅變異野生生物。", [
-    "完成 ASHLANDS，先在 Chemistry Bench 製作 Liquid Solution，在 Fabricator 製作 Aerosol Emitter；備妥供電與戰鬥補給。",
-    "到 Alpha 部署並供電，維持裝置運轉直到排放週期完成，再回到裝置處理變異野生生物。",
-    "到 Beta 依任務提示完成液體測試、部署／供電及指定生物戰鬥。",
-    "任務進入 Chi 測試時，再部署供電並維持排放週期；保持在 Emitter 附近收集資料。",
-    "逐一核對 Alpha、Beta、Chi 當下出現的目標與獵殺進度；實際週期秒數以遊戲顯示為準。"],
-    [prep("Liquid Solution、Aerosol Emitter 與供電", "依階段清單", True, "分別於 Chemistry Bench、Fabricator 製作"), prep("高耐久戰鬥裝備與藥品", "依隊伍", False, "建議，包含首領類風險")], risk=4),
-"PRO_E_Research": guide("DROVER｜漂浮生物監測", "製作並架設 Monitoring Pylon，完成監測。", [
-    "完成 ICE SHEET，先在 Machining Bench 製作 Monitoring Pylon。",
-    "帶到孤立 Drifter 下方指定石陣頂部，確認位置與可安全上下的通路。",
-    "部署監測柱，按每一階段顯示的物品與數量提供分析樣本；靜態文字 {0}/{1} 沒有列出實際材料，不預填猜測值。",
-    "檢查所有監測階段及任務完成訊息。"],
-    [prep("Monitoring Pylon", "1", True, "在 Machining Bench 製作"), prep("監測柱分析樣本", "依各監測階段", True, "需接取後核對實際材料與數量"), prep("登高建材、修理工具與補給", "1 組", False, "建議")], risk=2),
-"PRO_D_Recovery": guide("CRISIS｜醫療救援", "找到灰燼地施工現場，以 HEAL 裝置穩定救援隊員。", [
-    "完成 ASHLANDS，製作 HEAL Device，帶足醫療與補給物資。",
-    "追查灰燼地 Terraforming Construction Site，排除周圍威脅並與 Captain Church 交談；留意遊戲顯示的救援時限。",
-    "使用 HEAL Device 掃描每位隊員，按各人的診斷結果提供藥品與物資。",
-    "逐一穩定 Church、Tucker、Griff、Simmons、Washington 五位隊員，再與 Captain Church 交談完成回報。"],
-    [prep("HEAL Device", "1", True, "T3 解鎖、Machining Bench 製作"), prep("食物、水、氧氣與強於藥膏的藥品", "依五位隊員診斷", True, "來源明示需要比 pastes 更強的藥品；未掃描前不猜種類與數量")],
-    risks=["具有救援時限；應先備好 HEAL Device、進階藥品與五人的補給，再接取／出發。", "只有藥膏可能不足以治療隊員，依掃描診斷提供相應藥品。"], risk=3),
-"PRO_D_Resupply": guide("STRANDED｜救援卡車補給與維修", "補滿卡車資源、修理引擎並補充裝備。", [
-    "完成 CRISIS 後接取；到卡車逐部件檢查，確認交付位置與實際材料清單。",
-    "補充水與生物燃料，可使用 Fabricator 製作的 Portable Water／Biofuel Tanks 搬運。",
-    "在 Fabricator 製作 Radiator 與 Alternator，交到卡車引擎；在 Crafting Bench 製作 Rope 並交入卡車儲存區，數量按清單。",
-    "分別核對資源槽、引擎與儲存目標，完成前不要移走已交付物資。"],
-    [prep("水、生物燃料、Radiator、Alternator、Rope", "依卡車清單", True, "散熱器／發電機在 Fabricator，繩索在 Crafting Bench"), prep("Portable Water／Biofuel Tanks", "依運輸量", False, "建議；Fabricator 製作")], risk=2),
-"PRO_D_Rescue": guide("RESCUE｜營救 Simmons 與 Washington", "追蹤兩位指定隊員並完成救援。", [
-    "完成 STRANDED，在 Advanced Textiles Bench 製作兩個 Stasis Bags；預留 Utility Slot，先規劃前往 Medevac Ship 的回程。",
-    "依標記找到 Simmons，處理現場威脅後使用 Stasis Bag 裝載，運送到地圖標示的 Medevac Ship。",
-    "找到 Washington，同樣使用另一個 Stasis Bag 並送到救援船；兩名隊員的交付進度分開核對。",
-    "攜帶裝有隊員的袋子會占用 Utility Slot，按隊伍運力安排同行／分趟；確認兩人都已交付再回報。"],
-    [prep("Stasis Bags", "2", True, "來源明示兩個，Advanced Textiles Bench 製作"), prep("Utility Slot", "每個滿袋占 1 格", True, "先移開衝突裝備並安排運送人員"), prep("醫療、食物、水與照明", "依路程與人數", False, "建議，先查救援船位置")], risk=3),
-"PRO_Nullsector_Story": guide("NULL SECTOR｜探索冰原附近洞穴", "調查冰原前哨附近指定洞穴，推進區域故事。", [
-    "完成 ICE SHEET，先查閱前哨附近的任務洞穴標記與實際入口。",
-    "洞口有塌方時，搜索前哨與洞穴下方區域取得任務炸藥，將炸藥放在塌方處，再遠離以觸發爆破。",
-    "帶照明與醫療進入洞穴、繼續深入，依聲音指引前往洞窟並聆聽對話。",
-    "檢查 Exotic Formation，確認後續故事與任務完成狀態；保留可返回的路徑。"],
-    [prep("任務炸藥", "依現場補給", True, "從前哨與洞穴下方區域搜尋，非假定一般炸藥可替代"), prep("照明與備用燃料", "1 組", False, "建議；洞穴入口不等於任務物件座標")], risk=3),
-"PRO_SQ_Farmer": guide("CULTIVATION SPECIALIST｜農作交易專員", "協助專員設立交易站，準備首批蔬果並出售作物。", [
-    "先在任務裝置確認 Dangerous Horizons 任務可接，再前往專員位置。",
-    "按專員清單交付玻璃、硫、鋁錠與蜂蠟；數量以遊戲當下清單為準。",
-    "依提示離開區域，讓專員建立交易站；不要在建造未完成前期待交易功能。",
-    "準備首批水果與蔬菜，待交易站成立後出售作物取得 Ren。"],
-    [prep("玻璃、硫、鋁錠、蜂蠟", "以專員清單為準", True, "任務文字已確認四種材料；未還原固定數量"), prep("水果與蔬菜", "依首批交付目標", True, "建議先安排種植與保存")], risk=1),
-"PRO_SQ_Hunter": guide("PREDATOR SPECIALIST｜狩獵交易專員", "補給狩獵專員、清理周圍生物，再出售 Vestiges。", [
-    "確認任務權限與可接狀態，攜帶補給前往專員。",
-    "交付火藥、彈殼、照明彈與煙霧彈；數量依專員當下清單。",
-    "在指定狩獵區內清除生物，讓專員補足與安全狀態達標。",
-    "使用 Taxidermy Knife 剝皮取得 Vestiges，待專員準備好後出售。"],
-    [prep("火藥、彈殼、照明彈、煙霧彈", "依專員清單", True, "先查需求再批量生產"), prep("Taxidermy Knife", "1", True, "T2 Anvil 解鎖與製作；採集 Vestiges")], risk=3),
-"PRO_SQ_Norex": guide("BLACK MARKET｜Norex 接頭", "擊敗世界首領取得生物質，在指定位置發射信號並交易。", [
-    "確認 Dangerous Horizons 使用權與任務可接；準備 Single Barrel Launcher 及對應照明彈。",
-    "到標記位置迎戰 Blighted Landshark，先準備床點、戰鬥補給與撤退空間。",
-    "從首領屍體取得 Biomass，前往 Theta 高地的指定位置。",
-    "朝天空發射照明彈，接近 Norex 聯絡人並以 Biomass 換取生物部件。"],
-    [prep("Single Barrel Launcher 與相容 Flares", "各 1 組", True, "T2 解鎖；Crafting Bench 製作"), prep("Biomass", "依交易需求", True, "在任務中從指定首領屍體取得")], risk=4),
-"PRO_SQ_Fisher": guide("FISHERIES OFFICER｜漁業交易專員", "救助漁業專員、奪回修復前哨並完成首批漁獲交易。", [
-    "先備妥 HEAL Device、修理錘或釘槍、釣竿；另依任務清單準備要部署的漁業設備。",
-    "前往 Fishing Outpost，用 HEAL Device 穩定專員，並擊敗 Tide-Gorged Bear 奪回前哨。",
-    "使用錘或釘槍修復小屋，依遊戲清單放置所需工作台、陷阱與其他設備。",
-    "依提示離開讓專員完成重建；用釣竿或陷阱取得首批魚，再出售取得 Ren。"],
-    [prep("HEAL Device", "1", True, "T3 解鎖，Machining Bench 製作"), prep("修理錘或釘槍", "1", True, "用於修復小屋"), prep("釣竿與漁業設備", "依清單", True, "不猜測動態物品欄位 {item} 的種類與數量")], risk=4),
+"PRO_Story_1": guide("NOMAD | Establish communications", "Investigate the distress signal. Build a base and communications equipment to begin the Prometheus story.", [
+    "Investigate the distress location using the map and dialogue. Establish a small base and place a Bedroll, Oxidizer, Crafting Bench and Campfire.",
+    "Unlock the T2 C0NT4CT device, craft it at the Crafting Bench and deploy it.",
+    "Collect the SMPL3 chip / upgrade from the Sinotai supply pod and interact with C0NT4CT. Killing the guarding creature is optional.",
+    "Complete the SMPL3 farming tutorial: collect the tomato seed and crop plot, plant, wait for maturity, harvest, deliver and collect the reward.",
+    "Rescue Daisy: visit the last known location and guide her safely to the owner's base, watching her health. Search the owner's base as directed afterward."],
+    [prep("C0NT4CT Device", "1", True, "T2 technology; craft at the Crafting Bench"), prep("Bedroll, Oxidizer, Crafting Bench, Campfire", "According to the mission checklist", True, "Specified base facilities"), prep("Tomato seed, crop plot and SMPL3 chip", "According to the supply pod", True, "Collect during the mission")], risk=2),
+"PRO_Story_2": guide("OFFENDER | Track the thief", "Investigate the rumored base and recover evidence about the suspect.", [
+    "Confirm T3 crafting capability and supplies before accepting at C0NT4CT.",
+    "Enter the cave containing the rumored base, clear threats, then search for stolen technology and documents.",
+    "Deliver stolen supplies to the Sinotai Retrieval Pod. Keep mission documents; do not discard them or place them in ordinary production equipment.",
+    "Collect the Infrasonic Relay Upgrade from the new supply pod, install it in C0NT4CT and confirm the upgrade objective."],
+    [prep("T3 crafting capability", "1 set", True, "Current mission table: RequiredTech=Tier3"), prep("Inventory space for mission evidence", "Reserve several slots", False, "Adjust to the items actually obtained")]),
+"PRO_Story_3": guide("SHADOWED | Locate the hidden base", "Triangulate the suspect's hidden base using the clues, then continue collecting intelligence.", [
+    "Complete OFFENDER and upgrade C0NT4CT. Prepare T4 technology and supplies for a longer journey.",
+    "Collect the special equipment from the Sinotai supply pod, then scan at Alpha, Beta and Delta to locate the hidden base.",
+    "Search the base for stolen technology and documents, then place the mission Beacon inside.",
+    "Collect the marked Encrypted Satellite Upgrade and install it in C0NT4CT. Confirm later missions unlock. If mission equipment is lost, request Mission Resupply from the game's Escape menu."],
+    [prep("T4 crafting capability", "1 set", True, "Mission table: RequiredTech=Tier4"), prep("Scanning equipment and Beacon", "According to supply and mission prompts", True, "Collect the special equipment before visiting the scan sites"), prep("Temporary bedrolls and materials for long journeys", "1 set", False, "Recommended")]),
+"PRO_Story_4": guide("TEMPEST | Find the missing agents", "Find the missing Group 15 agents and deliver the recovered data.", [
+    "Confirm SHADOWED is complete and C0NT4CT has its T4 upgrade installed.",
+    "Start at the final broadcast location. Examine the first agent's body for the next signal, then track the second and third agents in sequence.",
+    "Clear the creature guarding the final body, inspect the remains and take the Audio Recording.",
+    "Follow the delivery branch that appears: interact with the equipment at Sol's old cache to upload, or deliver the recording to the Sinotai Retrieval Pod / Group 15. These branches are alternatives."],
+    [prep("Storage space for mission data", "Several slots", False, "Reserve spare capacity")]),
+"PRO_Story_5": guide("DISPATCH | Outpost data transmission and evacuation", "Enter the mined outpost, supply power, defend the transmission, place the beacon and evacuate in time.", [
+    "Bring generators with at least 10000 W total output, matching fuel and an Electricity Tool. Complete power and defense preparations before starting transmission.",
+    "Find the outpost and watch for explosive mines on entry. Reach the data-storage communicator.",
+    "Connect 10000 W of power. Check repairs, supplies and evacuation directions, then interact to start transmission.",
+    "Stay near the equipment and defend during transmission. Protect the communicator and keep checking its durability.",
+    "After transmission, craft the required Beacon at the Machining Bench, place it inside the outpost and report to Group 15.",
+    "Evacuate when the destruction warning appears. Looting is optional; do not miss evacuation for extra supplies."],
+    [prep("Reliable power totaling 10000 W and wiring", "≥10000 W", True, "Power requirement verified in current D_Quests; choose your own equipment combination"),
+     prep("Generator fuel / backup power", "Cover transmission and setup time", False, "Keep a power reserve; do not assume continuous sunlight"),
+     prep("Mission Beacon", "1", True, "Craft at the Machining Bench at the relevant mission stage"),
+     prep("Defense materials, Repair Hammer, spare weapons and ammunition", "According to party size and difficulty", False, "Recommended; establish supply points and an evacuation path first")],
+    ["The outpost contains explosive mines. Transmission attracts waves of enemies and requires the communicator to survive.", "A nearby player is required for transmission progress. Mission transmission time does not include the whole journey.", "The maximum number of simultaneous enemies is not the total number of kills for the encounter."],
+    time="600 seconds of transmission; travel, power setup, combat and evacuation are additional", risk=4,
+    mechanics=["Decoded local Story5 blueprint: transmission target 600 seconds; player proximity approximately 38 m.",
+               "Medium / Normal blueprint configuration: Ubis 14 s / cap 5, Drac 15 s / cap 5, Viscid 27 s / cap 2, Dreadwing 35 s / cap 5. These are configured values, not a guarantee of observed spawning.",
+               "At 0-5%, 35-40% and 65-70% transmission progress, the Ubis / Drac / Viscid spawn intervals are halved. Dreadwing does not receive this acceleration."]),
+"PRO_Story_6": guide("FRACTURE | Track down the traitor", "Collect Group 15 supplies and track down the traitor.", [
+    "Accept after DISPATCH. Collect the marked Group 15 supplies and inspect the received items and mission instructions.",
+    "Visit the last known location, examine the dead agent, follow the tracks through the cave and proceed to the nearby camp.",
+    "Search the camp, clear creatures and collect intelligence. Follow the current suspect / waiting branch. If the facial-recognition delivery objective appears, deliver the specified object to OES; not every branch is simultaneously required.",
+    "Use the hacked data to locate the base and collect more recordings. Start the data-storage hack, defend until it finishes, then leave the area.",
+    "Follow Mo's clues to find evidence. Defeat the Giant Lava Creature, find the cave entrance, explore the settlement inside and discuss the evidence with Sol."],
+    [prep("Group 15 mission supplies", "According to the supply pod", True, "Collect after accepting; do not purchase beforehand"), prep("Cave lighting, defense ammunition, heat protection and boss-fight supplies", "According to party size and difficulty", False, "Recommended; later stages include hacking defense and a Giant Lava Creature")], risk=4),
+"PRO_A_Extraction": guide("CRYSTAL | Super Cooled Ice extraction", "Collect drilling equipment, extract Super Cooled Ice from an ice vein and establish a small camp.", [
+    "Prepare T3 technology and arctic supplies. Collect the drilling equipment from the Sinotai drop pod.",
+    "Follow the mission marker to the ice vein, place the Ice Borer and verify its supply requirements and operating state.",
+    "Place the Cement Mixer, Concrete Furnace and Forge required by the camp checklist. Gather the required Super Cooled Ice.",
+    "Optional preparations include a Cold Steel Pickaxe for Frozen Ore, a Shovel for ice and Cocoa for warmth.",
+    "Deliver Ice, Super Cooled Ice, Frozen Ore and Cold Steel Ingots according to the Sinotai Retrieval Pod list. Verify each quantity; do not place the Ice Borer on an ordinary deposit."],
+    [prep("Ice Borer and mission equipment", "According to the drop pod", True, "Provided by the mission; collect as directed"), prep("Cement Mixer, Concrete Furnace, Forge", "According to the camp checklist", True, "Precraft or carry materials"), prep("Warm clothing, heat sources and camp materials", "1 set per party", False, "Recommended; warm clothing is needed in the arctic"), prep("Cold Steel Pickaxe, Shovel, Cocoa", "According to the gathering plan", False, "The source lists crafting as optional; verify delivery requirements separately")], risk=3),
+"PRO_B_Extermination": guide("MAGMATIC | Volcanic hunting and fishing", "Clear creatures and catch fish in the designated volcanic area.", [
+    "Prepare T2 technology, hunting weapons and fishing equipment. Collect the mission equipment from the Sinotai supply pod first.",
+    "Check the Lava Broodling, Drifter, Ashen Drake and Stonejaw targets inside the designated volcanic area. Kills outside the boundary may not count.",
+    "Catch Sunset Ripjaw, Void Triggerfish, Coral Darter and Neon Dory in the designated waters. Check quantities in the game before reporting."],
+    [prep("Fishing Rod and matching tackle", "1 set", True, "The mission includes fishing in a specified area"), prep("Heat protection, protective equipment and medicine", "Per participant", False, "Recommended; avoid crossing dangerous terrain directly")], risk=3),
+"PRO_C_Construction": guide("TREEHUT | Treetop home", "Build a qualifying home at the designated treetop.", [
+    "Confirm that the site is inside the mission area. Bring T2 construction materials and tools for working at height.",
+    "Build supports and a safe return to ground at the specified treetop, then fulfill each housing condition.",
+    "Place Beds, Anvil Bench, Textiles Bench, Skinning Bench, Oxidizer, Potbelly Stove and Stone Furnace. Check each housing objective. Keep supports until all requirements are confirmed."],
+    [prep("Beds, Anvil Bench, Textiles Bench, Skinning Bench, Oxidizer, Potbelly Stove, Stone Furnace", "Use the game's checklist quantities", True, "Includes all identified facility types; quantities hidden behind source placeholders are not guessed"), prep("Ladders, platforms, Repair Hammer and building materials", "1 set", False, "Recommended; protects against falls and structural damage")], risk=1),
+"PRO_C_Research": guide("MIASMIC | Swamp miasma research", "Build a research station, refine miasmic coating and craft miasmic tools.", [
+    "Prepare T4 technology, swamp protection and materials to transport the workstations. Confirm access to a Chemistry Bench.",
+    "Build the research station at the specified site. Place the Organic Residue Cleanser, Solar Panel, Foundry, Electric Furnace, Advanced Alteration Bench and Chemistry Bench listed in the objective.",
+    "Hunt and skin creatures in the swamp to collect Crystallised Miasma.",
+    "Refine the crystals into Distilled Miasmic Coating at the Chemistry Bench. Verify the recipe and required quantities before processing batches.",
+    "Use the coating to craft the Miasmic Sickle, Knife, Axe and Pickaxe. Where an objective ID and display name are swapped, follow the displayed item and actual completion check.",
+    "Test gathering with the matching miasmic tools. Deliver Acidic Glands, Thorned Plants, Infected Bark and Noxious Crust to the Sinotai Retrieval Pod, verifying each quantity."],
+    [prep("Six specified research-station facilities and T4 crafting capability", "Each item according to the checklist", True, "Cleanser, Solar Panel, Foundry, Electric Furnace, Advanced Alteration Bench, Chemistry Bench"), prep("Miasmic tool ingredients and coating", "According to the four tool recipes", True, "Check Knife, Sickle, Axe and Pickaxe")], risk=3),
+"PRO_A_Stockpile": guide("CELEBRITY CHEF | Refrigerated food deliveries", "Place the listed ingredients in refrigerated cargo and complete the required supply list.", [
+    "Check the Alpine / Marshlands refrigerated cargo lists first. Identified items include Fruit Salad, Berry Jam, Beer, Bread Dough, Soy Bean Stir Fry, Fish Pie, Freshwater Fish Curry, Battered Saltwater Fillet, Wine and Saltwater Fish Sashimi; allocate them using the current lists.",
+    "Prepare T3 processing and preservation. Prioritize perishable ingredients and keep oxygen and return supplies for each transport trip.",
+    "Place the specified prepared products in refrigerated mission cargo and verify progress. Raw ingredients do not substitute for prepared items."],
+    [prep("Specified ingredients / prepared food", "Use the cargo list after accepting", True, "Actual quantities have not been recovered from static tables"), prep("Refrigeration and transport space", "Per batch", False, "Recommended; reduces spoilage and overload risks")], risk=1),
+"PRO_Ashlands_Story": guide("ASHLANDS | Ashlands beacon chain", "Use a continuous beacon chain to mark the Null Sector entrance and exploration path.", [
+    "Complete DISPATCH first. Prepare T3 crafting capability, a Trail Beacon Tool and long-distance supplies.",
+    "Find the Null Sector entrance and destroy the barrier. The Trail Beacon Tool and Trail Beacons are on the T3 technology tree; bring both. Supplies are scarce there, so prepare ahead.",
+    "Place the first Trail Beacon at the entrance and confirm that the game accepts the location.",
+    "Extend the beacon chain as directed. Check coverage and map progress along each segment; straight-line distance does not establish a safe path across terrain.",
+    "Follow signal strength to the lost outpost, clear the nearby Stonejaw and search for the science team's evidence.",
+    "Place the final beacon near the Icesheet entrance. Confirm the unlock and return markers."],
+    [prep("Trail Beacon Tool and Trail Beacons", "1 tool; beacons depend on the route", True, "Both require T3 technology"), prep("Tools for breaking barriers, heat protection and long-distance supplies", "Adjust for travel distance", False, "Recommended; resources are scarce in Null Sector")], risk=3),
+"PRO_Icesheet_Story": guide("ICE SHEET | Icesheet beacon chain", "Extend the beacon chain from the Icesheet entrance to the scientists' outpost.", [
+    "Complete ASHLANDS. Bring a Trail Beacon Tool, warm clothing and arctic supplies.",
+    "Find the Icesheet entrance from Ashlands. Break the entrance cave-in with a Pickaxe and place the first beacon.",
+    "Extend the chain to the scientists' outpost. Keep checking warmth, oxygen and a connected return path.",
+    "Follow signal strength to the outpost, search for the science team's evidence, then investigate the nearby cave for the missing scientist."],
+    [prep("Trail Beacon Tool, Trail Beacons and Pickaxe", "1 set of each; beacons depend on the route", True, "Pickaxe for clearing the entrance cave-in"), prep("Warm clothing, heat sources and temporary bedrolls", "1 set per party", False, "Recommended")], risk=3),
+"PRO_D_Transport": guide("CARAVAN | Ashlands supply transport", "Stockpile supplies first, then transport the containers and supplies to the specified Ashlands location.", [
+    "Read the starting stockpile list: Wood, Fiber, Oxite and multiple seeds. Allocate containers and party roles by material and weight.",
+    "Stock the required storage equipment and confirm that the first stage is accepted.",
+    "Transport equipment and supplies to the designated Ashlands site. Place storage containers and deposit the listed items.",
+    "Deal with mission ambushes before checking destination supply requirements. Keep equipment deployed until the game confirms completion."],
+    [prep("Containers, Wood, Fiber, Oxite and several seed types", "According to both stage lists", True, "Use the mission / container requirements after accepting"), prep("Transport mount / vehicle, repair and combat supplies", "According to weight", False, "Recommended; prepare for ambushes")], risk=3),
+"PRO_D_Research": guide("COMPOSITION | Ashlands environmental tests", "Complete the Alpha and Beta tests and eliminate the mutated wildlife.", [
+    "Complete ASHLANDS. Craft Liquid Solution at the Chemistry Bench and an Aerosol Emitter at the Fabricator; prepare power and combat supplies.",
+    "Deploy and power the device at Alpha. Keep it operating until the emission cycle ends, then return and deal with the mutated wildlife.",
+    "At Beta, follow the objectives for the liquid test, deployment, power and specified creature encounter.",
+    "When the mission reaches the Chi test, deploy power again and maintain the emission cycle. Stay near the Emitter to collect data.",
+    "Check the current Alpha, Beta and Chi objectives and hunting progress individually. Use the cycle durations displayed in the game."],
+    [prep("Liquid Solution, Aerosol Emitter and power", "According to the stage list", True, "Craft at the Chemistry Bench and Fabricator respectively"), prep("Durable combat equipment and medicine", "According to party size", False, "Recommended; includes boss-level risks")], risk=4),
+"PRO_E_Research": guide("DROVER | Drifter monitoring", "Craft and deploy a Monitoring Pylon, then complete monitoring.", [
+    "Complete ICE SHEET. Craft a Monitoring Pylon at the Machining Bench first.",
+    "Bring it to the designated rock formation beneath the isolated Drifter. Confirm the location and a safe way up and down.",
+    "Deploy the Monitoring Pylon and supply the items and quantities shown at each stage. Static {0}/{1} placeholders do not identify actual materials, so no guessed quantities are filled in.",
+    "Check all monitoring stages and the mission-completion message."],
+    [prep("Monitoring Pylon", "1", True, "Craft at the Machining Bench"), prep("Monitoring Pylon analysis samples", "According to each monitoring stage", True, "Verify actual materials and quantities after accepting"), prep("Materials for elevated construction, repair tools and provisions", "1 set", False, "Recommended")], risk=2),
+"PRO_D_Recovery": guide("CRISIS | Medical rescue", "Find the Ashlands construction site and stabilize the rescue team using the HEAL Device.", [
+    "Complete ASHLANDS. Craft the HEAL Device and bring sufficient medicine and provisions.",
+    "Investigate the Ashlands Terraforming Construction Site, clear threats and speak to Captain Church. Watch the rescue time limit displayed in the game.",
+    "Scan each team member with the HEAL Device and supply medicine and provisions according to each diagnosis.",
+    "Stabilize Church, Tucker, Griff, Simmons and Washington, then speak to Captain Church to report."],
+    [prep("HEAL Device", "1", True, "T3 unlock; craft at the Machining Bench"), prep("Food, water, oxygen and medicine stronger than pastes", "According to the five diagnoses", True, "The source requires medicine stronger than pastes; types and quantities depend on the scan")],
+    risks=["This rescue has a time limit. Prepare the HEAL Device, advanced medicine and supplies for five people before accepting and leaving.", "Pastes alone may not treat the team. Supply medicine according to each scan diagnosis."], risk=3),
+"PRO_D_Resupply": guide("STRANDED | Resupply and repair the rescue truck", "Refill the truck's resources, repair the engine and replenish equipment.", [
+    "Accept after CRISIS. Inspect each truck component and confirm the delivery points and actual materials list.",
+    "Refill water and Biofuel. Portable Water / Biofuel Tanks crafted at the Fabricator can transport them.",
+    "Craft the Radiator and Alternator at the Fabricator and deliver them to the truck engine. Craft Rope at the Crafting Bench and deliver it to truck storage; follow the listed quantities.",
+    "Check resource slots, engine and storage objectives separately. Do not remove delivered supplies before completion."],
+    [prep("Water, Biofuel, Radiator, Alternator, Rope", "According to the truck list", True, "Radiator / Alternator: Fabricator; Rope: Crafting Bench"), prep("Portable Water / Biofuel Tanks", "According to transport volume", False, "Recommended; craft at the Fabricator")], risk=2),
+"PRO_D_Rescue": guide("RESCUE | Rescue Simmons and Washington", "Track and rescue the two specified team members.", [
+    "Complete STRANDED. Craft two Stasis Bags at the Advanced Textiles Bench, reserve a Utility Slot and plan the return to the Medevac Ship.",
+    "Find Simmons at the marker. Clear the threats, place him in a Stasis Bag and transport him to the marked Medevac Ship.",
+    "Find Washington, use the second Stasis Bag and deliver him to the rescue ship. Check each rescue's progress separately.",
+    "An occupied Stasis Bag uses a Utility Slot. Arrange carriers or multiple trips for your party; verify both agents are delivered before reporting."],
+    [prep("Stasis Bags", "2", True, "The source explicitly requires two; craft at the Advanced Textiles Bench"), prep("Utility Slot", "1 slot per occupied bag", True, "Remove conflicting equipment and assign transport roles first"), prep("Medicine, food, water and lighting", "Adjust for distance and party size", False, "Recommended; locate the rescue ship first")], risk=3),
+"PRO_Nullsector_Story": guide("NULL SECTOR | Explore the cave near the Icesheet", "Investigate the specified cave near the Icesheet outpost to advance the regional story.", [
+    "Complete ICE SHEET. Check the mission cave markers and actual entrance near the outpost first.",
+    "If a cave-in blocks the entrance, search the outpost and the area below the cave for mission explosives. Place them at the cave-in and move away to trigger the blast.",
+    "Bring lighting and medicine into the cave. Continue deeper and follow the sounds to the cavern to hear the dialogue.",
+    "Examine the Exotic Formation and confirm the story and mission completion. Keep a usable return path."],
+    [prep("Mission explosives", "According to available supplies", True, "Search the outpost and area below the cave; ordinary explosives are not assumed to be substitutes"), prep("Lighting and spare fuel", "1 set", False, "Recommended; cave entrance coordinates differ from mission object coordinates")], risk=3),
+"PRO_SQ_Farmer": guide("CULTIVATION SPECIALIST | Crop trading specialist", "Help the specialist establish a trading post, prepare the first fruit and vegetables, then sell the crops.", [
+    "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
+    "Deliver Glass, Sulfur, Aluminium Ingots and Beeswax according to the specialist's current list.",
+    "Leave the area as directed so the specialist can build the trading post. Trading may be unavailable until construction is complete.",
+    "Prepare the first fruit and vegetables. Sell crops for Ren once the trading post is established."],
+    [prep("Glass, Sulfur, Aluminium Ingots, Beeswax", "Use the specialist's list", True, "The objective names four materials; fixed quantities have not been recovered"), prep("Fruit and vegetables", "According to the first delivery objective", True, "Plan growing and preservation first")], risk=1),
+"PRO_SQ_Hunter": guide("PREDATOR SPECIALIST | Hunting trade specialist", "Supply the Hunting Specialist, clear nearby creatures and sell Vestiges.", [
+    "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
+    "Deliver Gunpowder, Shell Casings, Flares and Smoke Grenades; use the specialist's current list for quantities.",
+    "Hunt within the specified area until the specialist's supply and safety conditions are met.",
+    "Skin creatures with the Taxidermy Knife to collect Vestiges, then sell them when the specialist is ready."],
+    [prep("Gunpowder, Shell Casings, Flares, Smoke Grenades", "According to the specialist's list", True, "Check requirements before batch production"), prep("Taxidermy Knife", "1", True, "Unlock and craft at the T2 Anvil; gather Vestiges")], risk=3),
+"PRO_SQ_Norex": guide("BLACK MARKET | Norex contact", "Defeat a world boss for Biomass, signal from the designated location and trade.", [
+    "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
+    "Fight the Blighted Landshark at the marker. Prepare a bedroll, combat supplies and room to retreat first.",
+    "Collect Biomass from the boss corpse and visit the designated site on the Theta plateau.",
+    "Fire a flare into the sky, approach the Norex contact and exchange Biomass for creature parts."],
+    [prep("Single Barrel Launcher and compatible Flares", "1 set of each", True, "T2 unlock; craft at the Crafting Bench"), prep("Biomass", "According to trade requirements", True, "Collect from the designated boss corpse during the mission")], risk=4),
+"PRO_SQ_Fisher": guide("FISHERIES OFFICER | Fishing trade specialist", "Rescue the Fisheries Officer, retake and repair the outpost, then complete the first fish trade.", [
+    "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
+    "Visit the Fishing Outpost, stabilize the specialist with the HEAL Device and defeat the Tide-Gorged Bear to retake the outpost.",
+    "Repair the shed with a Hammer or Nailgun, then place the benches, traps and equipment listed in the game.",
+    "Leave as directed while the specialist rebuilds. Catch the first fish with a rod or trap, then sell them for Ren."],
+    [prep("HEAL Device", "1", True, "T3 unlock; craft at the Machining Bench"), prep("Repair Hammer or Nailgun", "1", True, "For shed repairs"), prep("Fishing Rod and fishing equipment", "According to the list", True, "The type and quantity of dynamic item field {item} have not been inferred.")], risk=4),
 }
 
 DYNAMIC_GUIDES = {
-"Boss": ("SMPL3｜狂暴生物", "獵殺受地球化影響而發狂的指定生物。", ["接取後先讀取目標生物、區域與難度，不以普通野獸強度估算。", "準備武器、充足彈藥與恢復物品，先設安全床點再進入標記區。", "擊殺指定目標並依更新後提示回報／領獎；普通同類生物不保證計入。"], [prep("適合目標生物的武器與彈藥", "依難度", False, "建議")], 4),
-"Mine": ("SMPL3｜採礦交付", "採集指定礦石並交付 UDA。", ["接取後先確認礦種、數量與交付點。", "選擇仍有可採狀態的相應礦點，攜帶能採該礦的鎬與備用修理材料。", "將指定礦石投入任務交付設備，核對數量後完成回報。"], [prep("對應等級的鎬", "1", True), prep("指定礦石", "依接取清單", True)], 1),
-"Grow": ("SMPL3｜農作交付", "種植並交付指定作物。", ["先確認作物種類、成品與數量，避免種錯。", "安排種子、種植床與灌溉，等候成熟期間做好保存與防護。", "收成後將要求物品交付 UDA，核對是否要求烹調而非原始作物。"], [prep("指定種子、種植床與作物", "依接取清單", True)], 1),
-"Cache": ("SMPL3｜隱藏補給箱", "搜尋其他探勘者遺留的隱藏物資。", ["前往任務搜尋區，先確認區域邊界與可回程入口。", "搜索補給箱並與任務物件互動，預留背包空間。", "依更新目標回報或領取獎勵，勿把普通容器當作任務目標。"], [prep("照明與背包空間", "數格", False, "建議")], 1),
-"Collect": ("SMPL3｜回收身分證件", "尋找死亡探勘隊員並交付其身分證件。", ["依任務標記搜尋隊員遺體，注意周圍掠食者。", "從每個指定遺體取得身分證件，任務物品分開保管。", "將要求證件交付 UDA，確認所有隊員目標已完成。"], [prep("任務身分證件", "依接取目標", True, "搜索遺體時取得")], 2),
-"Hunt": ("SMPL3｜區域狩獵", "獵殺附近區域指定生物，降低威脅。", ["接取後確認區域、物種與數量／進度。", "在指定範圍內擊殺，隨時核對進度；移動出界可能不計入。", "完成後回報，清理傷勢並補足彈藥再接下一個任務。"], [prep("武器與足夠箭／彈藥", "依任務難度", False, "建議")], 3),
-"Scan": ("SMPL3｜雷達掃描", "領取雷達並完成 UDA 掃描。", ["先從任務投放設備領取 Radar，查看指定掃描位置。", "在目標位置部署，先安排周圍防護再啟動掃描。", "依任務要求維持或回收雷達，完成後確認回報與獎勵。"], [prep("任務 Radar", "依投放艙", True, "接取後領取"), prep("防守與維修用品", "1 組", False, "建議")], 3),
-"Tools": ("SMPL3｜製作工具", "製作工具供 UDA 交給需要協助的新探勘者。", ["先查看工具種類、等級與數量。", "在相應工作台製作，預先確認材料及解鎖科技，勿以較低等級代替。", "投入指定交付設備並核對數量。"], [prep("指定工具與製作材料", "依交付清單", True)], 1),
-"Build": ("SMPL3｜建造瞭望塔", "建造瞭望塔並放置信標標記位置。", ["先確認建造區域與遊戲結構檢查條件，再帶建材。", "建立有可靠支撐與可上下通路的瞭望塔。", "在要求位置放置信標，核對各項建造條件後回報。"], [prep("塔體建材與信標", "依建造清單", True), prep("修理錘、梯子與照明", "1 組", False, "建議")], 2),
-"Drone": ("SMPL3｜墜毀無人機", "在時限內找到無人機，保護資料上傳。", ["先完成補給與戰備再接取，因任務標示具有時限。", "迅速前往墜毀點，先觀察無人機及周邊威脅。", "依提示啟動上傳並防守，檢查耐久與進度直到完成；時限以遊戲實際顯示為準。"], [prep("防守武器、彈藥、維修與醫療用品", "依難度", False, "建議在接取前備齊")], 4),
-"Lost": ("SMPL3｜廢棄基地搜索", "定位廢棄基地並為 UDA 搜尋。", ["前往任務標記的廢棄基地，先檢查環境與掠食者。", "逐區搜索並與指定物件互動，預留任務物品空間。", "依目標完成交付／回報，離開前確認清單沒有未完成項目。"], [prep("照明、修理與背包空間", "1 組", False, "建議")], 2),
+"Boss": ("SMPL3 | Enraged creature", "Hunt the specified creatures driven mad by terraforming.", ["Check the target creature, area and difficulty after accepting. Do not assume ordinary wildlife strength.", "Prepare weapons, ample ammunition and healing supplies. Establish a safe bedroll before entering the marked area.", "Kill the specified target and follow updated prompts to report or collect rewards. Ordinary creatures of the same species may not count."], [prep("Weapons and ammunition suited to the target creature", "According to difficulty", False, "Recommended")], 4),
+"Mine": ("SMPL3 | Mining delivery", "Gather the specified ores and deliver them to UDA.", ["Check ore types, quantities and delivery points after accepting.", "Choose a matching deposit with recoverable resources. Bring a suitable Pickaxe and spare repair materials.", "Deliver the specified ores to the mission equipment, verify quantities and report."], [prep("Pickaxe of the required tier", "1", True), prep("Specified ores", "According to the acceptance list", True)], 1),
+"Grow": ("SMPL3 | Crop delivery", "Grow and deliver the specified crops.", ["Confirm the required crops, products and quantities before planting.", "Prepare seeds, crop plots and irrigation. Protect and preserve the crops while waiting for growth.", "Deliver the harvested items to UDA. Check whether cooked products are required instead of raw crops."], [prep("Specified seeds, crop plots and crops", "According to the acceptance list", True)], 1),
+"Cache": ("SMPL3 | Hidden supply crates", "Search for hidden supplies left by other prospectors.", ["Visit the mission search area and identify its boundary and a usable return entrance.", "Search supply crates and interact with mission objects. Reserve inventory space.", "Report or collect rewards according to the updated objective. Ordinary containers are not mission targets."], [prep("Lighting and inventory space", "Several slots", False, "Recommended")], 1),
+"Collect": ("SMPL3 | Recover identification", "Find the dead prospectors and deliver their identification.", ["Search for the team members' bodies at the mission markers and watch for nearby predators.", "Collect identification from each specified body and keep mission items separate.", "Deliver the required identification to UDA and confirm that every team member objective is complete."], [prep("Mission identification documents", "According to the accepted objective", True, "Collect when searching the bodies")], 2),
+"Hunt": ("SMPL3 | Area hunting", "Hunt the specified nearby creatures to reduce the threat.", ["Confirm the area, species and required count / progress after accepting.", "Kill targets inside the designated boundary and check progress. Kills outside may not count.", "Report completion, treat injuries and replenish ammunition before taking another mission."], [prep("Weapons and sufficient arrows / ammunition", "According to mission difficulty", False, "Recommended")], 3),
+"Scan": ("SMPL3 | Radar scan", "Collect the Radar and complete the UDA scans.", ["Collect the Radar from the mission drop pod and check the designated scan locations.", "Deploy at the target location. Set up defenses before starting the scan.", "Maintain or retrieve the radar as directed, then verify the report and reward."], [prep("Mission Radar", "According to the drop pod", True, "Collect after accepting"), prep("Defense and repair supplies", "1 set", False, "Recommended")], 3),
+"Tools": ("SMPL3 | Craft tools", "Craft tools for UDA to distribute to prospectors needing help.", ["Check tool types, tiers and quantities first.", "Craft at the correct bench. Verify materials and technology unlocks; lower-tier substitutes may not qualify.", "Deposit in the specified delivery equipment and verify quantities."], [prep("Specified tools and crafting materials", "According to the delivery list", True)], 1),
+"Build": ("SMPL3 | Build an observation tower", "Build an observation tower and place a beacon to mark the site.", ["Check the construction area and structural requirements before transporting materials.", "Build an observation tower with reliable supports and access up and down.", "Place the beacon at the required site, check the building conditions and report."], [prep("Tower building materials and beacon", "According to the construction list", True), prep("Repair Hammer, ladders and lighting", "1 set", False, "Recommended")], 2),
+"Drone": ("SMPL3 | Crashed drone", "Find the drone within the time limit and protect its data upload.", ["Prepare supplies and combat equipment before accepting because this mission has a time limit.", "Reach the crash site quickly. Inspect the drone and nearby threats first.", "Start the upload as directed and defend it. Check durability and progress until complete; use the time limit shown in the game."], [prep("Defense weapons, ammunition, repair supplies and medicine", "According to difficulty", False, "Prepare before accepting")], 4),
+"Lost": ("SMPL3 | Search an abandoned base", "Locate and search the abandoned base for UDA.", ["Visit the marked abandoned base, checking the environment and predators first.", "Search each area and interact with the specified objects. Reserve mission-item space.", "Complete the required deliveries or reports. Verify that no checklist items remain before leaving."], [prep("Lighting, repair supplies and inventory space", "1 set", False, "Recommended")], 2),
 }
 
 
@@ -281,27 +281,27 @@ def build(source: Path, build_id: str, pak: Path | None = None):
             "prerequisite_ids": prerequisites(talent_for.get(mid, {})), "feature": feature,
             "tech": row.get("RequiredTech", "None"), "required_level": row.get("RequiredLevel", 0),
             "required_flags": row.get("RequiredFlags", []), "quest_ids": sorted(quest_ids),
-            "acquisition": "在該世界的 C0NT4CT 裝置開啟 Operations；依前置、升級與使用權確認可接。",
-            "source": "目前安裝版本 data.pak：D_ProspectList、D_FactionMissions、D_Quests、D_Talents。攻略中的建議補給由 APP 編寫。",
-            "order": len(missions), "guide_note": "原始目標保留遊戲英文以便對照；準備建議不等於遊戲硬性要求。",
+            "acquisition": "Open Operations at this world's C0NT4CT device. Verify prerequisites, upgrades and access before accepting.",
+            "source": "Installed-version data.pak: D_ProspectList, D_FactionMissions, D_Quests, D_Talents. Recommended supplies in the guides are authored by the app.",
+            "order": len(missions), "guide_note": "Original objectives retain the game's English wording. Preparation recommendations are separate from mandatory game requirements.",
         }
-        base_steps = ["先確認前置任務、C0NT4CT 升級與所需科技，於裝置接取後再出發。"]
-        base_steps += ["依遊戲提示完成：" + o["text"] + ("；" + o["info"] if o["info"] else "") for o in obj]
-        base_steps += ["依各階段新出現的數量與位置提示核對交付，最後確認任務完成與獎勵。"]
+        base_steps = ["Verify prerequisite missions, C0NT4CT upgrades and required technology. Accept at the device before setting out."]
+        base_steps += ["Follow the game objective: " + o["text"] + ("; " + o["info"] if o["info"] else "") for o in obj]
+        base_steps += ["Verify new quantities and location prompts at every stage, then confirm mission completion and rewards."]
         normal.update(guide(normal["title"], normal["summary"], base_steps,
-                           [prep("任務指定設備與物資", "依接取後清單", True, "尚無完整獨立繁中攻略，先以本機遊戲目標核對")]))
-        normal["guide_coverage"] = "來源目標與通用準備；個別細節待補"
+                           [prep("Mission equipment and supplies", "According to the list after accepting", True, "A complete dedicated guide is not yet available; verify against the local game's objectives")]))
+        normal["guide_coverage"] = "Source objectives and general preparation; mission details are incomplete"
         if mid in GUIDES:
             normal.update(GUIDES[mid])
-            normal["guide_coverage"] = "已撰寫任務專屬繁中攻略；動態數量與分支條件以接取後清單確認"
+            normal["guide_coverage"] = "Dedicated mission guide complete; verify dynamic quantities and branches using the list after accepting"
         rewards = []
         for reward in faction.get("CurrencyRewarded", []):
-            key = reward.get("Meta", {}).get("RowName", "未知貨幣")
-            label = {"Credits": "Ren", "Exotic_Red": "紅色異質礦", "Exotic1": "異質礦"}.get(key, key)
-            rewards.append(f"{label}：{reward.get('Amount', '未知')}（任務表基礎值，實際難度與倍率以遊戲為準）")
+            key = reward.get("Meta", {}).get("RowName", "Unknown currency")
+            label = {"Credits": "Ren", "Exotic_Red": "Red Exotics", "Exotic1": "Exotics"}.get(key, key)
+            rewards.append(f"{label}: {reward.get('Amount', 'Unknown')} (base mission-table value; actual difficulty and multipliers follow the game)")
         unlocks = [r.get("RowName") for r in faction.get("AccountFlagsRewarded", []) + faction.get("CharacterFlagsRewarded", [])]
-        rewards += ["解鎖標記：" + u for u in unlocks if u]
-        normal["rewards"] = rewards or ["此表未列出固定貨幣獎勵；以遊戲結算及後續解鎖為準。"]
+        rewards += ["Unlock flag: " + u for u in unlocks if u]
+        normal["rewards"] = rewards or ["This table lists no fixed currency reward; use the game's final reward and subsequent unlocks."]
         missions.append(normal)
     for row in tables["D_DynamicQuests"]["Rows"]:
         key = row["Name"]
@@ -313,15 +313,15 @@ def build(source: Path, build_id: str, pak: Path | None = None):
         missions.append({"id": mid, "map_name": "All", "kind": "SMPL3", "order": len(missions),
             **guide(title, summary, steps, equipment, risk=risk), "objectives": obj,
             "quest_ids": [mid] + [o["id"] for o in obj], "prerequisite_ids": [], "terminal_level": 0,
-            "acquisition": "在 SMPL3 隨機委派介面查看當下抽選；目錄包含類型，不代表當下所有類型均已出現。",
-            "rewards": ["依抽選難度與任務獎勵池決定；接取前在裝置確認，不預填固定數字。"],
-            "source": "目前安裝版本 data.pak：D_DynamicQuests、D_FactionMissions、D_Quests。",
-            "guide_coverage": "已撰寫委派類型攻略；變體數量於接取後確認", "guide_note": "SMPL3 的物種、數量、難度與獎勵會依抽選變體改變。"})
+            "acquisition": "Check the current selection in the SMPL3 random-assignment interface. The catalog lists types; it does not mean every type is currently offered.",
+            "rewards": ["Rewards depend on the selected difficulty and mission reward pool. Check the device before accepting; no fixed amount is assumed."],
+            "source": "Installed-version data.pak: D_DynamicQuests, D_FactionMissions, D_Quests.",
+            "guide_coverage": "Assignment-type guide complete; verify variant quantities after accepting", "guide_note": "SMPL3 species, quantities, difficulty and rewards vary with the selected assignment variant."})
     manifest = {"schema_version": 1, "source_build": build_id, "source_version": f"ICARUS Steam build {build_id}", "source_date": datetime.now().astimezone().isoformat(),
         "source_files": {name: {"sha256": hashlib.sha256((source / name).read_bytes()).hexdigest(), "bytes": (source / name).stat().st_size} for name in TABLES},
         "missions": missions, "quest_texts": {qid: text(q.get("Description", "")) for qid, q in quests.items()},
         "enum_evidence": {"source": "Installed Icarus-Win64-Shipping.exe reflected enumerator pointer/value table", "EMissionState": {"InProgress": 0, "Completed": 1, "Abandoned": 2, "Failed": 3}},
-        "coverage": {"operations": len(missions) - len(DYNAMIC_GUIDES), "smpl3_types": len(DYNAMIC_GUIDES), "prometheus_custom_guides": len(GUIDES), "other_map_guides": "依來源目標提供基礎指引；尚未全部補齊任務專屬繁中攻略"}}
+        "coverage": {"operations": len(missions) - len(DYNAMIC_GUIDES), "smpl3_types": len(DYNAMIC_GUIDES), "prometheus_custom_guides": len(GUIDES), "other_map_guides": "Basic guidance follows source objectives; dedicated guides are not yet complete for every mission"}}
     if pak:
         manifest["data_pak"] = {"bytes": pak.stat().st_size, "sha256": hashlib.sha256(pak.read_bytes()).hexdigest()}
         exe = pak.parents[2] / "Binaries/Win64/Icarus-Win64-Shipping.exe"

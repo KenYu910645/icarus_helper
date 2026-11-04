@@ -1,0 +1,3018 @@
+{
+  "schema_version": 1,
+  "source_build": "26313227",
+  "exe_sha256": "195e4883deda64be9dfe0bbbd876adce359c93c083512995bcc4a0383ba86c98",
+  "source_hashes": {
+    "D_Talents.json": "09a02098a0d054aad8c5a9c7182b2c024a3e4c30a4994ad4de00be50bbda37a1",
+    "D_ProspectList.json": "b44bcb187535dae60edfde1a461af557b352ace98423807d893b0eb8a4e476cd",
+    "D_FactionMissions.json": "0c18b33e56e3e1cf80db31b7f48bc84ffbcff4037e0c1d36cd069543d28551e1"
+  },
+  "native_contract": {
+    "talent_storage": "Account",
+    "prerequisite_combination": "any_positive_rank",
+    "release_feature_is_entitlement": false,
+    "retry_seconds": 157680000,
+    "retry_excluded_outcomes": [
+      2,
+      3
+    ],
+    "history_outcomes": {
+      "0": "InProgress",
+      "1": "Completed",
+      "2": "Abandoned",
+      "3": "Failed"
+    },
+    "one_operation_session_flag": "Mission_In_Progress"
+  },
+  "missions": {
+    "Tier1_Forest_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Survey_0": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Stockpile": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Research_0": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Extermination_0": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Farming": {
+      "talent_ids": [
+        "Prospect_OLY_Farming"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Defence": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Defence"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Construction": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Expedition_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Recovery_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Construction_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Research_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Glacier_Extraction_0": {
+      "talent_ids": [
+        "Prospect_OLY_Glacier_Extraction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Expedition_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Recovery_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Survey_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Construction_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier2_Canyon_Stockpile": {
+      "talent_ids": [
+        "Prospect_OLY_Canyons_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier2_Canyon_Stockpile2": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_Stockpile_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier2_Canyon_LongSurvey_0": {
+      "talent_ids": [
+        "Prospect_OLY_Canyon_LongSurvey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Expedition_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Extermination_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Survey_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Research_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Stockpile_0": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Stockpile_2": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Stockpile_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Construction": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Delivery": {
+      "talent_ids": [
+        "Prospect_OLY_Riverlands_Delivery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier3_RiverLands_Extraction": {
+      "talent_ids": [],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Expedition_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Extraction_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Extraction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Extermination_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Recovery_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Survey_0": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Arctic_Stockpile": {
+      "talent_ids": [
+        "Prospect_OLY_Arctic_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Expedition_0": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Scan_0": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Scan"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Extermination_0": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Extermination_2": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Extermination_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Research_0": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Research_2": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Research_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Recovery": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Recovery_2": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Recovery_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Construction_0": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier4_Desert_Survey": {
+      "talent_ids": [
+        "Prospect_OLY_Desert_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "Tier5_Omni_Recovery": {
+      "talent_ids": [
+        "Prospect_OLY_Omni_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "Tier5_Omni_Research": {
+      "talent_ids": [
+        "Prospect_Omni_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "Tier5_Omni_Research_2": {
+      "talent_ids": [
+        "Prospect_Omni_Research_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "Tier5_Omni_Olympus": {
+      "talent_ids": [
+        "Prospect_OLY_Omni_"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_A_Expedition": {
+      "talent_ids": [
+        "Prospect_Styx_A_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_A_Extermination": {
+      "talent_ids": [
+        "Prospect_Styx_A_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_B_Expedition": {
+      "talent_ids": [
+        "Prospect_Styx_B_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_B_Extermination": {
+      "talent_ids": [
+        "Prospect_Styx_B_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_C_Expedition": {
+      "talent_ids": [
+        "Prospect_Styx_C_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_C_Construction": {
+      "talent_ids": [
+        "Prospect_Styx_C_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_C_Extermination": {
+      "talent_ids": [
+        "Prospect_Styx_C_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_D_Expedition": {
+      "talent_ids": [
+        "Prospect_Styx_D_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_D_Extermination": {
+      "talent_ids": [
+        "Prospect_Styx_D_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_D_Delivery": {
+      "talent_ids": [
+        "Prospect_Styx_D_Delivery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_D_Recovery": {
+      "talent_ids": [
+        "Prospect_Styx_D_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_D_Research": {
+      "talent_ids": [
+        "Prospect_Styx_D_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_D_Research_2": {
+      "talent_ids": [
+        "Prospect_Styx_D_Research_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_E_Expedition": {
+      "talent_ids": [
+        "Prospect_Styx_E_Expedition"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_E_Survey": {
+      "talent_ids": [
+        "Prospect_Styx_E_Survey"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_E_Research": {
+      "talent_ids": [
+        "Prospect_Styx_E_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_A_Construction": {
+      "talent_ids": [
+        "Prospect_Styx_A_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "Tier1_Forest_Range": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_Range"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_Story_1": {
+      "talent_ids": [
+        "Prospect_Pro_Story_1"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_Story_2": {
+      "talent_ids": [
+        "Prospect_Pro_Story_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_A_Extraction": {
+      "talent_ids": [
+        "Prospect_Pro_A_Extraction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "PRO_B_Extermination": {
+      "talent_ids": [
+        "Prospect_Pro_B_Extermination"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "PRO_C_Construction": {
+      "talent_ids": [
+        "Prospect_Pro_C_Construction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "PRO_C_Research": {
+      "talent_ids": [
+        "Prospect_Pro_C_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "PRO_Story_3": {
+      "talent_ids": [
+        "Prospect_Pro_Story_3"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "PRO_Story_4": {
+      "talent_ids": [
+        "Prospect_Pro_Story_4"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_Story_5": {
+      "talent_ids": [
+        "Prospect_Pro_Story_5"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_Story_6": {
+      "talent_ids": [
+        "Prospect_Pro_Story_6"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_B_Stockpile": {
+      "talent_ids": [
+        "Prospect_Styx_B_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "Tier1_Forest_WS_Stockpile": {
+      "talent_ids": [
+        "Prospect_OLY_Forest_WS_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_C_Extermination2": {
+      "talent_ids": [
+        "Prospect_Styx_C_Extermination2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_E_Extraction": {
+      "talent_ids": [
+        "Prospect_Styx_E_Extraction"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_B_Research": {
+      "talent_ids": [
+        "Prospect_Styx_B_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_A_Extermination2": {
+      "talent_ids": [
+        "Prospect_Styx_A_Extermination2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_A_Stockpile": {
+      "talent_ids": [
+        "Prospect_Pro_A_Stockpile"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade1"
+    },
+    "STYX_C_Fishing": {
+      "talent_ids": [
+        "Prospect_Styx_C_Fishing"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_Ashlands_Story": {
+      "talent_ids": [
+        "Prospect_Pro_Ashlands_Story"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_Icesheet_Story": {
+      "talent_ids": [
+        "Prospect_Pro_Icesheet_Story"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "STYX_A_Research": {
+      "talent_ids": [
+        "Prospect_Styx_A_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_D_Transport": {
+      "talent_ids": [],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_D_Research": {
+      "talent_ids": [
+        "Prospect_Pro_D_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_E_Research": {
+      "talent_ids": [
+        "Prospect_Pro_E_Research"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_D_Recovery": {
+      "talent_ids": [
+        "Prospect_Pro_D_Recovery"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_D_Resupply": {
+      "talent_ids": [
+        "Prospect_Pro_D_Resupply"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_D_Rescue": {
+      "talent_ids": [
+        "Prospect_Pro_D_Rescue"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "PRO_Nullsector_Story": {
+      "talent_ids": [
+        "Prospect_Pro_Nullsector_Story"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Upgrade2"
+    },
+    "ELY_Story_1": {
+      "talent_ids": [
+        "Prospect_ELY_Story_1"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_Story_2": {
+      "talent_ids": [
+        "Prospect_ELY_Story_2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_Story_3": {
+      "talent_ids": [
+        "Prospect_ELY_Story_3"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_Story_4": {
+      "talent_ids": [
+        "Prospect_ELY_Story_4"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_Story_5": {
+      "talent_ids": [
+        "Prospect_ELY_Story_5"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_Story_6": {
+      "talent_ids": [
+        "Prospect_ELY_Story_6"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Igloo": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Igloo"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Yeti": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Yeti"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Fish": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Fish"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "OLY_SQ_Farmer": {
+      "talent_ids": [
+        "Prospect_OLY_SQ_Farm"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_SQ_Farmer": {
+      "talent_ids": [
+        "Prospect_STYX_SQ_Farm"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_SQ_Farmer": {
+      "talent_ids": [
+        "Prospect_PRO_SQ_Farm"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Farmer": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Farm"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Norex": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Norex"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_SQ_Norex": {
+      "talent_ids": [
+        "Prospect_PRO_SQ_Norex"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_SQ_Norex": {
+      "talent_ids": [
+        "Prospect_STYX_SQ_Norex"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "OLY_SQ_Norex": {
+      "talent_ids": [
+        "Prospect_OLY_SQ_Norex"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Hunter": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Hunter"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_SQ_Hunter": {
+      "talent_ids": [
+        "Prospect_PRO_SQ_Hunter"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_SQ_Hunter": {
+      "talent_ids": [
+        "Prospect_Styx_SQ_Hunter"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "OLY_SQ_Hunter": {
+      "talent_ids": [
+        "Prospect_OLY_SQ_Hunter"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "OLY_SQ_Fisher": {
+      "talent_ids": [
+        "Prospect_OLY_SQ_Fisher"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "STYX_SQ_Fisher": {
+      "talent_ids": [
+        "Prospect_Styx_SQ_Fisher"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "PRO_SQ_Fisher": {
+      "talent_ids": [
+        "Prospect_PRO_SQ_Fisher"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Fisher": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Fisher"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Ambush": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Speeder1"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Lifeline": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Speeder2"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Courier": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Speeder3"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    },
+    "ELY_SQ_Trials": {
+      "talent_ids": [
+        "Prospect_ELY_SQ_Speeder4"
+      ],
+      "use_retry_timeout": true,
+      "required_flags": [],
+      "required_character_flags": [],
+      "forbidden_character_flags": [],
+      "required_level": 0,
+      "terminal_availability": "Base"
+    }
+  },
+  "talents": {
+    "ProspectReroute_2": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_Canyon_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Canyon_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Farm": {
+      "required_talents": [
+        "Prospect_ELY_Story_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Fish": {
+      "required_talents": [
+        "Prospect_ELY_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Fisher": {
+      "required_talents": [
+        "Prospect_ELY_Story_1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Hunter": {
+      "required_talents": [
+        "Prospect_ELY_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Igloo": {
+      "required_talents": [
+        "Prospect_ELY_Story_1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Norex": {
+      "required_talents": [
+        "Prospect_ELY_Story_4"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Speeder1": {
+      "required_talents": [
+        "Prospect_ELY_Story_4"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Speeder2": {
+      "required_talents": [
+        "Prospect_ELY_SQ_Speeder1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Speeder3": {
+      "required_talents": [
+        "Prospect_ELY_SQ_Speeder2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Speeder4": {
+      "required_talents": [
+        "Prospect_ELY_SQ_Speeder3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_SQ_Yeti": {
+      "required_talents": [
+        "Prospect_ELY_SQ_Igloo"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_1": {
+      "required_talents": [],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_2": {
+      "required_talents": [
+        "Prospect_ELY_Story_1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_3": {
+      "required_talents": [
+        "Prospect_ELY_Story_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_4": {
+      "required_talents": [
+        "Prospect_ELY_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_5": {
+      "required_talents": [
+        "Prospect_ELY_Story_4"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_ELY_Story_6": {
+      "required_talents": [
+        "Prospect_ELY_Story_5"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Elysium",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Expedition": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Extermination": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Extraction": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Extraction"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Recovery": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Scan": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Stockpile": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Arctic_Survey": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Stockpile"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Construction": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Expedition": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_LongSurvey": {
+      "required_talents": [
+        "Prospect_OLY_Canyon_Survey"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Recovery": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Scan": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Stockpile_2": {
+      "required_talents": [
+        "Prospect_OLY_Canyons_Stockpile"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyon_Survey": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Canyons_Stockpile": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration",
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Construction": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Expedition": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Extermination": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Scan"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Extermination_2": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Recovery": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Recovery_2": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Expedition"
+      ],
+      "required_flags": [
+        "Zebra_Rescue_Mission"
+      ],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Research": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Research_2": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Extermination_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Scan": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Desert_Survey": {
+      "required_talents": [
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Farming": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Construction"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Construction": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Defence": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Scan"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Recon"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Extermination": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Scan"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Range": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Recon": {
+      "required_talents": [],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Research": {
+      "required_talents": [
+        "ProspectReroute_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Scan": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Stockpile": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Construction"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_Survey": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Construction"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Forest_WS_Stockpile": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Construction": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Expedition": {
+      "required_talents": [
+        "Prospect_OLY_Forest_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Extraction": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Recovery": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Research": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Glacier_Scan": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Omni_": {
+      "required_talents": [
+        "Prospect_OLY_Arctic_Exploration",
+        "Prospect_OLY_Desert_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Omni_Recovery": {
+      "required_talents": [
+        "Prospect_OLY_Omni_"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Construction": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Delivery": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Scan"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Expedition": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration",
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Exploration": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Extermination": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Extraction": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Research": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Scan": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Stockpile": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Stockpile_2": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Extermination"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_Riverlands_Survey": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Construction"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_SQ_Farm": {
+      "required_talents": [
+        "ProspectReroute_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_SQ_Fisher": {
+      "required_talents": [
+        "Prospect_Canyon_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_SQ_Hunter": {
+      "required_talents": [
+        "Prospect_OLY_Glacier_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_OLY_SQ_Norex": {
+      "required_talents": [
+        "Prospect_OLY_Riverlands_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_Omni_Research": {
+      "required_talents": [
+        "Prospect_OLY_Omni_"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_Omni_Research_2": {
+      "required_talents": [
+        "Prospect_OLY_Omni_"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Olympus",
+      "required_rank": "None"
+    },
+    "Prospect_PRO_SQ_Farm": {
+      "required_talents": [
+        "Prospect_Pro_Story_1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_PRO_SQ_Fisher": {
+      "required_talents": [
+        "Prospect_Pro_Story_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_PRO_SQ_Hunter": {
+      "required_talents": [
+        "Prospect_Pro_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_PRO_SQ_Norex": {
+      "required_talents": [
+        "Prospect_Pro_Story_5"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_A_Exploration": {
+      "required_talents": [
+        "Prospect_Pro_Story_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_A_Extraction": {
+      "required_talents": [
+        "Prospect_Pro_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_A_Stockpile": {
+      "required_talents": [
+        "Prospect_Pro_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Ashlands_Story": {
+      "required_talents": [
+        "Prospect_Pro_Story_5"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_B_Exploration": {
+      "required_talents": [
+        "Prospect_Pro_Story_4"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_B_Extermination": {
+      "required_talents": [
+        "Prospect_Pro_B_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_C_Construction": {
+      "required_talents": [
+        "Prospect_Pro_C_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_C_Exploration": {
+      "required_talents": [
+        "Prospect_Pro_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_C_Research": {
+      "required_talents": [
+        "Prospect_Pro_C_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_D_Recovery": {
+      "required_talents": [
+        "Prospect_Pro_Ashlands_Story"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_D_Rescue": {
+      "required_talents": [
+        "Prospect_Pro_D_Resupply"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_D_Research": {
+      "required_talents": [
+        "Prospect_Pro_Ashlands_Story"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_D_Resupply": {
+      "required_talents": [
+        "Prospect_Pro_D_Recovery"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_E_Research": {
+      "required_talents": [
+        "Prospect_Pro_Icesheet_Story"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Icesheet_Story": {
+      "required_talents": [
+        "Prospect_Pro_Ashlands_Story"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Nullsector_Story": {
+      "required_talents": [
+        "Prospect_Pro_Icesheet_Story"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_1": {
+      "required_talents": [],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_2": {
+      "required_talents": [
+        "Prospect_Pro_Story_1"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_3": {
+      "required_talents": [
+        "Prospect_Pro_Story_2"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_4": {
+      "required_talents": [
+        "Prospect_Pro_Story_3"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_5": {
+      "required_talents": [
+        "Prospect_Pro_Story_4"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_Pro_Story_6": {
+      "required_talents": [
+        "Prospect_Pro_Story_5"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Prometheus",
+      "required_rank": "None"
+    },
+    "Prospect_STYX_SQ_Farm": {
+      "required_talents": [
+        "Prospect_Styx_B_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_STYX_SQ_Norex": {
+      "required_talents": [
+        "Prospect_Styx_D_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Construction": {
+      "required_talents": [
+        "Prospect_Styx_A_Reroute"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Expedition": {
+      "required_talents": [],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Exploration": {
+      "required_talents": [
+        "Prospect_Styx_A_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Extermination": {
+      "required_talents": [
+        "Prospect_Styx_B_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Extermination2": {
+      "required_talents": [
+        "Prospect_Styx_A_Reroute"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Reroute": {
+      "required_talents": [
+        "Prospect_Styx_A_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_A_Research": {
+      "required_talents": [
+        "Prospect_Styx_A_Reroute"
+      ],
+      "required_flags": [
+        "Matariki_Mission"
+      ],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_B_Expedition": {
+      "required_talents": [
+        "Prospect_Styx_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_B_Exploration": {
+      "required_talents": [
+        "Prospect_Styx_B_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_B_Extermination": {
+      "required_talents": [
+        "Prospect_Styx_B_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_B_Research": {
+      "required_talents": [
+        "Prospect_Styx_B_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_B_Stockpile": {
+      "required_talents": [
+        "Prospect_Styx_B_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Construction": {
+      "required_talents": [
+        "Prospect_Styx_C_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Expedition": {
+      "required_talents": [
+        "Prospect_Styx_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Exploration": {
+      "required_talents": [
+        "Prospect_Styx_C_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Extermination": {
+      "required_talents": [
+        "Prospect_Styx_C_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Extermination2": {
+      "required_talents": [
+        "Prospect_Styx_C_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_C_Fishing": {
+      "required_talents": [
+        "Prospect_Styx_C_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Delivery": {
+      "required_talents": [
+        "Prospect_Styx_D_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Expedition": {
+      "required_talents": [
+        "Prospect_Styx_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Exploration": {
+      "required_talents": [
+        "Prospect_Styx_D_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Extermination": {
+      "required_talents": [
+        "Prospect_Styx_E_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Recovery": {
+      "required_talents": [
+        "Prospect_Styx_D_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Research": {
+      "required_talents": [
+        "Prospect_Styx_D_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_D_Research_2": {
+      "required_talents": [
+        "Prospect_Styx_D_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_E_Expedition": {
+      "required_talents": [
+        "Prospect_Styx_A_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_E_Exploration": {
+      "required_talents": [
+        "Prospect_Styx_E_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": true,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_E_Extraction": {
+      "required_talents": [
+        "Prospect_Styx_E_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_E_Research": {
+      "required_talents": [
+        "Prospect_Styx_E_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_E_Survey": {
+      "required_talents": [
+        "Prospect_Styx_E_Exploration"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_SQ_Fisher": {
+      "required_talents": [
+        "Prospect_Styx_E_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    },
+    "Prospect_Styx_SQ_Hunter": {
+      "required_talents": [
+        "Prospect_Styx_C_Expedition"
+      ],
+      "required_flags": [],
+      "forbidden_flags": [],
+      "required_level": 0,
+      "default_unlocked": false,
+      "tree": "Prospect_Styx",
+      "required_rank": "None"
+    }
+  }
+}

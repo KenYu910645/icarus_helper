@@ -24,10 +24,10 @@ from .models import Resource, WorldSnapshot
 CACHE_ROOT = Path(os.environ.get("LOCALAPPDATA", str(Path.home()))) / "IcarusHelper" / "catalog_cache"
 CATALOG_BUILD = "26313227"
 MINERAL_NAMES = {
-    "Gold": "金", "Copper": "銅", "Iron": "鐵", "Aluminium": "鋁", "Aluminum": "鋁", "Platinum": "白金",
-    "Titanium": "鈦", "Coal": "煤", "Sulfur": "硫磺", "Sulphur": "硫磺", "Silica": "矽石",
-    "Stone": "石材", "Oxite": "氧礦", "Salt": "鹽", "Scoria": "火山渣", "Obsidian": "黑曜石",
-    "Clay": "黏土", "Ice": "冰", "Exotic": "異質", "RedExotic": "紅異質", "Uranium": "鈾", "Bauxite": "鋁土", "Metal": "鐵",
+    "Gold": "Gold", "Copper": "Copper", "Iron": "Iron", "Aluminium": "Aluminium", "Aluminum": "Aluminium", "Platinum": "Platinum",
+    "Titanium": "Titanium", "Coal": "Coal", "Sulfur": "Sulfur", "Sulphur": "Sulfur", "Silica": "Silica",
+    "Stone": "Stone", "Oxite": "Oxite", "Salt": "Salt", "Scoria": "Scoria", "Obsidian": "Obsidian",
+    "Clay": "Clay", "Ice": "Ice", "Exotic": "Exotics", "RedExotic": "Red exotics", "Uranium": "Uranium", "Bauxite": "Bauxite", "Metal": "Iron",
 }
 
 MAP_BOUNDS = {
@@ -150,11 +150,11 @@ def _foliage_lookup() -> dict[str, list[dict]]:
 
 def _foliage_label(row: dict, mesh: str) -> str:
     value = str(row.get("view_trace_actor") or mesh)
-    words = {"Berry": "漿果", "Wheat": "小麥", "Corn": "玉米", "Carrot": "胡蘿蔔", "Pumpkin": "南瓜", "Potato": "馬鈴薯",
-             "Tomato": "番茄", "Cocoa": "可可", "Coffee": "咖啡", "Soy": "黃豆", "Tea": "茶", "Coconut": "椰子",
-             "Mushroom": "蘑菇", "Reed": "蘆葦", "Sponge": "海綿", "Aspen": "白楊", "Pine": "松樹", "Fir": "冷杉",
-             "Palm": "棕櫚", "Oxite": "氧礦", "Silica": "矽石", "Sulfur": "硫磺", "Salt": "鹽", "Stone": "石材",
-             "Rock": "岩石", "Obsidian": "黑曜石", "Scoria": "火山渣", "Tree": "樹木", "Fiber": "纖維植物"}
+    words = {"Berry": "Berries", "Wheat": "Wheat", "Corn": "Corn", "Carrot": "Carrot", "Pumpkin": "Pumpkin", "Potato": "Potato",
+             "Tomato": "Tomato", "Cocoa": "Cocoa", "Coffee": "Coffee", "Soy": "Soybean", "Tea": "Tea", "Coconut": "Coconut",
+             "Mushroom": "Mushroom", "Reed": "Reed", "Sponge": "Sponge", "Aspen": "Aspen", "Pine": "Pine", "Fir": "Fir",
+             "Palm": "Palm", "Oxite": "Oxite", "Silica": "Silica", "Sulfur": "Sulfur", "Salt": "Salt", "Stone": "Stone",
+             "Rock": "Rock", "Obsidian": "Obsidian", "Scoria": "Scoria", "Tree": "Trees", "Fiber": "Fiber plant"}
     return next((label for word, label in words.items() if word.lower() in value.lower()), str(row.get("name") or mesh.split("/")[-1]))
 
 
@@ -168,13 +168,13 @@ def _distance(a, b) -> float:
 
 def _calibration(anchors: list[dict], candidates: list[dict]) -> dict:
     if not anchors or not candidates:
-        return {"verified": False, "anchors": 0, "reason": "尚無足夠遊戲座標校準"}
+        return {"verified": False, "anchors": 0, "reason": "Insufficient game coordinate calibration"}
     errors = sorted(min(_distance(anchor, candidate) for candidate in candidates) for anchor in anchors)
     close = [distance for distance in errors if distance < 30]
     return {"verified": len(close) >= 3 and len(close) >= len(errors) * 0.65,
             "anchors": len(errors), "within_30m": len(close), "median_error_m": round(statistics.median(errors), 3),
             "p90_error_m": round(errors[min(len(errors) - 1, int(len(errors) * 0.9))], 3),
-            "basis": "遊戲資產／存檔入口與社群地穴位置比對；格位為16×16，世界範圍±403200 cm"}
+            "basis": "Game asset / saved entrances compared with community cave locations; 16×16 grid, world bounds ±403200 cm"}
 
 
 def _tables() -> tuple[dict, dict]:
@@ -208,7 +208,7 @@ def select_mineral(seed: int, entries: list[tuple[str, float]]) -> str:
         cumulative += weight
         if roll <= cumulative:
             return mineral
-    raise ValueError("礦種生成抽樣超出已驗證資源池範圍")
+    raise ValueError("Mineral generation sample is outside the verified resource pool")
 
 
 def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]:
@@ -226,10 +226,10 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
     for row in public.get("caves", []):
         x, y, z = _world_point(row)
         ident = str(row.get("gid") or row.get("id"))
-        cave = {"id": "atlas:cave:" + str(row.get("id")), "kind": "cave", "name": "地穴 " + ident,
-                "resource_type": "地穴", "x": x, "y": y, "z": z, "confidence": "候選",
-                "remaining_status": "採集狀態未知", "source": "Icarus Intel 社群地圖",
-                "detail": f"社群地穴點位；礦點模板 {row.get('oc', '未知')}、深層礦床模板 {row.get('doc', '未知')}。模板數不代表本世界剩餘量。" + str(row.get("n", "")),
+        cave = {"id": "atlas:cave:" + str(row.get("id")), "kind": "cave", "name": "Cave " + ident,
+                "resource_type": "Cave", "x": x, "y": y, "z": z, "confidence": "Candidate",
+                "remaining_status": "Mining status unknown", "source": "Icarus Intel community map",
+                "detail": f"Community cave location; ore template {row.get('oc', 'Unknown')}, deep deposit template {row.get('doc', 'Unknown')}. Template counts do not represent remaining resources in this world. " + str(row.get("n", "")),
                 "public": row}
         caves.append(cave)
     assets = [row for row in installed.get("points", []) if row.get("kind") == "cave"]
@@ -240,12 +240,12 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
         if nearest is not None and _distance(anchor, nearest) < 30 and nearest["id"] not in used:
             used.add(nearest["id"])
             nearest.update({"x": anchor["x"], "y": anchor["y"], "z": anchor["z"], "actor_path": anchor["actor_path"],
-                            "confidence": "已確認", "source": "本機遊戲地圖資產＋Icarus Intel 編號"})
-            nearest["detail"] += " 入口位置已由目前安裝版本的地圖資產校準。"
+                            "confidence": "Confirmed", "source": "Local game map assets + Icarus Intel numbering"})
+            nearest["detail"] += " Entrance calibrated against map assets from the installed game version."
         else:
-            caves.append({**anchor, "id": "asset:" + anchor["actor_path"], "name": "地穴入口 " + anchor["id"],
-                          "resource_type": "地穴", "confidence": "已確認", "remaining_status": "採集狀態未知",
-                          "source": "本機遊戲地圖資產", "detail": "遊戲地圖入口；尚未可靠對應社群地穴編號。"})
+            caves.append({**anchor, "id": "asset:" + anchor["actor_path"], "name": "Cave entrance " + anchor["id"],
+                          "resource_type": "Cave", "confidence": "Confirmed", "remaining_status": "Mining status unknown",
+                          "source": "Local game map assets", "detail": "Game map entrance; no verified community cave number association."})
     resources = []
     pools, _ = _tables()
     foliage_lookup = _foliage_lookup()
@@ -267,34 +267,34 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
                 # A visual rock or bush is not necessarily a harvestable resource.
                 unclassified_groups += 1
                 continue
-            names = {"tree": "樹木生成分布", "plant": "植物生成分布", "surface_resource": "地表資源生成分布", "water": "水源"}
+            names = {"tree": "Tree spawn distribution", "plant": "Plant spawn distribution", "surface_resource": "Surface resource spawn distribution", "water": "Water"}
             mesh_name = str(row.get("mesh", "")).split("/")[-1]
-            label = _foliage_label(matches[0], str(row.get("mesh"))) if matches else "水源"
-            detail = "遊戲地圖水體錨點；不代表完整水域邊界或已驗證可飲用性。" if kind == "water" else (
-                f"群組原始生成 {row.get('generated_instance_count', '未知')} 個實例；不是目前剩餘量或物品產量。"
-                "標記位於分布矩形中心，不是單株位置；可採集性以遊戲物件設定為準。" + mesh_name)
-            resources.append({**row, "id": "asset:" + row["actor_path"], "name": label + "分布" if kind != "water" else label,
-                              "resource_type": label, "confidence": "已確認", "remaining_status": "目前剩餘實例未知",
+            label = _foliage_label(matches[0], str(row.get("mesh"))) if matches else "Water"
+            detail = "Game map water anchor; not a full water boundary or verified drinking source." if kind == "water" else (
+                f"Group originally generated {row.get('generated_instance_count', 'Unknown')} instances; not a current remaining count or item yield."
+                " Marker is at the distribution rectangle center, not an individual plant. Harvestability depends on game object settings. " + mesh_name)
+            resources.append({**row, "id": "asset:" + row["actor_path"], "name": label + " distribution" if kind != "water" else label,
+                              "resource_type": label, "confidence": "Confirmed", "remaining_status": "Current remaining instances unknown",
                               "flod_record_index": matches[0]["record_index"] if len(matches) == 1 else None,
                               "flod_name": matches[0]["name"] if len(matches) == 1 else "",
-                              "source": "本機遊戲地圖資產（原始生成分布）", "detail": detail})
+                              "source": "Local game map assets (original spawn distribution)", "detail": detail})
             continue
-        mineral = select_mineral(row["seed"] + world_seed, pools[row["pool"]]) if world_seed is not None and row.get("pool") in pools and row.get("seed") is not None else "未知"
+        mineral = select_mineral(row["seed"] + world_seed, pools[row["pool"]]) if world_seed is not None and row.get("pool") in pools and row.get("seed") is not None else "Unknown"
         resources.append({**row, "id": "asset:" + row["actor_path"], "resource_type": mineral,
-                          "name": ("地穴" if "Caves" in str(row.get("pool")) else "一般") + _mineral_name(mineral) + "礦",
-                          "confidence": "已確認" if mineral != "未知" else "礦種待還原", "remaining_status": "採集狀態未知",
-                          "source": "本機遊戲地圖資產＋本世界生成種子" if mineral != "未知" else "本機遊戲地圖資產",
-                          "detail": "未出現在存檔採掘記錄中不等於未採集；礦點生成位置／礦種與剩餘量分開判定。"})
-    for collection, kind, name in (("ores", "deep_candidate", "深層礦床候選"), ("geysers", "geyser", "酵素間歇泉候選"),
-                                  ("oilGeysers", "oil", "石油泉候選"), ("metaDeposits", "exotic", "異質／特殊資源候選")):
+                          "name": ("Cave " if "Caves" in str(row.get("pool")) else "Surface ") + _mineral_name(mineral),
+                          "confidence": "Confirmed" if mineral != "Unknown" else "Mineral identity unresolved", "remaining_status": "Mining status unknown",
+                          "source": "Local game map assets + world generation seed" if mineral != "Unknown" else "Local game map assets",
+                          "detail": "Absence from mining records does not imply unmined. Spawn position / mineral identity and remaining quantity are assessed separately."})
+    for collection, kind, name in (("ores", "deep_candidate", "Deep deposit candidate"), ("geysers", "geyser", "Enzyme geyser candidate"),
+                                  ("oilGeysers", "oil", "Oil geyser candidate"), ("metaDeposits", "exotic", "Exotic / special resource candidate")):
         for row in public.get(collection, []):
             if "x" not in row or "y" not in row:
                 continue
             x, y, z = _world_point(row)
             resources.append({"id": f"atlas:{collection}:{row.get('code', row.get('id', len(resources)))}", "kind": kind,
-                              "name": name, "resource_type": str(row.get("variant", "未知")), "x": x, "y": y, "z": z,
-                              "confidence": "候選", "remaining_status": "是否生成／數量未知", "drill_status": "無法確認" if kind == "deep_candidate" else "",
-                              "source": "Icarus Intel 社群地圖", "detail": "僅為可能位置；是否在本世界生成須依目前存檔確認。", "public": row})
+                              "name": name, "resource_type": str(row.get("variant", "Unknown")), "x": x, "y": y, "z": z,
+                              "confidence": "Candidate", "remaining_status": "Spawn status / quantity unknown", "drill_status": "Cannot confirm" if kind == "deep_candidate" else "",
+                              "source": "Icarus Intel community map", "detail": "Possible location only; generation in this world must be checked against the current save.", "public": row})
     coverage = {"static_tiles_loaded": installed.get("tiles_loaded", 0), "static_tiles_expected": installed.get("tiles_expected", 0),
                 "asset_catalog_schema": installed.get("schema_version"), "asset_catalog_generated_at": installed.get("generated_at"),
                 "height_tiles_loaded": installed.get("height_tiles_loaded", 0), "height_tiles_expected": installed.get("height_tiles_expected", 0),
@@ -306,11 +306,11 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
                 "asset_cave_entrances": len(assets), "community_caves": len(public.get("caves", [])),
                 "community_counts": provenance.get("counts", {}), "catalog_game_build": installed.get("game_build", ""),
                 "installed_game_build": actual_build, "asset_build_compatible": compatible,
-                "calibration": calibration, "limitations": ["植物、樹木與地表資源使用資產群組分布矩形；不宣稱逐株位置或完整水域邊界。",
-                                                          "一般礦剩餘量須依存檔採掘記錄；無記錄的礦點採集狀態未知。",
-                                                          "社群特殊資源點僅為候選；全圖普通礦生成資產目前支援 Prometheus。"]}
+                "calibration": calibration, "limitations": ["Plants, trees and surface resources use asset group distribution rectangles, not individual plant locations or complete water boundaries.",
+                                                          "Ore remaining amounts require saved mining records; mining status is unknown where records are absent.",
+                                                          "Community special resource points are candidates only. Full-map ore spawn assets currently support Prometheus."]}
     if not compatible:
-        coverage["limitations"].insert(0, f"目前遊戲 build {actual_build} 與資產快取 {CATALOG_BUILD} 不符；已停用舊版資產及礦種還原，請重新建立並驗證資料。")
+        coverage["limitations"].insert(0, f"Installed game build {actual_build} differs from asset cache {CATALOG_BUILD}; outdated assets and mineral reconstruction disabled. Rebuild and verify the data.")
     background = _background_info(key)
     coverage["background"] = background
     bounds = MAP_BOUNDS.get(key)
@@ -318,7 +318,7 @@ def load_catalog(map_name: str, world_seed: int | None = None) -> dict[str, Any]
             "bounds": dict(zip(("min_x", "min_y", "max_x", "max_y"), bounds)) if bounds else {},
             "calibrated": calibration["verified"], "background_path": background.get("path", ""),
             "caves": caves, "resources": resources, "coverage": coverage,
-            "sources": [provenance, {"source": "本機 ICARUS 地圖資產", "build": installed.get("game_build"), "tiles": installed.get("tiles_loaded", 0),
+            "sources": [provenance, {"source": "Local ICARUS map assets", "build": installed.get("game_build"), "tiles": installed.get("tiles_loaded", 0),
                                       "generated_at": installed.get("generated_at"), "coordinate_rule": installed.get("coordinate_rule"),
                                       "source_packages": installed.get("source_packages", []), "manifest_sha256": installed.get("source_manifest_sha256")} ]}
 
@@ -327,8 +327,8 @@ def _resource(item: dict) -> Resource:
     fields = Resource.__dataclass_fields__
     values = {key: value for key, value in item.items() if key in fields and key != "raw"}
     values.setdefault("id", str(item.get("actor_path", "unknown")))
-    values.setdefault("name", "資源")
-    values.setdefault("resource_type", "未知")
+    values.setdefault("name", "Resource")
+    values.setdefault("resource_type", "Unknown")
     values.setdefault("kind", "resource")
     values.setdefault("x", 0.0)
     values.setdefault("y", 0.0)
@@ -354,7 +354,7 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
         replacement = load_catalog(snapshot.map_name, seed)
         catalog.clear()
         catalog.update(replacement)
-    if seed is not None and any(row.get("kind") == "ore" and row.get("resource_type") == "未知" for row in catalog.get("resources", [])):
+    if seed is not None and any(row.get("kind") == "ore" and row.get("resource_type") == "Unknown" for row in catalog.get("resources", [])):
         seeded = load_catalog(snapshot.map_name, seed)
         catalog.clear()
         catalog.update(seeded)
@@ -387,11 +387,11 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
                     valid = all(isinstance(index, int) and 0 <= index < original for index in destroyed)
                     if valid and not state.get("DynamicInstances") and not state.get("Instances"):
                         generated.remaining = original - len(set(destroyed))
-                        generated.remaining_unit = "生成實例（非物品產量）"
-                        generated.remaining_status = "未列為已破壞；不含動態再生"
-                        generated.source += "＋目前存檔破壞索引"
-                        generated.detail += (f" 已以唯一 mesh→FLOD資料列→同區塊RecordIndex對應：原生成{original}、"
-                                             f"已記錄破壞{len(set(destroyed))}、未列為破壞{int(generated.remaining)}；不推算物品產量。")
+                        generated.remaining_unit = "Spawned instances (not item yield)"
+                        generated.remaining_status = "Not recorded as destroyed; excludes dynamic regrowth"
+                        generated.source += " + current saved destruction indices"
+                        generated.detail += (f" Unique mesh → FLOD row → same-tile RecordIndex match: originally spawned {original}, "
+                                             f"recorded destroyed {len(set(destroyed))}, not recorded destroyed {int(generated.remaining)}; no item yield inferred.")
                         generated.raw["destroyed_instance_count"] = len(set(destroyed))
                         validation["foliage_unique_joins"] += 1
                     elif not valid:
@@ -402,15 +402,15 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
         if item.get("kind") != "ore":
             continue
         existing = by_path.get(item.get("actor_path"))
-        mineral = item.get("resource_type", "未知")
+        mineral = item.get("resource_type", "Unknown")
         if existing is not None:
             saved = existing.raw.get("VoxelSaveData", {})
             override = saved.get("VoxelResourceOverride")
             if override and override != "None":
                 mineral = override
             existing.resource_type = mineral
-            existing.name = ("地穴" if "Caves" in str(item.get("pool")) else "一般") + _mineral_name(mineral) + "礦"
-            existing.source = "目前存檔＋本機地圖資產＋本世界生成種子"
+            existing.name = ("Cave " if "Caves" in str(item.get("pool")) else "Surface ") + _mineral_name(mineral)
+            existing.source = "Current save + local map assets + world generation seed"
             existing.raw["static_metadata"] = {"pool": item.get("pool"), "seed": item.get("seed"), "tile": item.get("tile")}
             total = saved.get("TotalResourceCount")
             if total and total > 20 and mineral in density:
@@ -430,7 +430,7 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
                 existing.name = item["name"]
                 existing.raw["public_cave"] = item["public"]
             continue
-        if item.get("confidence") == "候選" and not catalog.get("calibrated"):
+        if item.get("confidence") == "Candidate" and not catalog.get("calibrated"):
             continue
         static = _resource(item)
         dynamic.append(static)
@@ -462,13 +462,13 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
         cave = min(nearby, key=lambda row: math.hypot(row.x - node.x, row.y - node.y))
         distance = math.hypot(cave.x - node.x, cave.y - node.y) / 100
         if distance <= 150:
-            node.raw["cave_association"] = {"id": cave.id, "name": cave.name, "distance_m": round(distance, 1), "confidence": "推定；僅依鄰近入口"}
-            node.detail += f" 鄰近 {cave.name} 約{distance:.0f}m（推定關聯，非已確認洞內隸屬）。"
+            node.raw["cave_association"] = {"id": cave.id, "name": cave.name, "distance_m": round(distance, 1), "confidence": "Inferred; nearby entrance only"}
+            node.detail += f" Near {cave.name}, about {distance:.0f} m (inferred association; not confirmed inside the cave)."
             summaries[cave.id][_mineral_name(node.resource_type)] += 1
     for cave in caves:
         if cave.id in summaries:
             cave.raw["nearby_ore_counts"] = dict(summaries[cave.id])
-            cave.detail += " 鄰近礦點（推定關聯，非剩餘量）：" + "、".join(f"{name} {count}點" for name, count in summaries[cave.id].most_common())
+            cave.detail += " Nearby ore points (inferred association, not remaining quantities): " + ", ".join(f"{name}: {count} points" for name, count in summaries[cave.id].most_common())
     coverage = copy.deepcopy(catalog.get("coverage", {}))
     coverage.update({"world_seed_available": seed is not None, "generated_mineral_validation": dict(validation),
                      "merged_resource_count": len(dynamic), "ordinary_mineral_types": dict(Counter(row.resource_type for row in dynamic if row.kind == "ore"))})
@@ -476,7 +476,7 @@ def merge_catalog(snapshot: WorldSnapshot, catalog: dict | None = None) -> list[
     if not coverage.get("asset_build_compatible", True):
         snapshot.warnings.append(coverage["limitations"][0])
     if validation.get("density_mismatches"):
-        snapshot.warnings.append("部分礦物密度與還原規則不符，請查核遊戲版本與礦種覆寫。")
+        snapshot.warnings.append("Some mineral densities differ from reconstruction rules. Check game version and mineral overrides.")
     return dynamic
 
 

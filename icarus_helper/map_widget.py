@@ -1,15 +1,12 @@
 """Batched QGraphicsView map: pan/zoom, calibrated grid and selectable markers."""
 from __future__ import annotations
 
-import math
-from pathlib import Path
-from collections import defaultdict
-
 from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap, QPolygonF
+from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsView
 
 from .map_icons import marker_pixmap, mineral_item_id, mineral_style, marker_style
+from .drill_inventory import inventory_for_point
 
 
 COLORS = {
@@ -48,6 +45,18 @@ def region_of(item):
     return None
 
 
+def drill_stock_label(point):
+    """Saved output items, separate from the deposit's remaining resource."""
+    stock = inventory_for_point(point)
+    if stock is None:
+        return ""
+    amount = stock.get("quantity")
+    if isinstance(amount, int) and not isinstance(amount, bool) and amount >= 0:
+        return f"Stock: {amount:,} items"
+    known = stock.get("known_quantity", 0)
+    return f"Known: {known:,} items + unknown" if isinstance(known, int) and known > 0 else "Stock unknown"
+
+
 class WorldMap(QGraphicsView):
     selected = Signal(object)
     positionPicked = Signal(float, float)
@@ -57,7 +66,7 @@ class WorldMap(QGraphicsView):
         super().__init__()
         self.setScene(QGraphicsScene(self))
         self.setObjectName("worldMap")
-        self.setAccessibleName("互動地圖；滾輪縮放、拖曳平移、點選標記")
+        self.setAccessibleName("Interactive map; scroll to zoom, drag to pan, click markers")
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.FullViewportUpdate)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
@@ -102,7 +111,7 @@ class WorldMap(QGraphicsView):
 
     def set_points(self, points):
         priority = {"cave": 3, "deep": 4, "drill": 5, "player": 6}
-        self.points = sorted(points, key=lambda p: 8 if kind_group(p) == "deep" and str(value(p, "drill_status", "")).startswith("已放置") else priority.get(kind_group(p), 0))
+        self.points = sorted(points, key=lambda p: 8 if kind_group(p) == "deep" and str(value(p, "drill_status", "")).startswith("Installed") else priority.get(kind_group(p), 0))
         self._hit_targets = []
         self.viewport().update()
 
@@ -156,8 +165,19 @@ class WorldMap(QGraphicsView):
         target = self.hit_target(event.position())
         if target:
             members = target["members"]
-            names = [str(value(p, "name", "位置")) for p in members[:6]]
-            tooltip = (f"{len(members)} 個重疊點位；點選放大\n" if len(members) > 1 else "") + "\n".join(names)
+            names = []
+            for point in members[:6]:
+                name = str(value(point, "name", "Location"))
+                stock = inventory_for_point(point)
+                if stock is not None:
+                    name += "\n" + drill_stock_label(point)
+                    for item in stock.get("items", []):
+                        amount = item.get("quantity")
+                        name += f"\n{item.get('name', item.get('id', 'Unknown item'))}: {amount:,} items" if isinstance(amount, int) else f"\n{item.get('name', item.get('id', 'Unknown item'))}: quantity unknown"
+                    from .live_positions import local_time_text
+                    name += "\nSave " + local_time_text(stock.get("saved_at"))
+                names.append(name)
+            tooltip = (f"{len(members)} overlapping locations; click to zoom in\n" if len(members) > 1 else "") + "\n".join(names)
         else:
             tooltip = ""
         if self.viewport().toolTip() != tooltip:
@@ -221,7 +241,7 @@ class WorldMap(QGraphicsView):
         transform = self.viewportTransform()
         markers = []
         areas = []
-        paired_drills = {value(p, "raw", {}).get("_drill", {}).get("id") for p in self.points if kind_group(p) == "deep" and str(value(p, "drill_status", "")).startswith("已放置")}
+        paired_drills = {value(p, "raw", {}).get("_drill", {}).get("id") for p in self.points if kind_group(p) == "deep" and str(value(p, "drill_status", "")).startswith("Installed")}
         for point in self.points:
             p = QPointF(float(value(point, "x", 0)) / 100, float(value(point, "y", 0)) / 100)
             region = region_of(point)
@@ -276,33 +296,33 @@ class WorldMap(QGraphicsView):
         if group in ("deep", "ore") or kind in ("ice", "deposit"):
             style = mineral_style(str(value(point, "resource_type", "")))
             if style.key == "unknown":
-                return "未知礦物"
-            return style.label + ("礦" if not style.label.endswith("礦") and style.label not in ("未知", "冰", "超冷冰", "凍木", "石材", "黏土", "石灰石") else "")
+                return "Unknown mineral"
+            return style.label
         if group == "exotic":
             item = mineral_item_id(str(value(point, "resource_type", "")))
-            return {"Exotic_Red_Raw": "紅異質", "Exotic_Red": "紅異質", "Uranium_Raw": "鈾礦"}.get(item, "異質")
+            return {"Exotic_Red_Raw": "Red exotics", "Exotic_Red": "Red exotics", "Uranium_Raw": "Uranium ore"}.get(item, "Exotics")
         if group == "base":
             name = str(value(point, "name", "") or "").strip()
-            return name if any("\u3400" <= char <= "\u9fff" for char in name) else f"基地 {name}".strip()
+            return f"Base: {name}".strip()
         if group == "cave":
-            name = str(value(point, "name", "地穴"))
-            return name if name.startswith("地穴 ") and len(name) < 14 else "地穴"
+            name = str(value(point, "name", "Cave"))
+            return name if name.startswith("Cave ") else "Cave"
         if group == "player":
             name = str(value(point, "name", "") or "").strip()
-            return name if any("\u3400" <= char <= "\u9fff" for char in name) else f"玩家 {name}".strip()
+            return f"Player: {name}".strip()
         if group == "drill":
-            return "採礦鑽機"
+            return "Mining drill"
         return marker_style(group, str(value(point, "resource_type", ""))).label
 
     @staticmethod
     def _marker_size(point, scale):
-        drilled = str(value(point, "drill_status", "")).startswith("已放置") or value(point, "drill_status") in ("installed", "inferred_installed")
+        drilled = str(value(point, "drill_status", "")).startswith("Installed") or value(point, "drill_status") in ("installed", "inferred_installed")
         return 32 if scale >= 0.32 or kind_group(point) in ("player", "base", "drill") or drilled else 26
 
     def _draw_marker(self, painter, point, position, scale):
         group = kind_group(point)
-        candidate = str(value(point, "confidence", "")) in ("candidate", "estimated", "inferred", "推定", "候選")
-        drilled = str(value(point, "drill_status", "")).startswith("已放置") or value(point, "drill_status") in ("installed", "inferred_installed")
+        candidate = str(value(point, "confidence", "")) in ("candidate", "estimated", "inferred", "Inferred", "Candidate", "Estimated")
+        drilled = str(value(point, "drill_status", "")).startswith("Installed") or value(point, "drill_status") in ("installed", "inferred_installed")
         size = self._marker_size(point, scale)
         pixmap = marker_pixmap(group, str(value(point, "resource_type", "")), size=size, candidate=candidate, drilled=drilled)
         icon_rect = QRectF(position.x() - size / 2, position.y() - size / 2, size, size)
@@ -314,24 +334,30 @@ class WorldMap(QGraphicsView):
         painter.drawPixmap(icon_rect, pixmap, QRectF(pixmap.rect()))
         hit_rect = icon_rect.adjusted(-7 if highlighted else -3, -7 if highlighted else -3, 7 if highlighted else 3, 7 if highlighted else 3)
         label = self._marker_label(point, scale)
+        stock_label = drill_stock_label(point)
         if label:
             font = QFont("Microsoft JhengHei UI")
             font.setPixelSize(12)
             font.setBold(True)
             painter.setFont(font)
-            width = painter.fontMetrics().horizontalAdvance(label) + 12
-            text_rect = QRectF(position.x() - width / 2, position.y() + size / 2 + 2, width, 21)
+            width = max(painter.fontMetrics().horizontalAdvance(text) for text in (label, stock_label)) + 12
+            text_rect = QRectF(position.x() - width / 2, position.y() + size / 2 + 2, width, 40 if stock_label else 21)
             painter.setBrush(QColor(76, 15, 26, 245) if highlighted else QColor(7, 17, 25, 235))
             painter.setPen(QPen(QColor("#ff6470") if highlighted else QColor("#9cc5d7"), 1.4 if highlighted else 0.7))
             painter.drawRoundedRect(text_rect, 4, 4)
             painter.setPen(QColor("#f4faff"))
-            painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, label)
+            if stock_label:
+                painter.drawText(QRectF(text_rect.x(), text_rect.y(), width, 20), Qt.AlignmentFlag.AlignCenter, label)
+                painter.setPen(QColor("#ffdf8a"))
+                painter.drawText(QRectF(text_rect.x(), text_rect.y() + 19, width, 20), Qt.AlignmentFlag.AlignCenter, stock_label)
+            else:
+                painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, label)
             hit_rect = hit_rect.united(text_rect)
         self._hit_targets.append({"rect": hit_rect, "members": [point], "scene_position": QPointF(value(point, "x", 0) / 100, value(point, "y", 0) / 100)})
 
     def grid(self, x, y):
         if not self.grid_verified:
-            return "格位未校準"
+            return "Grid not calibrated"
         col = int((x / 100 - self.map_bounds.left()) / self.map_bounds.width() * 16)
         row = int((y / 100 - self.map_bounds.top()) / self.map_bounds.height() * 16)
-        return f"{chr(65 + col)}{row + 1}" if 0 <= col < 16 and 0 <= row < 16 else "地圖範圍外"
+        return f"{chr(65 + col)}{row + 1}" if 0 <= col < 16 and 0 <= row < 16 else "Outside map bounds"

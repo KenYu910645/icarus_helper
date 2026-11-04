@@ -59,7 +59,7 @@ def save_fixture(path: Path, records=None, encoding="utf-8"):
     raw = props({"StateRecorderBlobs": [
         {"ComponentClassName": component, "BinaryData": props(record)} for component, record in records
     ], "Version": 2, "ProspectMapName": "Terrain_019"})
-    envelope = {"ProspectInfo": {"ProspectID": "測試世界", "ClaimedAccountID": "synthetic", "ProspectDTKey": "OpenWorld_Prometheus"},
+    envelope = {"ProspectInfo": {"ProspectID": "測試World", "ClaimedAccountID": "synthetic", "ProspectDTKey": "OpenWorld_Prometheus"},
                 "ProspectBlob": {"BinaryBlob": base64.b64encode(zlib.compress(raw)).decode(),
                                  "Hash": hashlib.sha1(raw).hexdigest(), "UncompressedLength": len(raw)}}
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,11 +79,11 @@ def drill(id, target=None, xyz=(0, 0, 0)):
 
 @pytest.mark.parametrize("encoding", ["utf-8", "utf-8-sig", "utf-16", "utf-16-le"])
 def test_envelope_encoding_and_integrity(tmp_path, encoding):
-    source = tmp_path / "原始" / "世界.json"
+    source = tmp_path / "原始" / "World.json"
     save_fixture(source, encoding=encoding)
     original = source.read_bytes()
     snapshot = load_snapshot(source, tmp_path / "cache")
-    assert snapshot.name == "測試世界"
+    assert snapshot.name == "測試World"
     assert snapshot.map_name == "Prometheus"
     assert snapshot.sha256 == hashlib.sha256(original).hexdigest()
     assert snapshot.source_size == len(original)
@@ -98,7 +98,7 @@ def test_discovery_ignores_backups_and_nonworlds(tmp_path):
     (tmp_path / "account" / "Prospects" / "notworld.json").write_text("{}")
     result = discover_saves(tmp_path)
     assert len(result) == 1
-    assert result[0].name == "測試世界"
+    assert result[0].name == "測試World"
 
 
 @pytest.mark.parametrize("field, value", [("Hash", "0" * 40), ("UncompressedLength", 1), ("BinaryBlob", "truncated!")])
@@ -132,54 +132,54 @@ def test_fully_mined_is_zero_but_absent_count_is_unknown():
     exhausted, unknown = point(1, "ore"), point(2, "ore")
     _mineral_state(exhausted, {"VoxelSaveData": {"bIsVoxelFullyMined": True}})
     _mineral_state(unknown, {"VoxelSaveData": {"VoxelResourceOverride": "None"}})
-    assert exhausted.remaining == 0 and exhausted.remaining_status == "已耗盡"
-    assert unknown.remaining is None and unknown.remaining_status == "數量未知"
+    assert exhausted.remaining == 0 and exhausted.remaining_status == "Depleted"
+    assert unknown.remaining is None and unknown.remaining_status == "Quantity unknown"
 
 
 def test_partial_mineral_is_estimate_not_final_item_count():
     ore = point(1, "ore")
     _mineral_state(ore, {"VoxelSaveData": {"TotalResourceCount": 40.0, "NumResourcesGranted": 10, "VoxelResourceOverride": "Gold"}})
-    assert ore.remaining == 30 and ore.remaining_status == "估計"
+    assert ore.remaining == 30 and ore.remaining_status == "Estimated"
     assert ore.resource_type == "Gold"
-    assert "不是保證物品產出" in ore.detail
+    assert "not guaranteed item yield" in ore.detail
 
 
 def test_explicit_drill_link_wins_over_distance_and_not_operation():
     deposit, nearby = point(10, xyz=(10000, 0, 0)), point(11)
     machine = drill(100, target=10)
     associate_drills([deposit, nearby], [machine])
-    assert deposit.drill_status == "已放置"
-    assert nearby.drill_status == "未放置"
-    assert "未運轉" in deposit.detail
+    assert deposit.drill_status == "Installed"
+    assert nearby.drill_status == "Not installed"
+    assert "Not running" in deposit.detail
 
 
 def test_missing_explicit_target_does_not_attach_to_other_deposit():
     deposit = point(10)
     associate_drills([deposit], [drill(100, target=999)])
-    assert deposit.drill_status == "未放置"
+    assert deposit.drill_status == "Not installed"
 
 
 def test_3d_fallback_uses_height_and_unambiguous_matching():
     low, high = point(10), point(11, xyz=(0, 0, 1000))
     associate_drills([low, high], [drill(100)])
-    assert low.drill_status == "已放置（推定）"
-    assert high.drill_status == "未放置"
+    assert low.drill_status == "Installed (inferred)"
+    assert high.drill_status == "Not installed"
     first, second = point(20), point(21, xyz=(100, 0, 0))
     associate_drills([first, second], [drill(200)])
-    assert first.drill_status == second.drill_status == "無法確認"
+    assert first.drill_status == second.drill_status == "Cannot confirm"
 
 
 def test_two_drills_cannot_claim_same_deposit_as_confirmed():
     deposit = point(10)
     associate_drills([deposit], [drill(100, target=10), drill(101, target=10)])
-    assert deposit.drill_status == "無法確認"
+    assert deposit.drill_status == "Cannot confirm"
 
 
 def test_absent_actor_ids_do_not_form_false_confirmed_link():
     deposit = point(10)
     deposit.raw.pop("IcarusActorGUID")
     associate_drills([deposit], [drill(100)])
-    assert deposit.drill_status == "已放置（推定）"
+    assert deposit.drill_status == "Installed (inferred)"
 
 
 def test_unknown_core_fields_make_deployment_absence_unknown():
@@ -187,7 +187,7 @@ def test_unknown_core_fields_make_deployment_absence_unknown():
     assert not _deployments_complete([bad])
     deposit = point(10)
     associate_drills([deposit], [], complete=_deployments_complete([bad]))
-    assert deposit.drill_status == "無法確認"
+    assert deposit.drill_status == "Cannot confirm"
     inventory = {"_component": "/Script/Icarus.DeployableRecorderComponent", "StaticItemDataRowName": "Storage",
                  "ActorClassName": "BP_Storage_C", "IcarusActorGUID": 123,
                  "ActorTransform": {"Translation": [0, 0, 0]},
@@ -205,7 +205,7 @@ def test_decoder_tracks_unknown_core_property_name():
 def test_deployment_collection_incomplete_keeps_absence_unknown():
     deposit = point(10)
     associate_drills([deposit], [], complete=False)
-    assert deposit.drill_status == "無法確認"
+    assert deposit.drill_status == "Cannot confirm"
 
 
 def test_world_identity_and_mission_state(tmp_path):
@@ -218,7 +218,7 @@ def test_world_identity_and_mission_state(tmp_path):
     assert snapshot.raw_records[0]["GameModeRecord"]["GameStateSeed"] == 123
     other = tmp_path / "other.json"
     envelope = save_fixture(other)
-    envelope["ProspectInfo"]["ProspectID"] = "另一世界"
+    envelope["ProspectInfo"]["ProspectID"] = "另一World"
     other.write_text(json.dumps(envelope))
     assert load_snapshot(other).world_id != snapshot.world_id
 
@@ -258,19 +258,19 @@ def test_save_transitions_mining_drill_placement_and_removal(tmp_path):
     save_fixture(source, [(resource_component, deposit)])
     first = load_snapshot(source)
     assert first.resources[0].remaining == 100
-    assert first.resources[0].drill_status == "未放置"
+    assert first.resources[0].drill_status == "Not installed"
     deposit["ResourceRemaining"] = 50
     save_fixture(source, [(resource_component, deposit), ("/Script/Icarus.DrillRecorderComponent", machine)])
     second = load_snapshot(source)
     assert second.resources[0].remaining == 50
-    assert second.resources[0].drill_status == "已放置"
-    assert "正在採礦" in second.resources[0].detail
+    assert second.resources[0].drill_status == "Installed"
+    assert "Mining" in second.resources[0].detail
     assert first.resources[0].remaining == 100  # Immutable-by-separation snapshot.
     deposit["ResourceRemaining"] = 0
     save_fixture(source, [(resource_component, deposit)])
     third = load_snapshot(source)
-    assert third.resources[0].remaining_status == "已耗盡"
-    assert third.resources[0].drill_status == "未放置"
+    assert third.resources[0].remaining_status == "Depleted"
+    assert third.resources[0].drill_status == "Not installed"
 
 
 def test_invalid_refresh_does_not_replace_cached_good_snapshot(tmp_path):
@@ -291,4 +291,4 @@ def test_negative_deposit_amount_is_not_claimed_infinite_or_zero(tmp_path):
     save_fixture(source, [("/Script/Icarus.ResourceDepositRecorderComponent", deposit)])
     item = load_snapshot(source).resources[0]
     assert item.remaining is None
-    assert item.remaining_status == "數量未知"
+    assert item.remaining_status == "Quantity unknown"

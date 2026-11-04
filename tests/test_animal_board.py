@@ -19,7 +19,7 @@ CATALOG = {"map": "Prometheus", "calibrated": True,
                       "max_x": 403200, "max_y": 403200}}
 
 
-def entry(ident, owner_key="owner:first", name=None, owner="同名飼養者", distance=20,
+def entry(ident, owner_key="owner:first", name=None, owner="同名Owner", distance=20,
           position=(10000, 20000, 300)):
     result = animal(ident, name or ident, distance, owner)
     result.update(owner_key=owner_key, position=list(position) if position is not None else None)
@@ -61,13 +61,13 @@ def point_ids(panel):
 def test_namesake_owners_have_separate_columns_and_shared_character_groups_together(board):
     app, panel = board
     source = snapshot(entry("a"), entry("b"), entry("c", owner_key="owner:second"),
-                      entry("d", owner_key="unknown", owner="未知"))
+                      entry("d", owner_key="unknown", owner="Unknown"))
     before = deepcopy(source)
     load(app, panel, source)
     assert set(panel.owner_columns) == {"owner:first", "owner:second", "unknown"}
     assert len(panel.owner_columns) == 3
-    assert panel.owner_columns["owner:first"].accessibleName() == "飼養者 同名飼養者"
-    assert panel.owner_columns["owner:second"].accessibleName() == "飼養者 同名飼養者"
+    assert panel.owner_columns["owner:first"].accessibleName() == "Owner 同名Owner"
+    assert panel.owner_columns["owner:second"].accessibleName() == "Owner 同名Owner"
     assert panel.animal_cards["a"].parentWidget() is panel.animal_cards["b"].parentWidget()
     assert panel.animal_cards["a"].parentWidget() is not panel.animal_cards["c"].parentWidget()
     assert card_ids(panel) == point_ids(panel) == {"a", "b", "c", "d"}
@@ -88,7 +88,7 @@ def test_scope_and_search_apply_to_cards_map_and_unknown_position_consistently(b
         assert {str(row["id"]) for row in panel._row_animals} == expected
         assert point_ids(panel) == expected - {"missing"}
     assert panel.animal_map.map.chosen is None
-    assert "位置未知" in panel.animal_map.position_note.text()
+    assert "Position unknown" in panel.animal_map.position_note.text()
     panel.scope_combo.setCurrentIndex(panel.scope_combo.findData("all"))
     panel.search_edit.setText("另一位")
     assert card_ids(panel) == point_ids(panel) == {"away"}
@@ -146,7 +146,7 @@ def test_mouse_selects_map_animal_card_and_card_locate_centers_its_true_position
     assert panel._selected_id == "first" and panel.animal_map.map.chosen["id"] == "first"
     assert "first" in panel.detail_title.text()
     locate = next(button for button in target_card.findChildren(QPushButton)
-                  if button.accessibleName().startswith("地圖定位"))
+                  if button.accessibleName().startswith("Locate on map:"))
     QTest.mouseClick(locate, Qt.MouseButton.LeftButton)
     assert panel.selected_animal()["id"] == "second"
     assert panel.animal_map.map.chosen["id"] == "second"

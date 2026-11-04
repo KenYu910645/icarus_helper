@@ -33,12 +33,12 @@ def catalogs(monkeypatch):
 
 
 def owned(ident, account=PRIVATE_A, slot=1):
-    return tame(ident, OwnerCharacterID={"PlayerID": account, "ChrSlot": slot}, OwnerName="同名飼養者")
+    return tame(ident, OwnerCharacterID={"PlayerID": account, "ChrSlot": slot}, OwnerName="同名Owner")
 
 
 def owner_info(account, slot, value):
     key = owner_stats.owner_key((account, slot))
-    return {"owner_key": key, "owner_name": "同名飼養者", "known_percent": {"health": value, "stamina": value},
+    return {"owner_key": key, "owner_name": "同名Owner", "known_percent": {"health": value, "stamina": value},
             "percent": {"health": value, "stamina": value},
             "persistent_complete": {"health": value is not None, "stamina": value is not None},
             "live_complete": False, "sources": [{"kind": "Characters.json", "sha256": "b" * 64,
@@ -121,7 +121,7 @@ def test_qt_owner_information_shows_no_platform_identity_or_private_source_path(
         entry = animal()
         entry["owner_key"] = owner_stats.owner_key((PRIVATE_A, 1))
         entry["owner_capacity"] = owner_info(PRIVATE_A, 1, 30)
-        entry["stats"][0].update(maximum=200, maximum_status="persistent", detail="已核對飼養者 +30%；角色資料為獨立時間。")
+        entry["stats"][0].update(maximum=200, maximum_status="persistent", detail="已核對Owner +30%; 角色資料為獨立時間.")
         panel.resize(1300, 800)
         panel.show()
         panel.set_summary(summary(entry))
@@ -135,7 +135,7 @@ def test_qt_owner_information_shows_no_platform_identity_or_private_source_path(
                 visible.extend(widget.item(row, col).text() for row in range(widget.rowCount()) for col in range(widget.columnCount()) if widget.item(row, col))
         text = "\n".join(visible)
         assert PRIVATE_A not in text and PRIVATE_B not in text and "PlayerData" not in text
-        assert "同名" not in text or "飼養者" in text
+        assert "同名" not in text or "Owner" in text
     finally:
         panel.close()
         app.processEvents()

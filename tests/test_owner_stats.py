@@ -16,7 +16,7 @@ ACCOUNT = "11111111111111111"
 OTHER = "22222222222222222"
 
 
-def tame(account=ACCOUNT, slot=1, name="同名飼養者"):
+def tame(account=ACCOUNT, slot=1, name="同名Owner"):
     return {"_component": "/Script/Icarus.IcarusMountCharacterRecorderComponent", "OwnerCharacterID": {"PlayerID": account, "ChrSlot": slot},
             "OwnerName": name, "BoolVariables": [{"VariableName": "bIsWildTame", "bVariable": False}]}
 
@@ -51,7 +51,7 @@ def only(result, account=ACCOUNT, slot=1):
 
 
 def test_complete_persistent_sources_include_character_and_account_bestiary_but_are_not_live(tmp_path):
-    root = tmp_path / "中文飼養者"
+    root = tmp_path / "中文Owner"
     account = profiles(root)
     before = {path.name: path.read_bytes() for path in account.iterdir()}
     result = summarize_owner_stats(snapshot(root))

@@ -12,12 +12,12 @@ CATALOG = {
     "game_build": BUILD, "supported_recorder_versions": [3], "level_rule": None,
     "species": {"Mount_Moa": {"name": "恐鳥", "english": "Moa"}, "Cow": {"name": "牛", "english": "Cow"},
                 "Juvenile_Moa": {"name": "恐鳥幼獸", "english": "Juvenile Moa"}},
-    "enums": {"movement": {"EMountMovementBehaviourState::IdleStanding": "原地站立"},
-              "combat": {}, "consumption": {}, "grazing": {}, "sex": {"1": "測試性別"}},
+    "enums": {"movement": {"EMountMovementBehaviourState::IdleStanding": "Stand idle"},
+              "combat": {}, "consumption": {}, "grazing": {}, "sex": {"1": "測試Sex"}},
     "modifiers": {"ReadyToMilk": {"name": "可以擠奶"}},
     "genetics": {}, "talents": {}, "lineages": {},
 }
-ITEMS = {"game_build": BUILD, "items": {"Wood": {"name": "木材"}, "Saddle": {"name": "鞍具"}},
+ITEMS = {"game_build": BUILD, "items": {"Wood": {"name": "木材"}, "Saddle": {"name": "Saddle"}},
          "dynamic_properties": {"ItemableStack": 7, "InventoryContainer_LinkedInventoryId": 13}}
 
 
@@ -39,7 +39,7 @@ def tame(uid=1, xyz=(0, 0, 0), component="IcarusMountCharacterRecorderComponent"
     return {"_component": "/Script/Icarus." + component, "ActorStateRecorderVersion": 3,
             "IcarusActorGUID": uid, "MountName": "測試動物", "AISetupRowName": "Mount_Moa",
             "OwnerCharacterID": {"PlayerID": "SYNTHETIC_PRIVATE_PLAYER", "ChrSlot": 0},
-            "OwnerName": "測試玩家", "BoolVariables": [{"VariableName": "bIsWildTame", "bVariable": False}],
+            "OwnerName": "測試Player", "BoolVariables": [{"VariableName": "bIsWildTame", "bVariable": False}],
             "IntVariables": [{"VariableName": "LastLevelAchieved", "iVariable": 31}],
             "CharacterRecord": {"CurrentHealth": 120}, "FoodLevel": 80, "WaterLevel": 90,
             "OxygenLevel": 100, "Stamina": 45, "Experience": 1000, "Modifiers": [],
@@ -69,7 +69,7 @@ def test_mount_cow_and_explicit_tamed_juvenile_are_admitted():
     assert selected_cow["inventory_status"] == "empty"
     assert next(s for s in selected_cow["stats"] if s["id"] == "milk")["value"] == 3000
     assert selected_cow["status_label"] == "可以擠奶"
-    assert next(a for a in result["animals"] if a["id"] == "3")["owner_name"] == "未知"
+    assert next(a for a in result["animals"] if a["id"] == "3")["owner_name"] == "Unknown"
 
 
 @pytest.mark.parametrize("changes", [
@@ -119,14 +119,14 @@ def test_missing_stats_and_position_are_unknown_but_zero_is_real():
     assert stats["water"]["value"] == 0
     assert all(s["maximum"] is None for s in row["stats"])
     assert row["position"] is None and row["at_home"] is None
-    assert "水分為 0" in row["status_label"]
+    assert "Water is 0" in row["status_label"]
 
 
 def test_raw_last_level_is_not_presented_as_verified_level():
     row = summarize(tame())["animals"][0]
     assert row["level"] is None
-    assert "尚未驗證" in row["level_note"]
-    assert {"label": "最後等級記錄（原值）", "value": "31"} in row["details"]
+    assert "not been verified" in row["level_note"]
+    assert {"label": "Last recorded level (raw)", "value": "31"} in row["details"]
 
 
 def test_explicit_verified_saved_level_rule_is_required():
@@ -236,7 +236,7 @@ def test_unverified_recorder_or_installed_build_fails_closed(monkeypatch):
 
 def test_unverified_world_envelope_version_fails_closed():
     for extra in ({"save_format_version": 9}, {"coverage": {"save_format_version": 9}},
-                  {"warnings": ["存檔世界格式版本 9 尚未驗證"]}):
+                  {"warnings": ["World save format version 9 not verified"]}):
         result = animals.summarize_animals(world(tame(), **extra))
         assert result["animals"] == []
         assert result["coverage"]["status"] == "unsupported_version"

@@ -5,6 +5,7 @@ from copy import deepcopy
 import hashlib
 from pathlib import Path
 import struct
+import time
 
 import pytest
 
@@ -255,16 +256,19 @@ def test_handle_is_closed_after_success_or_decode_failure(monkeypatch):
     monkeypatch.setattr(live, "_validate_executable", lambda path: None)
     class Handle:
         closed = False
-        def __init__(self, pid): pass
+        creation_time = 123456
+        bytes = calls = 0
+        def __init__(self, pid): self.started = time.monotonic()
         def close(self): self.closed = True
     for failing in (True, False):
         handle = Handle(123)
         monkeypatch.setattr(live, "_WindowsMemory", lambda pid, **kwargs: handle)
-        def decode(*args):
+        def decode(*args, **kwargs):
             if failing: raise live.Unavailable("synthetic unstable")
             return live._result("ok", "synthetic")
         monkeypatch.setattr(live, "_read_snapshot_from_memory", decode)
-        live.read_live_animal_stats(snapshot)
+        result = live.read_live_animal_stats(snapshot)
+        assert result["status"] == ("unavailable" if failing else "ok")
         assert handle.closed
 
 

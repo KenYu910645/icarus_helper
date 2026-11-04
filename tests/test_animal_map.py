@@ -26,7 +26,7 @@ def panel():
     app.processEvents()
 
 
-def animal(ident="one", position=None, owner="玩家甲"):
+def animal(ident="one", position=None, owner="Player甲"):
     return {"id": ident, "name": "阿牛" if ident == "one" else "阿羊", "species_id": "Buffalo",
             "species": "水牛", "owner_name": owner, "position": position,
             "distance_m": 5}
@@ -53,19 +53,19 @@ def test_original_xyz_missing_coordinates_and_shared_privacy(panel):
     point = widget.map.points[0]
     assert (point["x"], point["y"], point["z"]) == (12000, -44000, 900)
     assert source["animals"][0] == before["animals"][0]
-    assert "位置未知 2" in widget.status.text()
-    assert "存檔" in widget.status.text()
-    assert "即時" in widget.status.toolTip()
+    assert "Unknown positions: 2" in widget.status.text()
+    assert "save" in widget.status.text().lower()
+    assert "not continuously" in widget.status.toolTip()
     widget.set_context(snapshot(shared=True), source, catalog=CATALOG)
     assert widget.animals == [] and widget.map.points == []
     assert widget.map.chosen is None and widget.map.terrain.isNull()
-    assert "共用" in widget.status.text()
+    assert "shared" in widget.status.text()
 
 
 def test_card_selection_focus_click_and_overlap_keep_true_centers(panel):
     app, widget = panel
     source = {"animals": [animal(position=[10000, 20000, 80]),
-                           animal("two", [10000, 20000, 80], owner="玩家乙")]}
+                           animal("two", [10000, 20000, 80], owner="Player乙")]}
     widget.set_context(snapshot(), source, catalog=CATALOG)
     assert widget.select_animal("one")
     events = []
@@ -107,7 +107,7 @@ def test_world_change_and_filter_remove_old_targets_and_base(panel):
     widget.set_animals([source["animals"][1]])
     assert widget.map.points == []
     assert not widget.select_animal("two")
-    assert "位置未知" in widget.position_note.text()
+    assert "Position unknown" in widget.position_note.text()
     assert widget.position_note.toolTip() == ""
     widget.set_context(snapshot("different"), {"animals": []}, home, CATALOG)
     assert widget.map.chosen is None and widget.map.base is None
@@ -120,14 +120,14 @@ def test_world_change_and_filter_remove_old_targets_and_base(panel):
 
 
 def test_owner_color_is_stable_and_unknown_is_neutral():
-    assert owner_color("玩家甲") == owner_color("玩家甲")
-    assert owner_color("") == owner_color("未知") == owner_color("unknown") == "#99a9b7"
+    assert owner_color("Player甲") == owner_color("Player甲")
+    assert owner_color("") == owner_color("Unknown") == owner_color("unknown") == "#99a9b7"
 
 
 def test_map_owner_border_uses_same_private_group_key_as_cards(panel, monkeypatch):
     from icarus_helper import animal_map
     app, widget = panel
-    source = animal(position=[0, 0, 10], owner="同名飼養者")
+    source = animal(position=[0, 0, 10], owner="同名Owner")
     source["owner_key"] = "owner:unique-private-group"
     seen = []
     original_color = owner_color

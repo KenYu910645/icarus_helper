@@ -1,5 +1,13 @@
 # 地圖與物品資料建置工具
 
+`python tools/verify_backup_health_bars.py`唯讀載入歷史備份，渲染寬窄的生命值血條頁，核對列表繪製、選版明細的Qt圖片資源及樣本hash不變。輸出於ignored `artifacts/backup-health-bars-20261102/`，含私人角色資訊，不公開；工具不備份、清理或還原世界。這是Qt元件渲染驗證，不能代稱Windows實際互動或原世界還原。無畫面的Qt平台會顯式載入本機Windows字型供驗證，不改正式APP字型設定。
+
+## 世界存檔玩家摘要驗證
+
+`python tools/verify_backup_players.py --live`唯讀比較目前選定世界的歷史玩家摘要與完整存檔解碼，涵蓋兩人存活、死亡零值與離線最後保存值。報告位於ignored `artifacts/backup-player-details-20261102/player-audit.json`，含私人角色資訊，不公開。工具不還原、不修改原存檔或歷史備份；保留天數只讀目前設定。
+
+加上`--exe "dist/backup-player-details-20261102/ICARUS Helper/ICARUS Helper.exe"`會另外以獨立合成世界執行封裝背景模式，核對封裝內確有玩家解析、角色slot隔離、合法零值／False及匿名輸出。這是背景模式與唯讀資料驗證，不能代稱Windows桌面點選或原世界還原。
+
 桌面 APP 執行時只讀取本機快取或封裝內的精簡 atlas，不依賴此工具資料夾、舊分析專案、repak、UAssetAPI、網路或 Steam 寫入權限。原始遊戲檔與存檔均維持唯讀。
 
 原始碼隨附 `icarus_helper/atlas/26313227/` 的精簡圖資。安裝 `requirements.txt` 後即可用 `python main.py` 啟動，不需先解包遊戲或準備個人快取；資料來源及目前覆蓋限制仍以 `DATA_SOURCES.md` 為準。以下工具僅供重新建置圖資／物品目錄，不是使用APP的必要步驟。
@@ -100,6 +108,25 @@ python -m pytest tests/test_mission_locations.py -q
 資料保留來源hash與build。查詢位置僅是候選／搜尋區域；只有當前世界的明確關聯或位置旗標才提升為已知執行位置。執行階段不讀所有存檔備份，也不猜測尚未生成的動態投放艙。
 - Prometheus校準221個資產入口，其中216個距社群點小於30m；Olympus另外以測試世界11入口比對，10個小於30m。Styx尚無本機校準證據，因此不顯示已校準格位。
 
+## 行動接取規則重建
+
+`build_operation_rules.py`從明確指定的本機資料夾，唯讀取得`D_Talents.json`、`D_ProspectList.json`與`D_FactionMissions.json`三份已解包資料表，產生精簡的`operation_rules.json`。只需Python標準函式庫；不讀取存檔、Profile、帳號設定或遊戲程序，也不解包／散布原始遊戲資料。來源三表的SHA-256須符合已驗證build `26313227`，不同時停止，不能只改版本號延用原生規則。
+
+先將三表放在`$taskRuleSource`指定資料夾；例如本次本機研究目錄`artifacts/mission-clusters-20261103/full-catalog-audit`。以暫存輸出重建並對照現有隨附檔案：
+
+```powershell
+$taskRuleSource = 'artifacts/mission-clusters-20261103/full-catalog-audit'
+$taskRuleOutput = Join-Path $env:TEMP 'icarus-operation-rules.json'
+python tools/build_operation_rules.py --source $taskRuleSource --output $taskRuleOutput
+if ($LASTEXITCODE -ne 0) { throw '行動規則重建失敗' }
+$taskExpectedHash = (Get-FileHash -LiteralPath 'icarus_helper/data/operation_rules.json' -Algorithm SHA256).Hash
+if ((Get-FileHash -LiteralPath $taskRuleOutput -Algorithm SHA256).Hash -ne $taskExpectedHash) { throw '新輸出與隨附規則不同；需先查明差異' }
+```
+
+工具要求明確`--output`，上述流程不覆寫隨附資料。已查核並決定更新時，才把輸出指向`icarus_helper/data/operation_rules.json`。目前重建128項行動規則及144個Talent／Reroute節點；保留原任務順序、空的接取節點及完整遞迴前置，不把原表有列或缺少Talent當作確定可接。只輸出判定所需識別碼／欄位與來源hash；完整三表仍留在本機，不提交或封裝。
+
+帳號Talent儲存範圍、OR前置、放棄／失敗不加重接鎖、完成鎖期限、版本feature與DLC使用權分開，以及`Mission_In_Progress`的單一行動限制，是此build經原生／藍圖查核的固定契約；工具內保留對應EXE hash與函式位置。這些契約不是單靠三表推導，遊戲更新後須重新核對再調整工具與來源hash。生成結果只提供靜態規則，當下可接狀態仍需由APP結合正確帳號及世界快照判定。
+
 ## 家中物資目錄
 
 `build_inventory_catalog.py`唯讀擷取目前安裝版本的三份資料表，再產生`icarus_helper/data/inventory_items.json`。需要Python 3.12、repak及`pefile`；這個工具不需要UAssetAPI，也不讀取私人存檔或啟動遊戲。repak位置沿用前述`ICARUS_REPAK`設定，遊戲來源沿用`catalog_inventory.py`的`GAME`。
@@ -197,6 +224,10 @@ python tools/build_animal_icons.py
 
 ## 馴養動物卡片與地圖驗證
 
+`python tools/verify_live_tracking.py --output artifacts/live-tracking-20261102`要求使用者自行開啟所選世界，唯讀驗證cold／warm定位快取的bytes／calls／時間、動物五類目前值／上限與位置、玩家位置及Qt寬窄畫面。案例預設12動物、58組適用欄位、12動物位置、保存2玩家／至少1線上位置，可依CLI調整；不把乳牛氧氣／耐力初始化值當有效容量。`--allow-game-off`只允許備援畫面驗證，會明示`live_verified=False`，不得當真實遊戲驗收。工具不啟動或控制遊戲，設定使用隔離副本，原快照不得被改寫；來源hash變動記錄為外部存檔活動而非單憑變動指稱助手寫入。輸出含私人世界畫面，保留於ignored artifacts。
+
+`verify_animal_capacities.py`現在停用live及owner覆寫，專門隔離檢查版本化容量輸入；遊戲補給／位置與快取驗收改用上面的新工具。完整索引每300秒盤點，期間每輪仍bulk比對所有FUObjectItem世代並只解析有變動的候選，沒有略過舊slot重用檢查；詳細只讀權限、座標原點限制與資料範圍見DATA_SOURCES。
+
 `python tools/verify_animal_owner_live.py --output artifacts/animal-owner-live-20261102`核對目前所選世界的飼養者來源與遊戲／存檔狀態成對值，並以隔離設定渲染寬／窄畫面。遊戲可自行執行；工具不操作角色。來源hash前後變動只記錄為可能的外部存檔活動，使用者設定則必須未變。當次12隻及本機主人30%生命／10%耐力是案例前提，工具可調整動物數量；完整報告與畫面屬私人artifacts，不提交。原生UI同源getter與限制詳見DATA_SOURCES；合成記憶體測試不代稱遊戲實讀或桌面互動。
 
 合成資料的Qt測試可獨立執行，不操作遊戲：
@@ -217,3 +248,14 @@ python tools/verify_animal_board.py
 工具讀取固定使用者設定的目前來源與基地，將設定放入獨立暫存目錄，背景讀取有效存檔，驗證原生動物圖、飼養者分欄、地圖點數、離家動物定位、篩選同步、小視窗與清除。這份驗證要求當次動物均有圖示，屬有明確前提的案例檢查，不是所有世界必然通過的範例。結果及畫面位於`artifacts/animals-refined-20261102/`，結束前核對原始存檔hash及使用者設定位元組未變。畫面與結果含私人世界資訊，不提交Git或公開Release。
 
 上述為Qt元件及唯讀真實快照驗證，不能代稱Windows桌面滑鼠操作、封裝交付或遊戲內動物行為驗證；這些驗收須另外記錄。
+
+## 鑽機庫存驗證
+
+`python tools/verify_drill_inventory.py --output artifacts/drill-inventory-20261102`讀取目前選定世界的新有效快照，以獨立逐槽計算核對每台鑽機產出件數、燃料排除及礦床UID關聯，再用隔離的來源副本／設定測試地圖庫存第二行點選、明細、大小視窗與切共用圖清除私人庫存。要求該世界有可讀鑽機；不更動正式設定／備份排程或操作遊戲。輸出包含私人世界診斷與畫面，僅存ignored artifacts。這是唯讀真存檔及Qt元件驗證，Windows實際操作與封裝仍須另驗。
+# GuoGuoGaGa 公開世界同步（2026-11-02明確授權）
+
+`publish_world_sync.py`只讀指定GuoGuoGaGa／Prometheus來源，使用本機既有GitHub CLI登入；測試必須注入假GitHub，不能對外上傳測試世界。`--once`確認兩輪穩定後執行一次，未加時持續監看；`--keep-versions 3`只清理有本發布器receipt且重驗成功的舊公開版本。私有state固定在`%USERPROFILE%/.icarus-helper/world-publisher/`，不要放進Release。
+
+封裝EXE可用`--world-publisher --save <明確來源> --publisher-keep-versions 3`持續發布；`--publisher-once`可做一次。`install_world_sync.ps1 -ExecutablePath <新版EXE> -SourcePath <明確來源>`安裝／啟動一般使用者工作`IcarusHelperWorldShare`；不碰既有世界備份排程。發布前須確認只包含本次明確授權的世界。
+
+朋友端`--self-test-remote --self-test-report <隔離報告>`驗證正式公開來源及唯讀UI；快取、設定與備份store均在驗收暫存目錄，不能觸發正式daemon或還原。朋友正常使用只需世界選單選「公開同步」，每120秒更新，失敗保留上次有效版本。

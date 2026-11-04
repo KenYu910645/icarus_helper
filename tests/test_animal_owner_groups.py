@@ -52,5 +52,5 @@ def test_explicit_tame_with_no_owner_keeps_name_and_group_unknown():
     result = summarize_animals({"raw_records": [juvenile], "world_id": "synthetic-owner-groups",
                                "map_name": "Prometheus"})
     assert len(result["animals"]) == 1
-    assert result["animals"][0]["owner_name"] == "未知"
+    assert result["animals"][0]["owner_name"] == "Unknown"
     assert result["animals"][0]["owner_key"] == "unknown"

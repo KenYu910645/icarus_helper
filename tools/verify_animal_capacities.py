@@ -1,6 +1,8 @@
 """Read-only real-save capacity checks and isolated Qt rendering.
 
-This runs the animal page against the selected world's stable save snapshot.
+This runs the animal page against the selected world's stable save snapshot,
+with the live/owner overrides disabled to isolate native capacity inputs. Use
+verify_live_tracking.py to validate live supplies, locations and locator costs.
 Only the output directory and a temporary copy of settings/snapshots are written.
 It neither starts nor controls the game and is not desktop-input verification.
 """
@@ -47,6 +49,7 @@ def main():
     from PySide6.QtWidgets import QApplication
     from icarus_helper.animal_widgets import AnimalGauge
     from icarus_helper.animals_view import AnimalPanel
+    from icarus_helper.animals import load_animal_catalog, summarize_animals
     from icarus_helper.catalog import load_catalog
     from icarus_helper.saves import load_snapshot
     from icarus_helper.settings import Settings, settings_path
@@ -95,7 +98,12 @@ def main():
             if base:
                 base = dict(base, world_id=snapshot.world_id, map_name=snapshot.map_name)
             catalog = load_catalog(snapshot.map_name, world_seed=snapshot.game_state_seed)
-            panel = AnimalPanel()
+            capacity_catalog = deepcopy(load_animal_catalog())
+            capacity_catalog.pop("live_capacity_rule", None)
+            capacity_catalog.pop("owner_capacity_rule", None)
+            panel = AnimalPanel(summary_function=lambda current, selected, radius_m: summarize_animals(
+                current, selected, radius_m=radius_m, catalog=capacity_catalog))
+            result["live_reads_disabled_for_capacity_input_check"] = True
             panel.resize(1540, 1000)
             panel.show()
             panel.set_snapshot(snapshot, base, catalog)
