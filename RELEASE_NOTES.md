@@ -1,12 +1,15 @@
-# Unreleased source changes — 2026-11-04
+# v0.4.0 — 2026-11-04
 
 - The interface, resource/item labels, messages, mission guides and operating guide use English. User-created world, base, character and animal names are preserved.
 - Base inventory supports item/material search with a clear button, case-insensitive matching and queries retained across save refreshes. Each material uses one stacked bar with orange lower segments and teal upper segments, preserving actual counts, separate form icons, details and unknown quantities.
 - Mission lists and the overview show all confirmed unlocked or active Operations/NPC missions, excluding completed, locked, unconfirmed and SIMPLE/SMPL3 entries. Account evidence is bound to the selected host/world. A busy Operation slot leaves other unlocked missions waiting; nearby groups retain candidate and unresolved-stage distinctions.
 - Same-context inventory refresh failures retain the last valid chart and details with a stale/error message. Invalid results are not emitted as successful loads, and world/base/radius changes remain isolated.
 - Code cleanup removes unused imports and corrects the symbolic-link rejection test to expect the English error.
+- Includes the existing public-world sync, saved drill-output counts, tamed-animal tracking and world-save backup/confirmed-restore features. Public sync remains separate from the offline shared map and uses the explicitly approved world-data Release; application ZIPs contain no complete private save, account files or Helper settings.
 
-The retained local build is `dist/inventory-search-20261103/ICARUS Helper/ICARUS Helper.exe`. This source update does not publish a new Windows ZIP or replace existing desktop/background processes. Earlier builds and public release history remain available.
+Download `ICARUS-Helper-v0.4.0-Windows-x64.zip`, extract the complete archive into a new folder, then open `ICARUS Helper.exe` and retain `_internal`. `SHA256SUMS.txt` verifies the ZIP; the included `release-manifest.json` records individual file hashes. Existing settings and earlier application folders are retained.
+
+The local release build uses `dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe`. Runtime assets target Steam build 26313227, with Prometheus providing the most complete coverage. Unsupported versions and missing evidence remain explicitly unknown. No gameplay, original-world restoration or second-computer compatibility claim is implied by these release notes.
 
 # v0.2.1
 

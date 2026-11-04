@@ -4,7 +4,7 @@ An English Windows desktop companion that reads local or host world saves. The m
 
 ## Download the Windows app
 
-Open [GitHub Releases](https://github.com/KenYu910645/icarus_helper/releases/latest) and download `ICARUS-Helper-<version>-Windows-x64.zip`. Extract the entire archive, open `ICARUS Helper.exe`, and retain `_internal`. Python and separate map downloads are not required. GitHub's `Source code.zip` contains development sources; choose the Windows application ZIP to run the app. The source branch may contain changes newer than the published Windows ZIP; check [RELEASE_NOTES.md](RELEASE_NOTES.md) for unreleased changes.
+Open [GitHub Releases](https://github.com/KenYu910645/icarus_helper/releases/latest) and download `ICARUS-Helper-<version>-Windows-x64.zip`. For v0.4.0, choose `ICARUS-Helper-v0.4.0-Windows-x64.zip`. Extract the entire archive, open `ICARUS Helper.exe`, and retain `_internal`. Python and separate map downloads are not required. GitHub's `Source code.zip` contains development sources; choose the Windows application ZIP to run the app. Check [RELEASE_NOTES.md](RELEASE_NOTES.md) for changes and the accompanying `SHA256SUMS.txt` to verify the ZIP.
 
 With empty settings, the app opens the **Prometheus shared map and Home**, without requiring a local save. The shared map is marked **Host save not connected**. Its bundled base can be managed through the map's right-click menu and is stored separately from actual-world bases. The app remembers your selection after you switch to your own world.
 
@@ -24,7 +24,7 @@ The app is portable Windows x64. Prometheus has the most complete support; other
 
 ## Open and use
 
-1. Open the **ICARUS Helper** desktop shortcut or the extracted EXE. In the source checkout, `launch.ps1` opens the retained `dist/inventory-search-20261103/ICARUS Helper/ICARUS Helper.exe` when present and otherwise starts `main.py` using your installed Python environment. Earlier folders are retained and running backup processes are not overwritten.
+1. Open the **ICARUS Helper** desktop shortcut or the extracted EXE. In the source checkout, `launch.ps1` opens `dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe` when present and otherwise starts `main.py` using your installed Python environment. Earlier folders are retained and running backup processes are not overwritten.
 2. The first launch selects the shared map. Select a local world or **Choose host save** to track a read-only host copy/source. An old local copy does not automatically become current host data.
 3. Right-click the map and select **Add base here** to set Home, or choose a candidate inferred from deployed-object clusters. Right-click a base to edit, delete or make it primary. Right-click empty space to move the selected base there or switch saved bases. Settings are isolated by world.
 4. Zoom with the mouse wheel and drag to pan. The right-click menu offers full-map and primary-base positioning. Filters select minerals, layers and drill placement. Click a marker for details.
@@ -124,8 +124,8 @@ Builds isolate native-tool lookup paths, check ICU exports required by Qt, and r
 Separate output directories preserve an app already in use:
 
 ```powershell
-powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.2.1
-python tools/package_release.py --bundle "dist/releases/v0.2.1/ICARUS Helper" --output releases/v0.2.1 --version v0.2.1
+powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.4.0
+python tools/package_release.py --bundle "dist/releases/v0.4.0/ICARUS Helper" --output releases/v0.4.0 --version v0.4.0
 ```
 
 First-launch checks without user settings are mandatory, recorded in `artifacts/packaged-shared-startup.json`. Personal-world checks use `--self-test-reference-settings` and are not public Release assets. Unused Qt PDF/Virtual Keyboard/QML/Quick components are removed only after native dependency checks. ZIPs include third-party licenses and per-file SHA-256 manifests, with `SHA256SUMS.txt` alongside.

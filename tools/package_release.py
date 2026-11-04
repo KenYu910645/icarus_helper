@@ -26,7 +26,7 @@ def package(bundle: Path, output: Path, version: str) -> dict:
     if archive.exists():
         raise FileExistsError(archive)
     entries = {p.relative_to(bundle).as_posix(): p for p in bundle.rglob("*") if p.is_file()}
-    for name in ("README.md", "DATA_SOURCES.md", "THIRD_PARTY_NOTICES.md"):
+    for name in ("README.md", "RELEASE_NOTES.md", "DATA_SOURCES.md", "THIRD_PARTY_NOTICES.md"):
         entries[name] = root / name
     for path in (root / "licenses").rglob("*"):
         if path.is_file():
@@ -36,7 +36,7 @@ def package(bundle: Path, output: Path, version: str) -> dict:
         if path.is_symlink() or Path(relative).name in forbidden or any(part in {"artifacts", "snapshots", "PlayerData", "Prospects", ".git"} for part in Path(relative).parts):
             raise ValueError(f"Unexpected private or unused file in release: {relative}")
     manifest = {"version": version, "platform": "Windows x64", "default_map": "Prometheus",
-                "default_base": "我們家", "private_save_included": False,
+                "default_base": "Home", "private_save_included": False,
                 "files": [{"path": name, "bytes": path.stat().st_size, "sha256": sha256(path)} for name, path in sorted(entries.items())]}
     prefix = "ICARUS Helper/"
     with zipfile.ZipFile(archive, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
