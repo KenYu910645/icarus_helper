@@ -232,6 +232,8 @@
 
 ### 已建立的實作
 
+- 2026-11-04 v0.4.0正式發行：Windows x64 ZIP與`SHA256SUMS.txt`已發布至`https://github.com/KenYu910645/icarus_helper/releases/tag/v0.4.0`並設為最新APP Release。tag原始碼為`4be6742`，成品與40個封裝程式模組逐一一致；本節較早的發行準備及先前「僅提交原始碼」為當時歷史狀態。最新版桌面捷徑與`launch.ps1`使用`dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe`，私人設定與基地保留。背景備份／世界分享仍沿用原執行中版本，未因桌面版發布擅自切換。
+
 - 2026-11-04 v0.4.0發行準備：套件版本更新為0.4.0，`launch.ps1`改指向獨立`dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe`，尚無成品時仍回開發入口。ZIP manifest的預設基地名稱同步英文Home；僅為公開共用圖預設值，不修改既有私人基地。舊成品與正在使用的備份／公開同步程序保留；新成品、Release及桌面捷徑驗收結果須另記，不以前版證據代稱。
 - v0.4.0打包文件同步：`package_release.py`的Windows ZIP另附`RELEASE_NOTES.md`，讓README中的更新記錄連結在解壓後可用；其餘授權文字、逐檔manifest與ZIP校驗碼沿用原發行流程。
 - v0.4.0本機成品與捷徑：獨立成品已完成`dist/releases/v0.4.0/ICARUS Helper/`，桌面捷徑已備份並改指向新版EXE及成品`.icons/helper-<hash16>.ico`，回讀目標與圖示一致；`launch.ps1`同步。既有備份daemon與v0.3.0公開同步程序仍保留原路徑執行，不以更新桌面版代稱背景服務已升級。
@@ -302,6 +304,8 @@
 - 原生存檔器確實過濾`SaveToDatabase=false`效果，主人加成亦依OwnerCharacterID從角色StatContainer取得；世界存檔本身沒有完整主人天賦。獨立Characters檔即使時間接近，也不強稱同快照。可確認食物／水／坐騎氧氣依現版NPC資料繪比例，乳牛氧氣／耐力仍未知。缺遊戲來源時的生命／耐力仍須保留個體／持續範圍標記；遊戲來源核對成功時由原生UI同源目前值與上限取代，不再以個體基準冒充完整上限。
 
 ### 已取得的驗證證據
+
+- v0.4.0發行檔案：ZIP共94,961,861 bytes、3,194項（含manifest），3,193份檔案的大小與SHA-256逐項相符，授權文字／Home metadata／私人資料排除均通過；重新解壓後於獨立空LocalAppData及設定啟動共用圖成功。ZIP SHA-256為`43be03489d0a9171ce6f4ddb74fd7db4b493210ccb30c4b811b7be3d240e3c7e`，GitHub兩份Release資產digest均與本機相符；正式發布及最新Release狀態已查核。證據為同發行artifacts目錄的`packaged-source.json`、`zip-verification.json`、`extracted-shared.json`與`published-release.json`。不將此檔案／啟動驗證當作新遊戲操作或另一台實體電腦驗收。
 
 - 2026-11-04 v0.4.0封裝驗收：933項全量測試、12項subtests通過，2項Windows符號連結權限略過；原生Qt／ICU相依、封裝空設定共用圖、真實設定唯讀副本及正式公開同步的隔離啟動均通過。公開同步120000ms輪詢、遠端還原禁用與本機遊戲讀取隔離通過；原設定hash未變。證據在`artifacts/release-v0.4.0-20261104/`。Windows由更新後的捷徑實際開啟v0.4.0，核對EXE路徑、世界／原基地／存檔標頭及英文地圖、原位礦物圖示與鑽機庫存。首次擷取未對應助手，未據其輸入；重新選窗後確認正確畫面。隨後切物資頁操作被使用者實體Esc停止，已停止本輪所有Computer Use；本次不宣稱分頁滑鼠流程完成，亦未操作遊戲或還原原世界。
 
