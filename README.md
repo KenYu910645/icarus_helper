@@ -4,7 +4,7 @@ An English Windows desktop companion that reads local or host world saves. The m
 
 ## Download the Windows app
 
-Open [GitHub Releases](https://github.com/KenYu910645/icarus_helper/releases/latest) and download `ICARUS-Helper-<version>-Windows-x64.zip`. For v0.4.0, choose `ICARUS-Helper-v0.4.0-Windows-x64.zip`. Extract the entire archive, open `ICARUS Helper.exe`, and retain `_internal`. Python and separate map downloads are not required. GitHub's `Source code.zip` contains development sources; choose the Windows application ZIP to run the app. Check [RELEASE_NOTES.md](RELEASE_NOTES.md) for changes and the accompanying `SHA256SUMS.txt` to verify the ZIP.
+Open [GitHub Releases](https://github.com/KenYu910645/icarus_helper/releases/latest) and download `ICARUS-Helper-<version>-Windows-x64.zip`. For v0.4.1, choose `ICARUS-Helper-v0.4.1-Windows-x64.zip`. Extract the entire archive, open `ICARUS Helper.exe`, and retain `_internal`. Python and separate map downloads are not required. GitHub's `Source code.zip` contains development sources; choose the Windows application ZIP to run the app. Check [RELEASE_NOTES.md](RELEASE_NOTES.md) for changes and the accompanying `SHA256SUMS.txt` to verify the ZIP.
 
 With empty settings, the app opens the **Prometheus shared map and Home**, without requiring a local save. The shared map is marked **Host save not connected**. Its bundled base can be managed through the map's right-click menu and is stored separately from actual-world bases. The app remembers your selection after you switch to your own world.
 
@@ -24,13 +24,13 @@ The app is portable Windows x64. Prometheus has the most complete support; other
 
 ## Open and use
 
-1. Open the **ICARUS Helper** desktop shortcut or the extracted EXE. In the source checkout, `launch.ps1` opens the local objective-counter update at `dist/objective-counters-20261105/ICARUS Helper/ICARUS Helper.exe` when present and otherwise starts `main.py` using your installed Python environment. Earlier folders are retained and running backup processes are not overwritten. The public v0.4.0 Release is unchanged.
+1. Open the **ICARUS Helper** desktop shortcut or the extracted EXE. In the source checkout, `launch.ps1` opens `dist/releases/v0.4.1/ICARUS Helper/ICARUS Helper.exe` when present and otherwise starts `main.py` using your installed Python environment. Earlier folders are retained and running backup processes are not overwritten.
 2. The first launch selects the shared map. Select a local world or **Choose host save** to track a read-only host copy/source. An old local copy does not automatically become current host data.
 3. Right-click the map and select **Add base here** to set Home, or choose a candidate inferred from deployed-object clusters. Right-click a base to edit, delete or make it primary. Right-click empty space to move the selected base there or switch saved bases. Settings are isolated by world.
 4. Zoom with the mouse wheel and drag to pan. The right-click menu offers full-map and primary-base positioning. Filters select minerals, layers and drill placement. Click a marker for details.
 5. Open **Missions & guides** for every confirmed unlocked or active Operation/NPC in the selected world. Completed, locked, unconfirmed and SIMPLE/SMPL3 missions are excluded. Status distinguishes missions that can start now, unlocked missions waiting to start, and active missions. Only one Operation can run at once; finish it in the game before starting another. The overview retains all eligible mission points. A marker opens its guide, preparation and progress. Overlapping points provide a mission choice. Search filters the list without hiding other overview markers. Not-yet-generated points remain candidates; unresolved stages appear in **Stage map**. **Nearby groups** offers maximum point separations of 500/1,200/2,000 m and distinguishes stages inside/outside groups and unlocated stages. Groups use horizontal straight-line distances and do not guarantee a single-trip completion or passable terrain.
 
-   **Objectives** uses `0/N` for verified fixed targets, labeled as initial counts. Saved progress is listed separately; unknown and difficulty-dependent targets retain their labels.
+   **Objectives** uses `0/N` for verified fixed targets, labeled as initial counts. Saved progress is listed separately; unknown and difficulty-dependent targets retain their labels. Requirements are matched to the specific mission and verified source version. Unresolved values remain explicit rather than receiving guessed counts, timers or item names.
 6. Open **Base inventory** for saved items in containers/equipment around the selected base. The horizontal radius defaults to 100 m and can be changed, as can category. Each material, such as gold, copper or iron, has one stacked bar: ore/raw forms and other items/mineral fuels use orange at the bottom, with ingots and processed forms in teal above. There is no legend. Tooltips and the detail table retain original forms, quantities and containers. Bars sort by actual combined counts and detail rows by individual quantity, both descending. Unknown or partially unknown totals are last; confirmed partial counts are not presented as complete totals.
 7. Open **Tamed animals** for owner-column cards with native species icons, level and health/food/water/oxygen/stamina/experience bars. Select a card for saddle, backpack and heavy-cargo item icons/counts. Hover or expand item/quantity/slot details to inspect records. Full values, bloodlines, genetics and talents can also be expanded. All confirmed player-tamed animals appear by default; search and filters select near-home, away-from-home or unknown-position animals.
 
@@ -45,6 +45,8 @@ The window, taskbar and shortcut share a gold ICARUS icon with a green **H** at 
 Inventory has five categories: **Ores, Metals & Fuel**, **Materials, Parts & Construction**, **Food & Medical Supplies**, **Tools, Equipment & Ammunition**, and **Other Items**. Ores, ingots and mineral fuels share one chart with two bar colors. Other items/mineral fuels use the bottom color without being classified as unprocessed. Charts scroll horizontally when needed; unrecognized items appear separately when present. Native icons appear beside names; each material's available form icons sit side by side below its stacked bar, with distinct ore/ingot images and hover details. They are bundled, requiring no network or game installation at runtime. Missing icons retain names with question marks. Small windows can scroll to icons and axis labels.
 
 Use the search bar in **Base inventory** to filter the selected category by item or material name, regardless of letter case. Both the stacked chart and detail table update as you type. Searching a material such as `iron` shows its available forms; searching an item such as `iron ore` shows that item. Clear the field with its clear button to restore the category. The query stays in place when a new save updates the inventory.
+
+When inventory data is incomplete, charts and search retain the confirmed subtotal with an unknown remainder, such as `115 + ?`. Missing slots, unreadable item identities and conflicting container or animal-inventory copies remain unknown; they do not establish an empty inventory or a complete item count.
 
 Default map layers show caves, deep deposits, geysers, special resources, oil, drills, players and candidates. Dense layers such as ordinary ore are hidden. Changes are saved; **Restore default layers** resets them. Caves use entrance symbols, ore/deep deposits native mineral icons, and candidates dashed question marks. Installed drills add a red deposit ring, red name plate and green badge. All points stay at their actual coordinates and may overlap, without offsets or leader lines. Worlds with a saved home initially center nearby. World boundaries clip overflowing icon pixels without moving coordinates.
 
@@ -126,8 +128,8 @@ Builds isolate native-tool lookup paths, check ICU exports required by Qt, and r
 Separate output directories preserve an app already in use:
 
 ```powershell
-powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.4.0
-python tools/package_release.py --bundle "dist/releases/v0.4.0/ICARUS Helper" --output releases/v0.4.0 --version v0.4.0
+powershell -NoProfile -File tools/build_app.ps1 -OutputRoot dist/releases/v0.4.1
+python tools/package_release.py --bundle "dist/releases/v0.4.1/ICARUS Helper" --output releases/v0.4.1 --version v0.4.1
 ```
 
 First-launch checks without user settings are mandatory, recorded in `artifacts/packaged-shared-startup.json`. Personal-world checks use `--self-test-reference-settings` and are not public Release assets. Unused Qt PDF/Virtual Keyboard/QML/Quick components are removed only after native dependency checks. ZIPs include third-party licenses and per-file SHA-256 manifests, with `SHA256SUMS.txt` alongside.
@@ -153,6 +155,7 @@ This writes `artifacts/ui/verification.json` and layout images, checking zoom/pa
 - `saves.py`: discovery, stable read-only snapshots, package/Unreal decoding, resources and drill matching.
 - `catalog.py`: static maps, mineral-generation rules, dynamic merging, vegetation and coverage.
 - `missions.py`, `data/missions.json`: mission status, recommendations, version checks and guides.
+- `mission_text.py`, `data/mission_requirements.json`: unresolved-value display and verified mission-specific fixed/difficulty-dependent requirements, separate from saved progress and inventory.
 - `operation_eligibility.py`, `data/operation_rules.json`: version-bound native gates and account/world evidence for unlocked and active Operations.
 - `mission_locations.py`, `mission_map.py`: exact-stage locations, candidates, unresolved targets and the selected mission's map.
 - `mission_overview.py`, `mission_clusters.py`, `mission_planner_view.py`: all eligible mission locations and bounded nearby groups.
