@@ -232,6 +232,8 @@
 
 ### 已建立的實作
 
+- 2026-11-05 v0.4.1正式發行：完整Windows x64 ZIP及`SHA256SUMS.txt`已發布至`https://github.com/KenYu910645/icarus_helper/releases/tag/v0.4.1`並查核為最新非預發行APP Release；tag來源為`9c91e9b`。桌面捷徑與`launch.ps1`使用`dist/releases/v0.4.1/ICARUS Helper/ICARUS Helper.exe`，原私人設定hash、基地、舊成品與原背景服務保留。以下發行準備、未發行及舊版本路徑皆為各次歷史記錄，以本項為目前正式版本。
+
 - 2026-11-05 v0.4.1發行準備：套件版本改為0.4.1，`launch.ps1`改指向獨立`dist/releases/v0.4.1/ICARUS Helper/ICARUS Helper.exe`，沒有成品時保留開發入口。此次納入已提交的任務需求／起始0/N與不完整庫存修正；舊成品與執行中備份／公開同步程序保留。正式Release、捷徑與本輪驗收完成狀態另記，不借用先前本機版或v0.4.0證據。
 - v0.4.1本機成品與捷徑：獨立成品已建置於`dist/releases/v0.4.1/ICARUS Helper/`，桌面捷徑原檔已備份並改連新版EXE與成品`.icons/helper-<hash16>.ico`，回讀目標及圖示相符並由捷徑實際開啟。`launch.ps1`同步，既有私人設定hash未變；原備份及公開同步程序保留，不以桌面更新宣稱背景服務已切版。
 
@@ -315,6 +317,8 @@
 - 原生存檔器確實過濾`SaveToDatabase=false`效果，主人加成亦依OwnerCharacterID從角色StatContainer取得；世界存檔本身沒有完整主人天賦。獨立Characters檔即使時間接近，也不強稱同快照。可確認食物／水／坐騎氧氣依現版NPC資料繪比例，乳牛氧氣／耐力仍未知。缺遊戲來源時的生命／耐力仍須保留個體／持續範圍標記；遊戲來源核對成功時由原生UI同源目前值與上限取代，不再以個體基準冒充完整上限。
 
 ### 已取得的驗證證據
+
+- v0.4.1正式發布核對：本機ZIP SHA-256為`7d11cc39e58891f4856dce5fb0c5c1eb41286eb53cac68f2af157d6fa56a50af`，GitHub ZIP與校驗檔的資產大小及digest均逐份吻合。ZIP及重新解壓啟動、41模組與兩份任務資料一致性證據見下項及`artifacts/release-v0.4.1-20261105/`；`published-release.json`與`latest-release.json`確認已公開且為最新版，`installation.json`記錄已備份並回讀的新捷徑。此為正式封裝／發布驗收，不擴張前述桌面及遊戲驗證範圍。
 
 - 2026-11-05 v0.4.1封裝驗收：沿用本輪已review來源`dfc4d6d`的1,013項測試／12項subtests通過及2項Windows符號連結權限略過結果；發行僅更新版本／啟動路徑與文件，未重複將舊測試稱為新一輪完整回歸。新封裝Qt／ICU相依、隔離共用圖／本機唯讀設定副本／正式公開同步啟動皆通過；遠端120000ms輪詢與還原／本機遊戲讀取隔離正確。41個封裝模組（含`mission_text`）與來源CodeType一致，兩份任務JSON在成品及ZIP逐byte一致。ZIP共95,028,521 bytes／3,195項（含manifest），3,194份檔案的大小／hash、CRC、授權與私人檔案排除通過；獨立解壓EXE於空LocalAppData及設定啟動成功，證據在`artifacts/release-v0.4.1-20261105/`。
 - 同輪Windows實際開啟v0.4.1並核對EXE、世界／原基地／存檔標頭、英文資源圖及鑽機庫存。切任務分頁時使用者輸入保護阻擋，重新觀察擷取未對應助手，未據其輸入並停止本輪後續桌面操作；本次不宣稱任務分頁或0/N滑鼠流程完成。設定hash未變，未控制遊戲或還原原世界；桌面證據與前述自動／封裝驗收分開。
