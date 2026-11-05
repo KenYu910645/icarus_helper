@@ -68,10 +68,35 @@ def test_unknown_quantity_keeps_known_partial_and_never_draws_zero(app):
     assert panel.table.item(0, 3).text() == "70"
     assert panel.table.item(1, 3).text() == "Unknown (confirmed: 45)"
     assert panel.chart.rows[0]["values"]["ore"] is None
+    assert panel.chart.rows[0]["known_values"] == {"ore": 45, "ingot": 70}
+    ore_targets = [target for target in panel.chart.bar_targets if target[3]["id"] == "ore"]
+    ingot_bar = next(target[0] for target in panel.chart.bar_targets if target[3]["id"] == "ingot")
+    assert len(ore_targets) == 2  # Confirmed portion and an unscaled unknown cap.
+    ore_bar, unknown_cap = [target[0] for target in ore_targets]
+    assert ore_bar.height() / ingot_bar.height() == pytest.approx(45 / 70)
+    assert ingot_bar.bottom() == pytest.approx(ore_bar.top())
+    assert unknown_cap.bottom() <= ingot_bar.top()
+    assert "confirmed: 45" in ore_targets[0][1]
     assert "Quantity: Unknown" in panel.chart.bar_targets[0][1]
     assert not panel.table.item(0, 0).icon().isNull()
     assert panel.chart.icon_targets[0]["item_id"] == "CopperOre"
     panel.close()
+
+
+def test_search_keeps_only_the_matching_items_known_subtotal():
+    from copy import deepcopy
+
+    data = summary(None)
+    category = data["categories"][0]
+    data["items"][0]["known_quantity"] = 45
+    category["rows"][0]["known_values"] = {"ore": 45, "ingot": 70}
+    original = deepcopy(category)
+    filtered = inventory_view._search_category(category, "CopperOre")
+    rows = inventory_view._chart_rows(filtered)
+    assert rows[0]["values"] == {"ore": None}
+    assert rows[0]["known_values"] == {"ore": 45}
+    assert [item["id"] for item in rows[0]["items"]] == ["CopperOre"]
+    assert category == original
 
 
 def test_category_change_replaces_rows_and_details(app):

@@ -6,6 +6,7 @@ selected gameplay metadata and original English preparation guides.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from datetime import datetime
 import hashlib
 import json
@@ -16,6 +17,186 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 MAPS = {"Terrain_016": "Olympus", "Terrain_017": "Styx", "Terrain_019": "Prometheus", "Terrain_021": "Elysium"}
 TABLES = ["Prospects/D_ProspectList.json", "Factions/D_FactionMissions.json", "Quests/D_Quests.json", "Quests/D_DynamicQuests.json", "Talents/D_Talents.json"]
+REQUIREMENTS_PATH = ROOT / "icarus_helper/data/mission_requirements.json"
+
+
+def _requirement_amount(requirement: dict) -> str:
+    variants = requirement.get("quantity_by_difficulty")
+    if variants:
+        return "; ".join(f"{name}: {amount}" for name, amount in variants.items())
+    return str(requirement["quantity"])
+
+
+def _apply_objective_flow(catalog: dict, overrides: list[dict]) -> None:
+    """Correct prefix discovery using verified, mission-specific call graphs."""
+    source_rows = {row["id"]: row for mission in catalog["missions"]
+                   for key in ("objectives", "source_objectives", "catalog_only_objectives")
+                   for row in mission.get(key, [])}
+    by_mission = {row["mission_id"]: row for row in overrides}
+    for mission in catalog["missions"]:
+        if mission["id"] == "PRO_C_Research":
+            continue  # Its conflicting item labels are handled below.
+        rule = by_mission.get(mission["id"], {})
+        had_catalog_only = bool(mission.get("catalog_only_objectives"))
+        rows = {row["id"]: row for row in mission.get("source_objectives", [])
+                + mission.pop("catalog_only_objectives", [])}
+        for qid in rule.get("include_ids", []):
+            if qid in source_rows:
+                rows[qid] = deepcopy(source_rows[qid])
+            elif qid in catalog["quest_texts"]:
+                rows[qid] = {"id": qid, "text": catalog["quest_texts"][qid], "info": ""}
+        excluded = {qid for qid in rows if qid in rule.get("exclude_ids", [])
+                    or (rule.get("exclude_prefix") and qid.startswith(rule["exclude_prefix"]))}
+        if rule or had_catalog_only:
+            mission["source_objectives"] = [row for qid, row in rows.items() if qid not in excluded]
+            mission["catalog_only_objectives"] = [row for qid, row in rows.items() if qid in excluded]
+            for row in mission["source_objectives"]:
+                row.pop("exclusion_evidence", None)
+            for row in mission["catalog_only_objectives"]:
+                row["exclusion_evidence"] = deepcopy(rule)
+            mission["quest_ids"] = sorted((set(mission.get("quest_ids", [])) | set(rows)) - excluded)
+
+
+def _apply_catalog_requirements(catalog: dict, requirements: dict) -> None:
+    """Use only audited count pairs, with explicit difficulty variants.
+
+    Timer, health and generated-item placeholders are not inferred as counts.
+    MIASMIC's legacy-row and preparation rules are handled separately below.
+    """
+    pair = re.compile(r"\{0\}\s*/\s*\{1\}")
+    for mission in catalog["missions"]:
+        if mission["id"] == "PRO_C_Research":
+            continue
+        additions = {}
+        # Remove our generated entries before reapplying a different source.
+        mission["checklist"] = [row for row in mission.get("checklist", [])
+                                if not row.get("verified_objective_target")]
+        for key in ("objectives", "source_objectives"):
+            for row in mission.get(key, []):
+                template = row.get("source_text", row["text"])
+                requirement = requirements.get(row["id"])
+                if requirement and (requirement["source_text"] != template
+                                    or mission["id"] not in requirement["evidence"].get("missions", [])):
+                    requirement = None
+                if requirement is None and "quantity_source" not in row:
+                    continue
+                previous = row["text"]
+                row["source_text"] = template
+                for field in ("required_quantity", "required_quantity_by_difficulty", "quantity_source"):
+                    row.pop(field, None)
+                row["text"] = template
+                display = requirement.get("display_template", template) if requirement else template
+                if requirement and pair.search(display):
+                    label = _requirement_amount(requirement)
+                    row["text"] = pair.sub("Required: " + label, display).strip()
+                    row["quantity_source"] = deepcopy(requirement["evidence"])
+                    if requirement.get("quantity_by_difficulty"):
+                        row["required_quantity_by_difficulty"] = deepcopy(requirement["quantity_by_difficulty"])
+                    else:
+                        row["required_quantity"] = requirement["quantity"]
+                    if requirement.get("prep_item") and not requirement.get("reuse_preparation_from"):
+                        action = requirement.get("action", "objective")
+                        additions[row["id"]] = {**prep(requirement["prep_item"], label, True,
+                            requirement.get("preparation_note", f"{action} target for this stage; obtain during the mission as appropriate. Separate stage targets are not a combined departure total.")),
+                            "quest_id": row["id"], "verified_objective_target": True}
+                catalog["quest_texts"][row["id"]] = row["text"]
+                # Generated fallback guides also quote the source objective.
+                mission["guide"] = [step.replace(previous, row["text"]).replace(template, row["text"])
+                                    for step in mission.get("guide", [])]
+        for requirement in requirements.values():
+            original = requirement.get("reuse_preparation_from")
+            if original in additions and mission["id"] in requirement["evidence"].get("missions", []):
+                additions[original]["note"] = requirement["evidence"]["preparation_note"]
+        mission["checklist"] = list(additions.values()) + mission["checklist"]
+
+
+def apply_verified_requirements(catalog: dict, evidence: dict | None = None) -> None:
+    """Join audited fixed targets, never an invented current progress count.
+
+    Only audited two-argument count templates are supported here. Other
+    argument semantics must not be blindly formatted.
+    The original template is retained for diagnostics and repeatable rebuilds.
+    """
+    if evidence is None:
+        evidence = json.loads(REQUIREMENTS_PATH.read_text(encoding="utf-8"))
+    compatible = (catalog.get("source_build") == evidence["source_build"]
+                  and catalog.get("source_files", {}).get("Quests/D_Quests.json", {}).get("sha256")
+                  == evidence["quest_table_sha256"])
+    requirements = evidence["quests"] if compatible else {}
+    _apply_objective_flow(catalog, evidence.get("mission_objective_overrides", []) if compatible else [])
+    _apply_catalog_requirements(catalog, requirements)
+    pair = re.compile(r"\(\{0\}\s*/\s*\{1\}\)")
+
+    def objective(qid: str, template: str) -> tuple[str, dict | None]:
+        requirement = requirements.get(qid)
+        if requirement and requirement["source_text"] != template:
+            requirement = None
+        label = f"Required: {requirement['quantity']}" if requirement else "Quantity unconfirmed"
+        display = requirement.get("display_template", template) if requirement else template
+        return pair.sub(f"({label})", display).strip(), requirement
+
+    for mission in catalog["missions"]:
+        if mission["id"] != "PRO_C_Research":
+            continue
+        # Prefix-based discovery also finds unused legacy rows. Keep them for
+        # diagnostics without presenting them as required deliveries.
+        excluded = evidence.get("excluded_objectives", {}) if compatible else {}
+        source_rows = mission.get("source_objectives", []) + mission.pop("catalog_only_objectives", [])
+        mission["source_objectives"] = [row for row in source_rows if row["id"] not in excluded]
+        mission["catalog_only_objectives"] = [row for row in source_rows if row["id"] in excluded]
+        for row in mission["catalog_only_objectives"]:
+            row["exclusion_evidence"] = deepcopy(excluded[row["id"]])
+            template = row.get("source_text", row["text"])
+            row["source_text"] = template
+            catalog["quest_texts"][row["id"]] = (pair.sub("", template).strip()
+                + " (Legacy catalog row; not a required delivery in the verified mission flow)")
+        accepted = {}
+        for key in ("objectives", "source_objectives"):
+            for row in mission.get(key, []):
+                template = row.get("source_text", row["text"])
+                if not pair.search(template):
+                    continue
+                row["source_text"] = template
+                row["text"], requirement = objective(row["id"], template)
+                row["required_quantity"] = requirement["quantity"] if requirement else None
+                row.pop("quantity_source", None)
+                if requirement:
+                    row["quantity_source"] = deepcopy(requirement["evidence"])
+                    accepted[row["id"]] = requirement
+                catalog["quest_texts"][row["id"]] = row["text"]
+
+        # Quantities in Preparation and Objectives come from the same match.
+        facilities = []
+        for qid, item in (
+            ("PRO_C_Research_Build_Solar", "Solar Panel"),
+            ("PRO_C_Research_Build_Furnace", "Electric Furnace"),
+            ("PRO_C_Research_Build_Alteration_Bench", "Advanced Alteration Bench"),
+            ("PRO_C_Research_Build_Chemisry_Bench", "Chemistry Bench"),
+            ("PRO_C_Research_Build_Cleaning", "Organic Residue Cleanser"),
+            ("PRO_C_Research_Build_Foundry", "Foundry"),
+        ):
+            requirement = accepted.get(qid)
+            facilities.append({**prep(item, str(requirement["quantity"]) if requirement else "Unconfirmed",
+                                      True, "Deploy at the mission research site; T4 crafting capability required."),
+                               "quest_id": qid})
+        mission["checklist"] = facilities + [row for row in mission["checklist"]
+            if row.get("item") != "Six specified research-station facilities and T4 crafting capability"
+            and row.get("quest_id") not in {entry["quest_id"] for entry in facilities}]
+        mission["guide"][1] = ("Build the research station at the specified site. Required equipment: "
+            + "; ".join(f"{row['item']} x {row['quantity']}" for row in facilities) + ".")
+        mission["guide"][4] = "Use the coating to craft the Miasmic tools in the quantities listed under Objectives. Verify unconfirmed targets in the game."
+        mission["guide"][5] = "Test gathering with the matching miasmic tools. Verify the required delivery items and quantities in the current game objectives."
+        if compatible and excluded:
+            mission["guide"][4] = "Use the coating to craft the Miasmic Axe, Knife, Pickaxe and Sickle in the quantities listed under Objectives."
+            deliveries = []
+            for qid, item in (("PRO_C_Research_Test_Axe", "Infected Bark"),
+                              ("PRO_C_Research_Test_Knife", "Acidic Glands")):
+                quantity = accepted.get(qid, {}).get("quantity", "Unconfirmed")
+                deliveries.append(f"{item} x {quantity}")
+            mission["guide"][5] = ("Test gathering with the matching miasmic tools. Deliver "
+                + " and ".join(deliveries) + " to the Sinotai Retrieval Pod.")
+        mission["guide_note"] = ("Fixed objective quantities are joined from verified blueprint defaults for this catalog build. "
+                                 "Required quantities are not saved progress or inventory counts; unverified targets remain unknown.")
 
 
 def text(value):
@@ -46,12 +227,12 @@ def guide(title, summary, steps, equipment=(), risks=(), time="Depends on travel
 
 GUIDES = {
 "PRO_Story_1": guide("NOMAD | Establish communications", "Investigate the distress signal. Build a base and communications equipment to begin the Prometheus story.", [
-    "Investigate the distress location using the map and dialogue. Establish a small base and place a Bedroll, Oxidizer, Crafting Bench and Campfire.",
+    "Investigate the distress location using the map and dialogue. A small shelter, Bedroll and basic supplies are recommended for the journey.",
     "Unlock the T2 C0NT4CT device, craft it at the Crafting Bench and deploy it.",
     "Collect the SMPL3 chip / upgrade from the Sinotai supply pod and interact with C0NT4CT. Killing the guarding creature is optional.",
     "Complete the SMPL3 farming tutorial: collect the tomato seed and crop plot, plant, wait for maturity, harvest, deliver and collect the reward.",
     "Rescue Daisy: visit the last known location and guide her safely to the owner's base, watching her health. Search the owner's base as directed afterward."],
-    [prep("C0NT4CT Device", "1", True, "T2 technology; craft at the Crafting Bench"), prep("Bedroll, Oxidizer, Crafting Bench, Campfire", "According to the mission checklist", True, "Specified base facilities"), prep("Tomato seed, crop plot and SMPL3 chip", "According to the supply pod", True, "Collect during the mission")], risk=2),
+    [prep("C0NT4CT Device", "1", True, "T2 technology; craft at the Crafting Bench"), prep("Shelter, Bedroll and basic survival supplies", "According to travel plans", False, "Recommended; the old base-facility objective is not part of the current mission flow"), prep("Tomato seed, crop plot and SMPL3 chip", "According to the supply pod", True, "Collect during the mission")], risk=2),
 "PRO_Story_2": guide("OFFENDER | Track the thief", "Investigate the rumored base and recover evidence about the suspect.", [
     "Confirm T3 crafting capability and supplies before accepting at C0NT4CT.",
     "Enter the cave containing the rumored base, clear threats, then search for stolen technology and documents.",
@@ -99,7 +280,7 @@ GUIDES = {
     "Place the Cement Mixer, Concrete Furnace and Forge required by the camp checklist. Gather the required Super Cooled Ice.",
     "Optional preparations include a Cold Steel Pickaxe for Frozen Ore, a Shovel for ice and Cocoa for warmth.",
     "Deliver Ice, Super Cooled Ice, Frozen Ore and Cold Steel Ingots according to the Sinotai Retrieval Pod list. Verify each quantity; do not place the Ice Borer on an ordinary deposit."],
-    [prep("Ice Borer and mission equipment", "According to the drop pod", True, "Provided by the mission; collect as directed"), prep("Cement Mixer, Concrete Furnace, Forge", "According to the camp checklist", True, "Precraft or carry materials"), prep("Warm clothing, heat sources and camp materials", "1 set per party", False, "Recommended; warm clothing is needed in the arctic"), prep("Cold Steel Pickaxe, Shovel, Cocoa", "According to the gathering plan", False, "The source lists crafting as optional; verify delivery requirements separately")], risk=3),
+    [prep("Ice Borer and mission equipment", "According to the drop pod", True, "Provided by the mission; collect as directed"), prep("Warm clothing, heat sources and camp materials", "1 set per party", False, "Recommended; warm clothing is needed in the arctic"), prep("Cold Steel Pickaxe, Shovel, Cocoa", "According to the gathering plan", False, "The source lists crafting as optional; verify delivery requirements separately")], risk=3),
 "PRO_B_Extermination": guide("MAGMATIC | Volcanic hunting and fishing", "Clear creatures and catch fish in the designated volcanic area.", [
     "Prepare T2 technology, hunting weapons and fishing equipment. Collect the mission equipment from the Sinotai supply pod first.",
     "Check the Lava Broodling, Drifter, Ashen Drake and Stonejaw targets inside the designated volcanic area. Kills outside the boundary may not count.",
@@ -109,7 +290,7 @@ GUIDES = {
     "Confirm that the site is inside the mission area. Bring T2 construction materials and tools for working at height.",
     "Build supports and a safe return to ground at the specified treetop, then fulfill each housing condition.",
     "Place Beds, Anvil Bench, Textiles Bench, Skinning Bench, Oxidizer, Potbelly Stove and Stone Furnace. Check each housing objective. Keep supports until all requirements are confirmed."],
-    [prep("Beds, Anvil Bench, Textiles Bench, Skinning Bench, Oxidizer, Potbelly Stove, Stone Furnace", "Use the game's checklist quantities", True, "Includes all identified facility types; quantities hidden behind source placeholders are not guessed"), prep("Ladders, platforms, Repair Hammer and building materials", "1 set", False, "Recommended; protects against falls and structural damage")], risk=1),
+    [prep("Ladders, platforms, Repair Hammer and building materials", "1 set", False, "Recommended; protects against falls and structural damage")], risk=1),
 "PRO_C_Research": guide("MIASMIC | Swamp miasma research", "Build a research station, refine miasmic coating and craft miasmic tools.", [
     "Prepare T4 technology, swamp protection and materials to transport the workstations. Confirm access to a Chemistry Bench.",
     "Build the research station at the specified site. Place the Organic Residue Cleanser, Solar Panel, Foundry, Electric Furnace, Advanced Alteration Bench and Chemistry Bench listed in the objective.",
@@ -122,21 +303,21 @@ GUIDES = {
     "Check the Alpine / Marshlands refrigerated cargo lists first. Identified items include Fruit Salad, Berry Jam, Beer, Bread Dough, Soy Bean Stir Fry, Fish Pie, Freshwater Fish Curry, Battered Saltwater Fillet, Wine and Saltwater Fish Sashimi; allocate them using the current lists.",
     "Prepare T3 processing and preservation. Prioritize perishable ingredients and keep oxygen and return supplies for each transport trip.",
     "Place the specified prepared products in refrigerated mission cargo and verify progress. Raw ingredients do not substitute for prepared items."],
-    [prep("Specified ingredients / prepared food", "Use the cargo list after accepting", True, "Actual quantities have not been recovered from static tables"), prep("Refrigeration and transport space", "Per batch", False, "Recommended; reduces spoilage and overload risks")], risk=1),
+    [prep("Refrigeration and transport space", "Per batch", False, "Recommended; reduces spoilage and overload risks")], risk=1),
 "PRO_Ashlands_Story": guide("ASHLANDS | Ashlands beacon chain", "Use a continuous beacon chain to mark the Null Sector entrance and exploration path.", [
     "Complete DISPATCH first. Prepare T3 crafting capability, a Trail Beacon Tool and long-distance supplies.",
     "Find the Null Sector entrance and destroy the barrier. The Trail Beacon Tool and Trail Beacons are on the T3 technology tree; bring both. Supplies are scarce there, so prepare ahead.",
     "Place the first Trail Beacon at the entrance and confirm that the game accepts the location.",
     "Extend the beacon chain as directed. Check coverage and map progress along each segment; straight-line distance does not establish a safe path across terrain.",
-    "Follow signal strength to the lost outpost, clear the nearby Stonejaw and search for the science team's evidence.",
+    "Follow signal strength to the lost outpost and search for the science team's evidence. Prepare for wildlife encountered along the route.",
     "Place the final beacon near the Icesheet entrance. Confirm the unlock and return markers."],
-    [prep("Trail Beacon Tool and Trail Beacons", "1 tool; beacons depend on the route", True, "Both require T3 technology"), prep("Tools for breaking barriers, heat protection and long-distance supplies", "Adjust for travel distance", False, "Recommended; resources are scarce in Null Sector")], risk=3),
+    [prep("Trail Beacon Tool", "1", True, "T3 technology; the separate beacon target is listed below. Additional route supplies depend on travel plans"), prep("Tools for breaking barriers, heat protection and long-distance supplies", "Adjust for travel distance", False, "Recommended; resources are scarce in Null Sector")], risk=3),
 "PRO_Icesheet_Story": guide("ICE SHEET | Icesheet beacon chain", "Extend the beacon chain from the Icesheet entrance to the scientists' outpost.", [
     "Complete ASHLANDS. Bring a Trail Beacon Tool, warm clothing and arctic supplies.",
     "Find the Icesheet entrance from Ashlands. Break the entrance cave-in with a Pickaxe and place the first beacon.",
     "Extend the chain to the scientists' outpost. Keep checking warmth, oxygen and a connected return path.",
     "Follow signal strength to the outpost, search for the science team's evidence, then investigate the nearby cave for the missing scientist."],
-    [prep("Trail Beacon Tool, Trail Beacons and Pickaxe", "1 set of each; beacons depend on the route", True, "Pickaxe for clearing the entrance cave-in"), prep("Warm clothing, heat sources and temporary bedrolls", "1 set per party", False, "Recommended")], risk=3),
+    [prep("Trail Beacon Tool and Pickaxe", "1 of each", True, "Pickaxe for clearing the entrance cave-in; the separate beacon target is listed below"), prep("Warm clothing, heat sources and temporary bedrolls", "1 set per party", False, "Recommended")], risk=3),
 "PRO_D_Transport": guide("CARAVAN | Ashlands supply transport", "Stockpile supplies first, then transport the containers and supplies to the specified Ashlands location.", [
     "Read the starting stockpile list: Wood, Fiber, Oxite and multiple seeds. Allocate containers and party roles by material and weight.",
     "Stock the required storage equipment and confirm that the first stage is accepted.",
@@ -144,18 +325,18 @@ GUIDES = {
     "Deal with mission ambushes before checking destination supply requirements. Keep equipment deployed until the game confirms completion."],
     [prep("Containers, Wood, Fiber, Oxite and several seed types", "According to both stage lists", True, "Use the mission / container requirements after accepting"), prep("Transport mount / vehicle, repair and combat supplies", "According to weight", False, "Recommended; prepare for ambushes")], risk=3),
 "PRO_D_Research": guide("COMPOSITION | Ashlands environmental tests", "Complete the Alpha and Beta tests and eliminate the mutated wildlife.", [
-    "Complete ASHLANDS. Craft Liquid Solution at the Chemistry Bench and an Aerosol Emitter at the Fabricator; prepare power and combat supplies.",
+    "Complete ASHLANDS. Craft the required Liquid Solution at the Chemistry Bench and Aerosol Emitters at the Fabricator; prepare power and combat supplies.",
     "Deploy and power the device at Alpha. Keep it operating until the emission cycle ends, then return and deal with the mutated wildlife.",
     "At Beta, follow the objectives for the liquid test, deployment, power and specified creature encounter.",
     "When the mission reaches the Chi test, deploy power again and maintain the emission cycle. Stay near the Emitter to collect data.",
     "Check the current Alpha, Beta and Chi objectives and hunting progress individually. Use the cycle durations displayed in the game."],
-    [prep("Liquid Solution, Aerosol Emitter and power", "According to the stage list", True, "Craft at the Chemistry Bench and Fabricator respectively"), prep("Durable combat equipment and medicine", "According to party size", False, "Recommended; includes boss-level risks")], risk=4),
+    [prep("Power supplies for the Aerosol Emitters", "According to each deployment site", True, "Connect and verify power during each test"), prep("Durable combat equipment and medicine", "According to party size", False, "Recommended; includes boss-level risks")], risk=4),
 "PRO_E_Research": guide("DROVER | Drifter monitoring", "Craft and deploy a Monitoring Pylon, then complete monitoring.", [
     "Complete ICE SHEET. Craft a Monitoring Pylon at the Machining Bench first.",
     "Bring it to the designated rock formation beneath the isolated Drifter. Confirm the location and a safe way up and down.",
-    "Deploy the Monitoring Pylon and supply the items and quantities shown at each stage. Static {0}/{1} placeholders do not identify actual materials, so no guessed quantities are filled in.",
+    "Deploy the Monitoring Pylon and supply Stone, Gold Ore and Sulfur at their respective stages. Select the requirement matching the mission difficulty.",
     "Check all monitoring stages and the mission-completion message."],
-    [prep("Monitoring Pylon", "1", True, "Craft at the Machining Bench"), prep("Monitoring Pylon analysis samples", "According to each monitoring stage", True, "Verify actual materials and quantities after accepting"), prep("Materials for elevated construction, repair tools and provisions", "1 set", False, "Recommended")], risk=2),
+    [prep("Monitoring Pylon", "1", True, "Craft at the Machining Bench"), prep("Materials for elevated construction, repair tools and provisions", "1 set", False, "Recommended")], risk=2),
 "PRO_D_Recovery": guide("CRISIS | Medical rescue", "Find the Ashlands construction site and stabilize the rescue team using the HEAL Device.", [
     "Complete ASHLANDS. Craft the HEAL Device and bring sufficient medicine and provisions.",
     "Investigate the Ashlands Terraforming Construction Site, clear threats and speak to Captain Church. Watch the rescue time limit displayed in the game.",
@@ -168,7 +349,7 @@ GUIDES = {
     "Refill water and Biofuel. Portable Water / Biofuel Tanks crafted at the Fabricator can transport them.",
     "Craft the Radiator and Alternator at the Fabricator and deliver them to the truck engine. Craft Rope at the Crafting Bench and deliver it to truck storage; follow the listed quantities.",
     "Check resource slots, engine and storage objectives separately. Do not remove delivered supplies before completion."],
-    [prep("Water, Biofuel, Radiator, Alternator, Rope", "According to the truck list", True, "Radiator / Alternator: Fabricator; Rope: Crafting Bench"), prep("Portable Water / Biofuel Tanks", "According to transport volume", False, "Recommended; craft at the Fabricator")], risk=2),
+    [prep("Water and Biofuel", "According to the truck resource slots", True, "Verify fill status in the game; item counts and fluid fill levels are separate"), prep("Portable Water / Biofuel Tanks", "According to transport volume", False, "Recommended; craft at the Fabricator")], risk=2),
 "PRO_D_Rescue": guide("RESCUE | Rescue Simmons and Washington", "Track and rescue the two specified team members.", [
     "Complete STRANDED. Craft two Stasis Bags at the Advanced Textiles Bench, reserve a Utility Slot and plan the return to the Medevac Ship.",
     "Find Simmons at the marker. Clear the threats, place him in a Stasis Bag and transport him to the marked Medevac Ship.",
@@ -186,13 +367,13 @@ GUIDES = {
     "Deliver Glass, Sulfur, Aluminium Ingots and Beeswax according to the specialist's current list.",
     "Leave the area as directed so the specialist can build the trading post. Trading may be unavailable until construction is complete.",
     "Prepare the first fruit and vegetables. Sell crops for Ren once the trading post is established."],
-    [prep("Glass, Sulfur, Aluminium Ingots, Beeswax", "Use the specialist's list", True, "The objective names four materials; fixed quantities have not been recovered"), prep("Fruit and vegetables", "According to the first delivery objective", True, "Plan growing and preservation first")], risk=1),
+    [prep("Growing and preservation supplies", "According to crop plans", False, "Recommended for the first fruit and vegetable objectives")], risk=1),
 "PRO_SQ_Hunter": guide("PREDATOR SPECIALIST | Hunting trade specialist", "Supply the Hunting Specialist, clear nearby creatures and sell Vestiges.", [
     "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
     "Deliver Gunpowder, Shell Casings, Flares and Smoke Grenades; use the specialist's current list for quantities.",
     "Hunt within the specified area until the specialist's supply and safety conditions are met.",
     "Skin creatures with the Taxidermy Knife to collect Vestiges, then sell them when the specialist is ready."],
-    [prep("Gunpowder, Shell Casings, Flares, Smoke Grenades", "According to the specialist's list", True, "Check requirements before batch production"), prep("Taxidermy Knife", "1", True, "Unlock and craft at the T2 Anvil; gather Vestiges")], risk=3),
+    [prep("Taxidermy Knife", "1", True, "Unlock and craft at the T2 Anvil; gather Vestiges")], risk=3),
 "PRO_SQ_Norex": guide("BLACK MARKET | Norex contact", "Defeat a world boss for Biomass, signal from the designated location and trade.", [
     "Accept this mission at the mission device. If an Operation is active, complete or end it first, then follow the marker to the specialist.",
     "Fight the Blighted Landshark at the marker. Prepare a bedroll, combat supplies and room to retreat first.",
@@ -204,7 +385,7 @@ GUIDES = {
     "Visit the Fishing Outpost, stabilize the specialist with the HEAL Device and defeat the Tide-Gorged Bear to retake the outpost.",
     "Repair the shed with a Hammer or Nailgun, then place the benches, traps and equipment listed in the game.",
     "Leave as directed while the specialist rebuilds. Catch the first fish with a rod or trap, then sell them for Ren."],
-    [prep("HEAL Device", "1", True, "T3 unlock; craft at the Machining Bench"), prep("Repair Hammer or Nailgun", "1", True, "For shed repairs"), prep("Fishing Rod and fishing equipment", "According to the list", True, "The type and quantity of dynamic item field {item} have not been inferred.")], risk=4),
+    [prep("HEAL Device", "1", True, "T3 unlock; craft at the Machining Bench"), prep("Repair Hammer or Nailgun", "1", True, "For shed repairs"), prep("Fishing Rod and tackle for the first fish trade", "According to fishing plans", False, "Recommended; acquire and deploy the listed outpost equipment as one shared set")], risk=4),
 }
 
 DYNAMIC_GUIDES = {
@@ -330,6 +511,7 @@ def build(source: Path, build_id: str, pak: Path | None = None):
     verified = source / "blueprint_verification.json"
     if verified.is_file():
         manifest["blueprint_verification"] = json.loads(verified.read_text(encoding="utf-8"))
+    apply_verified_requirements(manifest)
     target = ROOT / "icarus_helper/data/missions.json"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")

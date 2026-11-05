@@ -198,3 +198,19 @@ APP只納入最大128px的PNG及來源／hash對照，執行時由Qt載入並快
 動物圖示由`D_AISetup.BestiaryGroup → D_BestiaryData.Image`的明確引用解析到原生貼圖，精簡對照為`data/animal_icons.json`，縮圖位於`assets/animals/`，來源表與貼圖雜湊、版本及缺圖原因保留於對照中。目前241個種類定義有219個原生圖示、22個缺圖，以問號備援，不用近似物種代替。這些圖是遊戲圖鑑的種類／群組代表，不證明個體毛色、性別或外觀變異；幼獸共用群組圖也不表示個體外觀相同。原始解包貼圖留在本機建置快取，不進入APP。
 
 `animal_map.py`使用所選世界同快照的動物`ActorTransform.Translation`與既有地圖校準，固定像素圖示直接畫在原位，允許重疊，不調整來源座標。卡片與地圖雙向選取、卡片定位、搜尋與範圍篩選使用相同動物清單；缺失或不合法座標保留為位置未知，不加入地圖點。世界切換、共用圖資與缺來源會清除舊卡片及私人位置；資料更新與選取依動物穩定識別維持一致。縮放平移及水平直線距離不提供可步行路線或即時位置證據。
+
+## MIASMIC fixed objective quantities — 2026-11-05
+
+`icarus_helper/data/mission_requirements.json` records 13 fixed targets from installed build 26313227. Six deployment checks use blueprint `MaxCount` (including inherited defaults), crafting uses `Amount`, and delivery uses `Required_Number`. The compact data retains exact quest templates, field/parent/item associations and SHA-256 hashes of the source table and blueprint assets. `tools/build_mission_catalog.py` applies these targets only when the build, quest-table hash and template match; preparation, objectives and saved-quest labels share the same results. Required amounts are separate from current progress and inventory.
+
+The current MIASMIC Test blueprint calls the Infected Bark and Acidic Glands delivery quests. The unused Thorned Plants/Noxious Crust rows reference classes checking different items and are retained as `catalog_only_objectives`, outside the normal guide. Craft Knife/Sickle display text is corrected against the actual blueprint Item association. These findings come from read-only installed assets, not an in-game mission completion test. The broader audit below uses separate verified contracts for other missions.
+
+## Quantity and missing-data audit — 2026-11-05
+
+The audit renders all 139 internal mission guides and 2,399 saved-quest labels. Previously 86 guides exposed format arguments. The final display fallback marks unresolved values explicitly; it does not assume that every argument is an item count. Original templates remain in diagnostic data.
+
+For the 24 Prometheus mission catalog entries, installed build 26313227 assets were read without modifying them. The audit covers 105 template objectives: 58 fixed targets, 25 difficulty-dependent targets, 16 runtime/unresolved status templates and six catalog-only legacy targets. A separate bounded scan of non-template count fields found the two Stasis Bags already stated in source text. Compact evidence includes blueprint/parent associations, exact source templates, source hashes, difficulty enum fields and verified mission membership. It does not reconstruct all transitive shared quests or arbitrary dynamic formulas. Other maps retain explicit gaps.
+
+Mission-specific call-graph corrections exclude obsolete NOMAD base and ASHLANDS kill steps, keep STRANDED truck requirements out of CRISIS, and bind ICE SHEET beacon preparation to the actual shared ASHLANDS quest IDs. Fisher equipment acquisition and deployment reuse the same batch. Fixed targets and difficulty variants are preparation requirements, never current saved progress or inventory. Each mission, build, table hash and template must match before applying them.
+
+Synthetic parser and Qt checks cover malformed/missing inventory data, conflicting container/inventory copies, unknown slot identities and known subtotals in partial inventories. They preserve verified zero separately from unreadable values. Backup/player/resource read-only code review found no additional reproducible issue within this audit; that is not proof that the whole program has no other defects. No original save was restored and no game operation was performed.

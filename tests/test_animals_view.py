@@ -166,10 +166,11 @@ def test_absent_inventory_distinguishes_unknown_from_confirmed_empty(app, status
     panel.close()
 
 
-def test_unknown_inventory_section_does_not_claim_empty(app):
+@pytest.mark.parametrize("state", ["unavailable", "partial"])
+def test_unknown_inventory_section_does_not_claim_empty(app, state):
     panel = AnimalPanel()
     entry = animal()
-    entry["inventories"] = [{"id": "gear", "label": "裝備", "status": "unavailable", "items": []}]
+    entry["inventories"] = [{"id": "gear", "label": "裝備", "status": state, "items": []}]
     panel.set_summary(summary(entry))
     text = "\n".join(widget.text() for widget in panel.inventory_host.findChildren(QLabel))
     assert "empty state unconfirmed" in text and "Confirmed empty" not in text

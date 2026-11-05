@@ -322,7 +322,7 @@ class MissionTests(unittest.TestCase):
         self.assertIn("Medevac Ship", " ".join(rescue["guide"]))
         self.assertIn("Daisy", " ".join(missions["PRO_Story_1"]["guide"]))
         self.assertIn("Giant Lava Creature", " ".join(missions["PRO_Story_6"]["guide"]))
-        self.assertIn("Noxious Crust", " ".join(missions["PRO_C_Research"]["guide"]))
+        self.assertIn("Acidic Glands x 30", " ".join(missions["PRO_C_Research"]["guide"]))
         self.assertIn("Chi", " ".join(missions["PRO_D_Research"]["guide"]))
 
     def test_other_map_fallback_guide_is_visibly_marked_as_incomplete(self):

@@ -121,7 +121,7 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
         "excluded_containers": 0, "outside_radius": 0, "missing_locations": 0,
         "excluded_inventory_slots": 0, "duplicate_records": 0, "conflicting_records": 0,
         "unknown_stacks": 0, "unknown_items": 0, "empty_slots": 0, "linked_item_inventories": 0,
-        "conflicting_slots": 0, "malformed_inventories": 0, "unknown_inventory_ids": [],
+        "conflicting_slots": 0, "conflicting_inventories": 0, "malformed_inventories": 0, "unknown_inventory_ids": [],
         "game_build": catalog["game_build"], "verified_at": catalog["verified_at"],
         "snapshot_time": str(_get(snapshot, "saved_at", "")),
         "scope": "Storage, processor, fuel, seed, fertilizer and ammunition slots in deployed containers and equipment within the base radius",
@@ -153,11 +153,16 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
     unique = {}
     conflicts = set()
     for record in records:
-        if not isinstance(record, dict) or not isinstance(record.get("SavedInventories"), list) or not record["SavedInventories"]:
+        if not isinstance(record, dict):
             continue
         if record.get("_component") not in COMPONENTS:
-            coverage["excluded_containers"] += 1
+            if isinstance(record.get("SavedInventories"), list) and record["SavedInventories"]:
+                coverage["excluded_containers"] += 1
             continue
+        if "SavedInventories" in record and not isinstance(record["SavedInventories"], list):
+            coverage["malformed_inventories"] += 1
+        # Missing/empty inventory collections can contradict another copy of
+        # the same actor. Compare identity before excluding unreadable content.
         identity = _identity(record)
         signature = _fingerprint({k: record.get(k) for k in ("StaticItemDataRowName", "ActorTransform", "SavedInventories")})
         if identity in unique:
@@ -172,6 +177,8 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
     for identity, (_, record) in unique.items():
         if identity in conflicts:
             continue
+        if not isinstance(record.get("SavedInventories"), list) or not record["SavedInventories"]:
+            continue
         xyz = _position(record)
         if xyz is None:
             coverage["missing_locations"] += 1
@@ -181,16 +188,19 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
             coverage["outside_radius"] += 1
             continue
         containers = record["SavedInventories"]
-        counted_inventories = []
+        counted_inventories = defaultdict(dict)
         for inv in containers:
-            if not isinstance(inv, dict) or not isinstance(inv.get("InventoryID"), int):
+            if not isinstance(inv, dict) or type(inv.get("InventoryID")) is not int:
                 coverage["malformed_inventories"] += 1
                 continue
             inventory_id = inv["InventoryID"]
             if str(inventory_id) not in catalog["inventory_ids"] and inventory_id not in coverage["unknown_inventory_ids"]:
                 coverage["unknown_inventory_ids"].append(inventory_id)
             if inventory_id in STOCK_INVENTORY_IDS:
-                counted_inventories.append(inv)
+                signature = _fingerprint(inv)
+                if signature in counted_inventories[inventory_id]:
+                    coverage["duplicate_records"] += 1
+                counted_inventories[inventory_id][signature] = inv
             elif isinstance(inv.get("Slots", []), list):
                 coverage["excluded_inventory_slots"] += len(inv.get("Slots", []))
         if not counted_inventories:
@@ -200,30 +210,45 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
                      "x": xyz[0], "y": xyz[1], "z": xyz[2], "distance_m": distance,
                      "item_count": 0, "unknown_stacks": 0}
         seen_slots = {}
+        unlocated_slots = set()
+        conflicting_inventories = {key for key, copies in counted_inventories.items() if len(copies) > 1}
+        coverage["conflicting_inventories"] += len(conflicting_inventories)
         # A saved inventory may repeat; the identity is actor + inventory + slot.
-        for inv in counted_inventories:
-            slots = inv.get("Slots", [])
+        for inv in (copy for copies in counted_inventories.values() for copy in copies.values()):
+            slots = inv.get("Slots")
             if not isinstance(slots, list):
                 coverage["malformed_inventories"] += 1
                 continue
-            for index, slot in enumerate(slots):
+            for slot in slots:
                 if not isinstance(slot, dict):
+                    container["unknown_stacks"] += 1
+                    coverage["unknown_stacks"] += 1
                     continue
-                location = slot.get("Location", "unlocated:" + str(index))
-                key = (inv["InventoryID"], _fingerprint(location))
                 signature = _fingerprint(slot)
+                location = slot.get("Location")
+                valid_location = type(location) is int and 0 <= location <= 2**31 - 1
+                key = (inv["InventoryID"], _fingerprint(location) if valid_location else "unlocated:" + signature)
+                if not valid_location:
+                    unlocated_slots.add(key)
                 candidates = seen_slots.setdefault(key, {})
                 if signature in candidates:
                     coverage["duplicate_records"] += 1
                 candidates[signature] = slot
         for key, candidates in seen_slots.items():
-            disputed = len(candidates) > 1
-            coverage["conflicting_slots"] += int(disputed)
+            disputed = len(candidates) > 1 or key[0] in conflicting_inventories or key in unlocated_slots
+            coverage["conflicting_slots"] += int(len(candidates) > 1)
             seen_items = set()
             for slot in candidates.values():
                 item_id = _item_id(slot)
                 if not item_id:
-                    coverage["empty_slots"] += 1
+                    static = slot.get("ItemStaticData")
+                    if isinstance(static, dict):
+                        static = static.get("RowName")
+                    if isinstance(static, str) and static.casefold() in {"", "none", "null"} and key not in unlocated_slots:
+                        coverage["empty_slots"] += 1
+                    else:
+                        container["unknown_stacks"] += 1
+                        coverage["unknown_stacks"] += 1
                     continue
                 item_id = canonical_ids.get(item_id.casefold(), item_id)
                 if item_id in seen_items:
@@ -294,14 +319,16 @@ def summarize_inventory(snapshot: Any, base: dict | None, radius_m: float = 100)
     coverage["item_types"] = len(result["items"])
     coverage["counted_stacks"] = len(stacks)
     coverage["known_quantity"] = sum(item["known_quantity"] for item in result["items"])
-    if coverage["unknown_stacks"] or coverage["unknown_items"] or conflicts or coverage["missing_locations"] or coverage["malformed_inventories"] or coverage["unknown_inventory_ids"]:
+    if coverage["unknown_stacks"] or coverage["unknown_items"] or conflicts or coverage["conflicting_inventories"] or coverage["missing_locations"] or coverage["malformed_inventories"] or coverage["unknown_inventory_ids"]:
         coverage["status"] = "partial"
     if not coverage["records_with_inventory"] or not unique:
         coverage.update(status="unavailable", reason="This snapshot has no container inventory records; home inventory is unavailable.")
-    if conflicts or coverage["conflicting_slots"]:
-        coverage["warnings"].append("Some duplicate records conflict. Conflicting containers are excluded; quantities for possible items in conflicting slots remain unknown.")
+    if conflicts or coverage["conflicting_slots"] or coverage["conflicting_inventories"]:
+        coverage["warnings"].append("Some duplicate records conflict. Conflicting containers are excluded; quantities for possible items in conflicting inventories or slots remain unknown.")
     if coverage["malformed_inventories"] or coverage["unknown_inventory_ids"]:
         coverage["warnings"].append("Some inventory formats or slot types are unrecognized and are excluded from totals.")
+    if coverage["unknown_stacks"]:
+        coverage["warnings"].append("Some slots lack a verified item, position or quantity. Missing data is not counted as empty or zero.")
     if coverage["missing_locations"]:
         coverage["warnings"].append("Some containers have no verified position and cannot be confirmed inside the base radius.")
     coverage["warnings"] += [

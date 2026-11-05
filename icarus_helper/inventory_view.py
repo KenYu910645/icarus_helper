@@ -58,8 +58,21 @@ def _chart_rows(category):
     for row in category.get("rows", category.get("materials", [])):
         values = row.get("values", row.get("series", {}))
         values = values if isinstance(values, dict) else {}
+        values = {_form(key): value for key, value in values.items()}
+        source_known = row.get("known_values", {})
+        source_known = {_form(key): value for key, value in source_known.items()} if isinstance(source_known, dict) else {}
+        known_values = {}
+        for form, amount in values.items():
+            if _number(amount):
+                known_values[form] = amount
+            elif _number(source_known.get(form)):
+                known_values[form] = source_known[form]
+            else:
+                counts = [item.get("quantity") if _number(item.get("quantity")) else item.get("known_quantity")
+                          for item in row.get("items", []) if _form(item.get("form", "other")) == form]
+                known_values[form] = sum(value for value in counts if _number(value))
         result.append({"key": row.get("key", row.get("id", "")), "label": row.get("label", row.get("name", "Uncategorized")),
-                       "values": {_form(key): value for key, value in values.items()}, "items": row.get("items", [])})
+                       "values": values, "known_values": known_values, "items": row.get("items", [])})
     return sorted(result, key=_row_order)
 
 
@@ -95,12 +108,14 @@ def _search_category(category, text):
             for field in ("id", "item_id", "name", "english", "material", "material_label"))]
         if not items:
             continue
-        values = {}
+        values, known_values = {}, {}
         for item in items:
             form, quantity = _form(item.get("form", "other")), item.get("quantity")
             previous = values.get(form, 0)
             values[form] = previous + quantity if _number(previous) and _number(quantity) else None
-        rows.append({**row, "items": items, "values": values})
+            known = quantity if _number(quantity) else item.get("known_quantity")
+            known_values[form] = known_values.get(form, 0) + (known if _number(known) else 0)
+        rows.append({**row, "items": items, "values": values, "known_values": known_values})
     return {**category, "rows": rows}
 
 
@@ -160,7 +175,7 @@ class InventoryChart(QWidget):
         # Reserve visual space for unknown caps, without assigning them a count.
         unknown_slots = max((sum(not _number(value) for value in row["values"].values()) for row in self.rows), default=0)
         chart = QRectF(65, 64 + unknown_slots * 24, max(80, self.width() - 89), max(60, self.height() - 188 - unknown_slots * 24))
-        known = [sum(value for value in row["values"].values() if _number(value)) for row in self.rows]
+        known = [sum(row["known_values"].values()) for row in self.rows]
         peak = max(known, default=1)
         raw_step = max(peak / 5, 1)
         magnitude = 10 ** math.floor(math.log10(raw_step))
@@ -182,17 +197,19 @@ class InventoryChart(QWidget):
         for index, row in enumerate(self.rows):
             center_x = chart.left() + group_width * (index + 0.5)
             present = [series for series in self.series if series["id"] in row["values"]]
-            known_total = sum(value for value in row["values"].values() if _number(value))
+            known_total = sum(row["known_values"].values())
             stacked = 0
             unknown_index = 0
             x, width = center_x - bar_width / 2, bar_width
             for column, series in enumerate(present):
                 amount = row["values"][series["id"]]
-                if _number(amount):
-                    height = amount / maximum * chart.height()
-                    top = chart.bottom() - (stacked + amount) / maximum * chart.height()
+                known_amount = row["known_values"][series["id"]]
+                targets = []
+                if _number(amount) or known_amount:
+                    height = known_amount / maximum * chart.height()
+                    top = chart.bottom() - (stacked + known_amount) / maximum * chart.height()
                     bar = QRectF(x, top, width, height)
-                    stacked += amount
+                    stacked += known_amount
                     painter.setPen(Qt.PenStyle.NoPen)
                     painter.setBrush(QColor(series["color"]))
                     painter.drawRect(bar)
@@ -201,8 +218,9 @@ class InventoryChart(QWidget):
                         painter.drawLine(bar.topLeft(), bar.topRight())
                     if len(present) > 1 and height >= 20:
                         painter.setPen(QColor("#10222b"))
-                        painter.drawText(bar, Qt.AlignmentFlag.AlignCenter, number_text(amount))
-                else:
+                        painter.drawText(bar, Qt.AlignmentFlag.AlignCenter, number_text(known_amount))
+                    targets.append(bar if bar.height() else bar.adjusted(0, -2, 0, 2))
+                if not _number(amount):
                     top = chart.bottom() - known_total / maximum * chart.height() - (unknown_index + 1) * 24
                     bar = QRectF(x, top, width, 22)
                     unknown_index += 1
@@ -211,7 +229,10 @@ class InventoryChart(QWidget):
                     painter.drawRect(bar)
                     painter.setPen(QColor("#e9f3fa"))
                     painter.drawText(bar, Qt.AlignmentFlag.AlignCenter, "?")
+                    targets.append(bar)
                 tooltip = f"{row['label']} · {series['label']}\nQuantity: {number_text(amount)}"
+                if not _number(amount) and known_amount:
+                    tooltip += f" (confirmed: {number_text(known_amount)})"
                 details = []
                 for item in row.get("items", []):
                     if _form(item.get("form", "other")) != series["id"]:
@@ -222,8 +243,7 @@ class InventoryChart(QWidget):
                     details.append(f"{item.get('name', item.get('id', ''))}: {count}")
                 if details:
                     tooltip += "\n" + "\n".join(details[:8])
-                target = bar if bar.height() else bar.adjusted(0, -2, 0, 2)
-                self.bar_targets.append((target.adjusted(-4, 0, 4, 0), tooltip, row, series))
+                self.bar_targets.extend((target.adjusted(-4, 0, 4, 0), tooltip, row, series) for target in targets)
                 matching = [item for item in row.get("items", []) if _form(item.get("form", "other")) == series["id"]]
                 representative = matching[0] if matching else {}
                 ident = _item_id(representative)

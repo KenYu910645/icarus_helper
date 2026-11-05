@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .catalog import installed_game_build
+from .mission_text import display_mission_text
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "mission_locations.json"
 
@@ -198,7 +199,7 @@ def build_mission_locations(snapshot: Any, mission: dict) -> dict:
             plans.append({"id": name, "label": "Track the creature's area" if name == "DYN_Kill" else "Hunt the nearby creature" if name == "DYN_Kill_Boss" else "Current mission location", "quest_ids": [name], "queries": []})
     if not plans:
         for index, step in enumerate(mission.get("guide", []), 1):
-            plans.append({"id": f"guide-{index}", "label": str(step), "quest_ids": [], "queries": []})
+            plans.append({"id": f"guide-{index}", "label": display_mission_text(step), "quest_ids": [], "queries": []})
     current_build = installed_game_build()
     static_compatible = bool(current_build and current_build == catalog.get("source_build") and map_name == catalog.get("map_name"))
     marker_tags = defaultdict(list)

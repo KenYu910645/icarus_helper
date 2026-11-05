@@ -1,3 +1,13 @@
+# Unreleased — Mission quantities and unknown inventory values (2026-11-05)
+
+- Objectives show verified fixed targets in the preferred `0/N` format, labeled as initial counts. Saved mission progress and unknown or difficulty-dependent quantities retain their existing meaning.
+- MIASMIC preparation and objectives now show 4 Solar Panels, 2 Electric Furnaces and one of each other required research-station facility. Verified tool, coating and delivery targets replace raw format placeholders without inventing saved progress.
+- Corrected swapped Knife/Sickle labels using blueprint item checks. Two conflicting legacy delivery rows outside the current blueprint flow remain in diagnostics and are excluded from required objectives.
+
+- Added verified fixed and difficulty-dependent targets for Prometheus mission guides, corrected obsolete or misattributed steps, and avoided double-counting Fisher equipment acquired and then deployed. Unresolved arguments across the catalog display an explicit unknown-value message.
+- Missing or conflicting container and animal-inventory records no longer appear as confirmed empty or definite quantities. Base inventory charts and search retain known subtotals when additional quantities are unknown.
+- Missing, invalid or conflicting saved mission counters no longer become a false zero-second timer.
+
 # v0.4.0 — 2026-11-04
 
 - The interface, resource/item labels, messages, mission guides and operating guide use English. User-created world, base, character and animal names are preserved.

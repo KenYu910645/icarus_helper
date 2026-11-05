@@ -108,6 +108,24 @@ def test_conflicting_duplicate_actor_is_excluded_and_reported():
     assert result["coverage"]["status"] == "partial"
 
 
+@pytest.mark.parametrize("inventories", [None, {}, [], "missing"])
+def test_incomplete_duplicate_actor_cannot_leave_its_other_copy_confirmed(inventories):
+    original = container(1, slots=[slot("Gold_Ore", 17)])
+    conflicting = deepcopy(original)
+    if inventories == "missing":
+        conflicting.pop("SavedInventories")
+    else:
+        conflicting["SavedInventories"] = inventories
+    valid = container(2, slots=[slot("Gold_Ore", 3)])
+    for records in ([original, conflicting, valid], [conflicting, original, valid]):
+        result = summarize(*records)
+        assert result["coverage"]["status"] == "partial"
+        assert result["coverage"]["conflicting_records"] == 1
+        assert result["coverage"]["counted_containers"] == 1
+        assert item(result, "Gold_Ore")["quantity"] == 3
+        assert item(result, "Gold_Ore")["containers"] == ["actor:2"]
+
+
 def test_conflicting_slot_keeps_both_candidate_items_with_unknown_counts():
     result = summarize(container(slots=[slot("Gold_Ore", 17), slot("New_DLC_Resource", 19)]))
     assert item(result, "Gold_Ore")["quantity"] is None
@@ -124,6 +142,53 @@ def test_malformed_or_unrecognized_inventory_is_explicitly_partial():
     assert result["coverage"]["unknown_inventory_ids"] == [600]
     assert result["coverage"]["malformed_inventories"] == 2
     assert result["coverage"]["status"] == "partial"
+
+
+@pytest.mark.parametrize("slots", [None, [None], [{"Location": 0}],
+                                  [{"Location": 0, "ItemStaticData": {}}]])
+def test_missing_or_malformed_slots_do_not_erase_other_known_inventory(slots):
+    damaged = container(2)
+    if slots is None:
+        damaged["SavedInventories"][0].pop("Slots")
+    else:
+        damaged["SavedInventories"][0]["Slots"] = slots
+    original = deepcopy(damaged)
+    result = summarize(container(1, slots=[slot("Gold_Ore", 7)]), damaged)
+    assert result["coverage"]["status"] == "partial"
+    assert result["coverage"]["empty_slots"] == 0
+    assert result["coverage"]["malformed_inventories"] or result["coverage"]["unknown_stacks"]
+    assert item(result, "Gold_Ore")["quantity"] == 7
+    assert damaged == original
+
+
+def test_malformed_inventory_collection_is_reported_beside_valid_records():
+    damaged = container(2)
+    damaged["SavedInventories"] = {}
+    result = summarize(container(1, slots=[slot("Gold_Ore", 7)]), damaged)
+    assert result["coverage"]["status"] == "partial"
+    assert result["coverage"]["malformed_inventories"] == 1
+    assert item(result, "Gold_Ore")["quantity"] == 7
+
+
+def test_conflicting_inventory_copies_do_not_confirm_the_union_of_their_slots():
+    record = container(slots=[slot("Gold_Ore", 17)])
+    record["SavedInventories"] += [{"InventoryID": 1, "Slots": []},
+                                   {"InventoryID": 6, "Slots": [slot("Gold_Ore", 3)]}]
+    original = deepcopy(record)
+    result = summarize(record)
+    assert result["coverage"]["status"] == "partial"
+    assert result["coverage"]["conflicting_inventories"] == 1
+    assert item(result, "Gold_Ore")["quantity"] is None
+    assert item(result, "Gold_Ore")["known_quantity"] == 3
+    assert record == original
+
+
+@pytest.mark.parametrize("location", [None, -1, True])
+def test_unverified_slot_location_does_not_establish_a_complete_count(location):
+    result = summarize(container(slots=[slot("Gold_Ore", 7, location)]))
+    assert result["coverage"]["status"] == "partial"
+    assert item(result, "Gold_Ore")["quantity"] is None
+    assert item(result, "Gold_Ore")["known_quantity"] == 0
 
 
 def test_unrecognized_item_is_retained_with_count_and_case_insensitive_fname():

@@ -1,6 +1,6 @@
 # ICARUS Helper — 專案工作規範
 
-最後更新：2026-11-04（Asia/Taipei）
+最後更新：2026-11-05（Asia/Taipei）
 
 ## 1. 每次工作都必須遵守
 
@@ -232,6 +232,14 @@
 
 ### 已建立的實作
 
+- 2026-11-05依使用者偏好恢復Objectives的`0/1`格式：只在攻略顯示層將屬於該任務的已核對固定需求轉為起始`0/N`，Solar Panel維持`0/4`、Electric Furnace維持`0/2`；一行英文說明區分起始計數與保存進度。未知與依難度需求保留原本明示，Mission progress、來源目錄與準備數量不改，不將缺失進度填0。此要求取代下方歷史記錄的Objectives `Required`格式。
+- 本次成品為`dist/objective-counters-20261105/ICARUS Helper/`，桌面捷徑與`launch.ps1`已更新並實際開啟；前版與背景服務保留。74項相關測試及12項subtests通過，59/59個已核對固定需求轉換成功，封裝原始碼／資料一致與隔離共用圖啟動通過。Windows實際切Missions & guides、選MIASMIC並捲至Objectives，確認`0/1`、`0/2`、`0/4`、`0/20`、`0/30`及起始計數說明；保存進度仍獨立顯示。證據於`artifacts/objective-counters-20261105/`，未操作遊戲或修改世界。
+- 2026-11-05擴查版交付：最新本機成品為`dist/quantity-audit-20261105/ICARUS Helper/`，桌面捷徑與`launch.ps1`已更新；前版及捷徑副本保留，既有背景服務未重啟，公開Release未變。全套1,013項測試與12項subtests通過，2項符號連結測試因Windows帳號權限跳過。Qt相依／隔離設定封裝啟動通過，6個修改模組的封裝程式物件與來源一致，兩份任務JSON逐byte相同；8張Qt攻略畫面及動物／物資合成案例為離線元件驗證。證據集中`artifacts/quantity-audit-20261105/`。本輪未恢復先前Esc停止的桌面輸入，沒有新增Windows點擊、遊戲操作或原世界還原驗收。
+- 2026-11-05同類數量問題擴查：掃描內部139份攻略及2,399個任務標籤，`mission_text.py`在顯示層將未解析模板明示為未確認值，不猜計數、時間、血量或物品。Prometheus24任務目錄的105個模板經現版藍圖與呼叫流程核對：58個固定目標、25個依難度變動、16個執行期／未還原狀態、6個舊目錄目標。`mission_requirements.json`保留精簡來源及有效任務歸屬；建置按build／表hash／原模板／任務ID套用，其他地圖不能因共用ID自動視為已查核。保存進度文字也按目前任務隔離，共用ID不能借用其他地圖的已驗證量。Fisher取得與部署同批設備只計一份準備；NOMAD舊基地、ASHLANDS舊獵殺、CRISIS混入STRANDED的貨車步驟排除，ICE SHEET使用實際呼叫的共用beacon ID。需求與存檔進度、庫存分開；其他地圖固定數量及所有遞迴動態狀態尚未全面還原。
+- 同次修正物資／動物背包的空值語意：缺Slots、壞槽、缺物品識別、無法核對槽位或互相衝突的容器／inventory副本不再冒充完整空庫存／確定件數；保留獨立可確認物資。物資圖表與搜尋保留部分未知群組的已知小計（例如45原礦＋70錠＋未知顯示115 + ?）。任務數值缺失／非有限值／衝突不補成0秒；明確0保留。
+- 2026-11-05 MIASMIC數量修正：`data/mission_requirements.json`保存build26313227任務藍圖／父類的13項固定需求及來源hash；`build_mission_catalog.py`按build、D_Quests hash與原模板核對，統一產生準備清單、Objectives與quest_texts的需求文字。Solar Panel為4、Electric Furnace為2，其餘四種設備各1；工具各1、塗層20、Infected Bark與Acidic Glands各30。顯示`Required`而非猜測目前完成數，來源不符保留未知。Knife／Sickle按藍圖實際Item修正互換名稱；兩筆與Class衝突且不在現版Test藍圖流程的舊交付列移至內部`catalog_only_objectives`，不再當必交物資。此為安裝資產唯讀查核，不是遊戲內任務完成驗證。成品與實際桌面驗收另記。
+- 2026-11-05先前MIASMIC單項修正版已安裝至`dist/mission-quantities-20261105/ICARUS Helper/`，桌面捷徑與`launch.ps1`已切換；舊成品、原捷徑副本及既有背景程序保留，公開v0.4.0 Release未更新。123項任務／英文介面相關測試及12項subtests通過，Qt相依與封裝空設定啟動通過，封裝兩份任務資料與來源逐byte一致。`artifacts/mission-quantities-20261105/`保存安裝資產查核、測試、封裝及捷徑證據。嘗試開啟新版時，使用者實體Esc停止Computer Use；已停止所有桌面輸入，不宣稱本輪Windows畫面／點擊驗收完成，也未操作遊戲或原世界。
+
 - 2026-11-04 v0.4.0正式發行：Windows x64 ZIP與`SHA256SUMS.txt`已發布至`https://github.com/KenYu910645/icarus_helper/releases/tag/v0.4.0`並設為最新APP Release。tag原始碼為`4be6742`，成品與40個封裝程式模組逐一一致；本節較早的發行準備及先前「僅提交原始碼」為當時歷史狀態。最新版桌面捷徑與`launch.ps1`使用`dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe`，私人設定與基地保留。背景備份／世界分享仍沿用原執行中版本，未因桌面版發布擅自切換。
 
 - 2026-11-04 v0.4.0發行準備：套件版本更新為0.4.0，`launch.ps1`改指向獨立`dist/releases/v0.4.0/ICARUS Helper/ICARUS Helper.exe`，尚無成品時仍回開發入口。ZIP manifest的預設基地名稱同步英文Home；僅為公開共用圖預設值，不修改既有私人基地。舊成品與正在使用的備份／公開同步程序保留；新成品、Release及桌面捷徑驗收結果須另記，不以前版證據代稱。
@@ -304,6 +312,8 @@
 - 原生存檔器確實過濾`SaveToDatabase=false`效果，主人加成亦依OwnerCharacterID從角色StatContainer取得；世界存檔本身沒有完整主人天賦。獨立Characters檔即使時間接近，也不強稱同快照。可確認食物／水／坐騎氧氣依現版NPC資料繪比例，乳牛氧氣／耐力仍未知。缺遊戲來源時的生命／耐力仍須保留個體／持續範圍標記；遊戲來源核對成功時由原生UI同源目前值與上限取代，不再以個體基準冒充完整上限。
 
 ### 已取得的驗證證據
+
+- 2026-11-05本輪code review：審查任務需求目錄／建置器／顯示與保存進度、物資解析／部分未知小計及搜尋、動物背包副本／槽位語意，未發現需阻擋提交的可重現實質問題。以前版目錄重新套用目前GUIDES及需求規則，與新`missions.json`結構完全相同。全量1,013項測試、12項subtests通過，2項Windows符號連結權限略過（`artifacts/code-review-20261105/all-tests-baseline.xml`）；隔離LocalAppData與暫存設定的原始碼共用圖啟動成功，五頁英文標題及Home正常（同目錄`source-shared-startup.json`）。關鍵語法／未定義名稱／未使用匯入與Git差異檢查通過；提交候選未發現憑證、原始平台帳號識別、私人路徑或私人檔案。本輪只整理提交既有程式與文件，不新增Windows滑鼠操作、遊戲／真存檔查核、封裝或公開Release，先前成品與驗收仍按各自日期及範圍記錄。
 
 - v0.4.0發行檔案：ZIP共94,961,861 bytes、3,194項（含manifest），3,193份檔案的大小與SHA-256逐項相符，授權文字／Home metadata／私人資料排除均通過；重新解壓後於獨立空LocalAppData及設定啟動共用圖成功。ZIP SHA-256為`43be03489d0a9171ce6f4ddb74fd7db4b493210ccb30c4b811b7be3d240e3c7e`，GitHub兩份Release資產digest均與本機相符；正式發布及最新Release狀態已查核。證據為同發行artifacts目錄的`packaged-source.json`、`zip-verification.json`、`extracted-shared.json`與`published-release.json`。不將此檔案／啟動驗證當作新遊戲操作或另一台實體電腦驗收。
 

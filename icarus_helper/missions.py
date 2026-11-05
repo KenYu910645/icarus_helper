@@ -12,6 +12,7 @@ import re
 from typing import Any
 
 from .catalog import installed_game_build
+from .mission_text import display_mission_text
 from .operation_eligibility import operation_talent_gate, operation_retry_gate, operation_start_block
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "missions.json"
@@ -57,19 +58,69 @@ def _mission_name(value: Any) -> str | None:
     return value.strip()
 
 
-def _progress(quest: dict, catalog: dict) -> dict:
+def _quest_number(variable: dict) -> float | int | None:
+    """Read the numeric slot without erasing zero or accepting invalid values.
+
+    Saved records may include the unused numeric slot with its default zero.
+    Distinct nonzero slots conflict; missing slots do not default to zero.
+    """
+    values = [variable[key] for key in ("fVariable", "iVariable") if key in variable]
+    if not values or any(not isinstance(value, (int, float)) or isinstance(value, bool)
+                         or not math.isfinite(value) for value in values):
+        return None
+    nonzero = set(value for value in values if value != 0)
+    return next(iter(nonzero)) if len(nonzero) == 1 else 0 if not nonzero else None
+
+
+def _progress_text(qid: str, catalog: dict, mission: dict | None) -> str:
+    """Shared NPC quest IDs do not share a mission's audited requirements."""
+    fallback = catalog.get("quest_texts", {}).get(qid, qid)
+    if mission is None:
+        return display_mission_text(fallback)
+    for key in ("source_objectives", "objectives"):
+        for row in mission.get(key, []):
+            if row.get("id") == qid:
+                source = row.get("quantity_source")
+                if source and mission.get("id") not in source.get("missions", []):
+                    return display_mission_text(row.get("source_text", qid))
+                return display_mission_text(row.get("text", qid))
+    for row in mission.get("catalog_only_objectives", []):
+        if row.get("id") == qid:
+            label = display_mission_text(row.get("source_text", row.get("text", qid)))
+            return label + " (Catalog-only objective; not required in this verified mission flow)"
+    if "Required:" in fallback:
+        # A global label may have been filled for another map's NPC. Recover
+        # its unfilled source only; absence from this mission is not approval
+        # to reuse another mission's fixed/difficulty-specific target.
+        for other in catalog.get("missions", []):
+            for key in ("source_objectives", "objectives", "catalog_only_objectives"):
+                for row in other.get(key, []):
+                    if row.get("id") == qid and row.get("source_text"):
+                        return display_mission_text(row["source_text"])
+        return f"{qid} (Quantity unconfirmed for this mission)"
+    return display_mission_text(fallback)
+
+
+def _progress(quest: dict, catalog: dict, mission: dict | None = None) -> dict:
     """Expose evidence without treating a persisted actor as an active objective."""
     qid = quest.get("QuestName", "")
-    variables = quest.get("VariableRecords", [])
-    by_name = {v.get("VariableName"): v for v in variables}
+    variables = [var for var in (quest.get("VariableRecords") or []) if isinstance(var, dict)]
+    by_name = {v["VariableName"]: v for v in variables if isinstance(v.get("VariableName"), str)}
     explicit_done = any(by_name.get(k, {}).get("bVariable") for k in ("Complete", "Completed", "bComplete", "bCompleted"))
     reached = bool(by_name.get("LocationReached", {}).get("bVariable"))
     state = "Completed (explicit completion flag)" if explicit_done else "Reached (location flag)" if reached else "Record exists; completion unconfirmed"
     details = []
-    for var in variables:
+    for var in by_name.values():
         name = var.get("VariableName", "")
+        if not isinstance(name, str):
+            continue
+        records = [row for row in variables if row.get("VariableName") == name]
+        numbers = [_quest_number(row) for row in records]
+        number = numbers[0] if numbers and all(value == numbers[0] for value in numbers) else None
         if name in {"CurrentTime", "ElapsedTime", "TimeElapsed", "ProgressTime"}:
-            current = float(var.get("fVariable", 0) or var.get("iVariable", 0))
+            if number is None or number < 0:
+                continue
+            current = float(number)
             if qid == "PRO_Story_5_Outpost_Progress":
                 current = min(600.0, max(0.0, current))
                 details.append(f"Transmission {current:.0f}/600 s ({current / 6:.1f}%); {600-current:.0f} s of effective transmission remaining")
@@ -77,12 +128,13 @@ def _progress(quest: dict, catalog: dict) -> dict:
             else:
                 details.append(f"{name}: {current:g} s (raw field value)")
         elif any(key in name.lower() for key in ("count", "amount", "health", "durability", "progress")):
-            number = var.get("fVariable") or var.get("iVariable")
             if number is not None:
                 details.append(f"{name}: {number:g} (no percentage without a verified target)")
+            else:
+                details.append(f"{name}: Unknown (missing, invalid or conflicting numeric value)")
     if qid == "PRO_Story_5_Outpost_Progress" and not details:
         details.append("This snapshot has no readable transmission timer; a countdown is unavailable")
-    return {"id": qid, "text": catalog.get("quest_texts", {}).get(qid, qid), "state": state,
+    return {"id": qid, "text": _progress_text(qid, catalog, mission), "state": state,
             "complete": bool(explicit_done), "reached": reached, "details": details, "variables": variables}
 
 
@@ -112,7 +164,7 @@ def _next_step(mission: dict) -> str:
     completed = {q["id"] for q in mission.get("progress", []) if q.get("complete")}
     remaining = [q.get("text", "") for q in mission.get("objectives", []) if q.get("id") not in completed]
     if remaining:
-        return "Check the next objective in the game: " + remaining[0] + ". This snapshot cannot establish every stage's order or completion conditions."
+        return "Check the next objective in the game: " + display_mission_text(remaining[0]) + ". This snapshot cannot establish every stage's order or completion conditions."
     return "Follow the current in-game objective. Saved quest actors do not prove that every recorded stage is still active."
 
 
@@ -338,7 +390,7 @@ def build_missions(world: Any, goal: str = "story", context: dict | None = None)
             known_ids = mission.get("quest_ids", [])
             if qid not in known_ids and qid != mid:
                 continue
-            mission["progress"].append(_progress(quest, catalog))
+            mission["progress"].append(_progress(quest, catalog, mission))
             xyz = quest.get("ActorTransform", {}).get("Translation")
             if xyz and any(abs(float(n)) > 0 for n in xyz) and "position" not in mission:
                 mission["position"] = xyz
@@ -386,10 +438,29 @@ def build_missions(world: Any, goal: str = "story", context: dict | None = None)
     return results
 
 
+def _initial_objective_text(row: Any, mission_id: str | None) -> tuple[str, bool]:
+    """Show verified guide targets as starting counters, never saved progress."""
+    if not isinstance(row, dict):
+        return str(row), False
+    text = str(row.get("text", ""))
+    quantity = row.get("required_quantity")
+    source = row.get("quantity_source")
+    if (type(quantity) is not int or quantity <= 0 or not isinstance(source, dict)
+            or mission_id not in source.get("missions", [])):
+        return text, False
+    label = f"(Required: {quantity})"
+    if label in text:
+        return text.replace(label, f"(0/{quantity})"), True
+    prefix = f"Required: {quantity} "
+    if text.startswith(prefix):
+        return f"(0/{quantity}) " + text[len(prefix):], True
+    return text, False
+
+
 def mission_html(mission: dict) -> str:
     """Render the requested gameplay guide; keep diagnostics in the data model."""
     def esc(value):
-        return escape(str(value))
+        return escape(display_mission_text(value))
     def bullets(items):
         return "<ul>" + "".join(f"<li>{esc(x)}</li>" for x in items) + "</ul>"
     parts = ["<html><head><style>body{font-family:'Segoe UI',sans-serif;color:#e8ecf2;} h1{font-size:23px;color:#ffffff;}h2{font-size:16px;color:#f6c25b;}p,li{line-height:1.6;} .muted{color:#aeb7c5;}table{border-collapse:collapse;}td,th{padding:7px;border-bottom:1px solid #384452;text-align:left;}</style></head><body>",
@@ -409,6 +480,11 @@ def mission_html(mission: dict) -> str:
         parts += ["<h2>Mission progress</h2>", bullets(f"{q['text']}: {q['state']}" + ("; " + "; ".join(q.get("details", [])) if q.get("details") else "") for q in mission["progress"])]
     parts += ["<h2>Risks and supplies</h2>", bullets(mission.get("risks", [])), "<h2>Rewards and unlocks</h2>", bullets(mission.get("rewards", []))]
     if mission.get("source_objectives") or mission.get("objectives"):
-        parts += ["<h2>Objectives</h2>", bullets(x.get("text", "") if isinstance(x, dict) else x for x in (mission.get("source_objectives") or mission.get("objectives", [])))]
+        objectives = [_initial_objective_text(row, mission.get("id"))
+                      for row in (mission.get("source_objectives") or mission.get("objectives", []))]
+        parts.append("<h2>Objectives</h2>")
+        if any(initial for _, initial in objectives):
+            parts.append("<p class='muted'>Initial objective counts; saved progress is listed separately.</p>")
+        parts.append(bullets(text for text, _ in objectives))
     parts.append("</body></html>")
     return "".join(parts)

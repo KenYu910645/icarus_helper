@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
-$taskExe = Join-Path $PSScriptRoot 'dist\releases\v0.4.0\ICARUS Helper\ICARUS Helper.exe'
+$taskExe = Join-Path $PSScriptRoot 'dist\objective-counters-20261105\ICARUS Helper\ICARUS Helper.exe'
 if (Test-Path -LiteralPath $taskExe) {
     Start-Process -FilePath $taskExe -WorkingDirectory $PSScriptRoot -WindowStyle Normal
 } else {

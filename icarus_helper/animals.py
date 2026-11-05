@@ -212,32 +212,49 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
     canonical = {key.casefold(): key for key in items["items"]}
     dynamic_ids = items["dynamic_properties"]
     collected = {}
+    inventory_warnings = {}
+    inventory_copies = {}
     for inv in saved:
-        if not isinstance(inv, dict) or not isinstance(inv.get("InventoryID"), int) or isinstance(inv.get("InventoryID"), bool) or not isinstance(inv.get("Slots"), list):
+        if not isinstance(inv, dict) or not isinstance(inv.get("InventoryID"), int) or isinstance(inv.get("InventoryID"), bool):
             coverage["malformed_inventories"] += 1
             warnings.append("Some inventory formats could not be read.")
             continue
         inventory_id = inv["InventoryID"]
+        copies = inventory_copies.setdefault(inventory_id, [])
+        if inv in copies:
+            if isinstance(inv.get("Slots"), list):
+                coverage["duplicate_slots"] += len(inv["Slots"])
+            continue
+        copies.append(inv)
         group = collected.setdefault(inventory_id, {})
-        for index, slot in enumerate(inv["Slots"]):
+        inv_warnings = inventory_warnings.setdefault(inventory_id, [])
+        if not isinstance(inv.get("Slots"), list):
+            coverage["malformed_inventories"] += 1
+            inv_warnings.append("Inventory slots are missing or unreadable; empty state is unconfirmed.")
+            continue
+        for slot in inv["Slots"]:
             if not isinstance(slot, dict):
-                warnings.append("Some item slot formats could not be read.")
+                inv_warnings.append("Some item slot formats could not be read.")
                 coverage["malformed_inventories"] += 1
                 continue
             location = slot.get("Location")
-            valid_location = isinstance(location, int) and not isinstance(location, bool) and location >= 0
-            key = location if valid_location else ("unlocated", index)
+            valid_location = isinstance(location, int) and not isinstance(location, bool) and 0 <= location <= 2**31 - 1
+            key = location if valid_location else ("unlocated", json.dumps(slot, sort_keys=True, ensure_ascii=False, separators=(",", ":")))
             candidates = group.setdefault(key, [])
             if slot not in candidates:
                 candidates.append(slot)
             else:
                 coverage["duplicate_slots"] += 1
             if not valid_location:
-                warnings.append("Some item slots have no valid index and remain unknown.")
+                inv_warnings.append("Some item slots have no valid index and remain unknown.")
     output = []
     for inventory_id, groups in sorted(collected.items()):
         label = INVENTORY_LABELS.get(inventory_id, f"Unknown inventory ({inventory_id})")
-        inv_warnings = []
+        inv_warnings = inventory_warnings[inventory_id]
+        inventory_conflict = len(inventory_copies[inventory_id]) > 1
+        if inventory_conflict:
+            coverage["conflicting_inventories"] += 1
+            inv_warnings.append("Conflicting copies of this inventory exist; its item quantities remain unknown.")
         if inventory_id not in INVENTORY_LABELS:
             inv_warnings.append("Unverified inventory type; only identifiable items are shown.")
             coverage["unknown_inventory_ids"].append(inventory_id)
@@ -249,6 +266,12 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
                 inv_warnings.append("Conflicting entries in the same inventory slot; item quantities remain unknown.")
             seen = set()
             for slot in candidates:
+                item_data = slot.get("ItemStaticData")
+                item_name = item_data.get("RowName") if isinstance(item_data, dict) else item_data
+                if not isinstance(item_name, str):
+                    coverage["malformed_inventories"] += 1
+                    inv_warnings.append("Some item identities are missing or unreadable; empty state is unconfirmed.")
+                    continue
                 item_id = _item_id(slot)
                 if not item_id:
                     continue
@@ -256,11 +279,15 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
                 if item_id in seen:
                     continue
                 seen.add(item_id)
-                quantity = None if conflict else _quantity(slot, dynamic_ids["ItemableStack"])
+                reported_quantity = _quantity(slot, dynamic_ids["ItemableStack"])
+                verified_location = isinstance(location, int)
+                quantity = None if conflict or inventory_conflict or not verified_location else reported_quantity
                 if quantity == 0:
                     continue
                 definition = items["items"].get(item_id)
                 row_warnings = []
+                if not verified_location:
+                    row_warnings.append("The slot identity is missing or invalid; its reported count cannot establish a unique stack.")
                 if definition is None:
                     coverage["unknown_items"] += 1
                     row_warnings.append("Item is not in the current-version catalog.")
@@ -275,7 +302,8 @@ def _inventories(record: dict, items: dict, coverage: dict) -> tuple[list, str, 
                     row_warnings.append("Nested item containers/slots have not been expanded and are excluded from this inventory list.")
                 rows.append({"id": item_id, "name": (definition or {}).get("name", item_id),
                              "quantity": quantity, "slot": location if isinstance(location, int) else None,
-                             "warnings": row_warnings, "nested_inventory_status": "unexpanded" if linked or nested else "none"})
+                             "warnings": row_warnings, "nested_inventory_status": "unexpanded" if linked or nested else "none",
+                             **({"unverified_quantity": reported_quantity} if not verified_location else {})})
                 inv_warnings.extend(row_warnings)
         status = "partial" if inv_warnings else "ok" if rows else "empty"
         output.append({"id": inventory_id, "label": label, "items": rows,
@@ -397,7 +425,7 @@ def summarize_animals(snapshot: Any, base: dict | None = None, radius_m: float =
                 "duplicate_records": 0, "conflicting_records": 0, "missing_identity": 0,
                 "unsupported_records": 0, "unknown_species": 0, "unknown_stacks": 0, "unknown_stats": 0,
                 "unknown_items": 0, "unknown_inventory_ids": [], "duplicate_slots": 0,
-                "conflicting_slots": 0, "malformed_inventories": 0, "unavailable_inventories": 0,
+                "conflicting_slots": 0, "conflicting_inventories": 0, "malformed_inventories": 0, "unavailable_inventories": 0,
                 "unexpanded_item_inventories": 0, "distance_type": "Horizontal straight-line distance", "radius_m": radius_m}
     result = {"animals": [], "coverage": coverage, "players": [],
               "world_id": _get(snapshot, "world_id"), "snapshot_sha256": _get(snapshot, "sha256")}
@@ -491,7 +519,7 @@ def summarize_animals(snapshot: Any, base: dict | None = None, radius_m: float =
         _apply_live_stats(result, read_live_animal_stats(snapshot), base=base, radius_m=radius)
     coverage["total_tamed"] = len(result["animals"])
     coverage["unknown_inventory_ids"] = sorted(set(coverage["unknown_inventory_ids"]))
-    if coverage["warnings"] or any(coverage[k] for k in ("conflicting_records", "missing_identity", "unsupported_records", "uncertain_ownership", "unknown_species", "unknown_stacks", "unknown_stats", "unknown_location", "unknown_items", "unknown_inventory_ids", "conflicting_slots", "malformed_inventories", "unavailable_inventories", "unexpanded_item_inventories")) or any(a["warnings"] for a in result["animals"]):
+    if coverage["warnings"] or any(coverage[k] for k in ("conflicting_records", "missing_identity", "unsupported_records", "uncertain_ownership", "unknown_species", "unknown_stacks", "unknown_stats", "unknown_location", "unknown_items", "unknown_inventory_ids", "conflicting_slots", "conflicting_inventories", "malformed_inventories", "unavailable_inventories", "unexpanded_item_inventories")) or any(a["warnings"] for a in result["animals"]):
         coverage.update(status="partial", reason="Some animal data is missing, unverified, or conflicting; see detail warnings.")
     return result
 

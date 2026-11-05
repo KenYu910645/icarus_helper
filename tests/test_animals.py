@@ -221,7 +221,104 @@ def test_malformed_and_unknown_inventory_data_remain_visible_as_partial():
     result = summarize(record)
     assert result["coverage"]["unknown_inventory_ids"] == [999]
     assert result["coverage"]["malformed_inventories"] == 1
-    assert result["animals"][0]["inventories"][0]["items"][0]["name"] == "Future_Item"
+    inventories = {entry["id"]: entry for entry in result["animals"][0]["inventories"]}
+    assert inventories[999]["items"][0]["name"] == "Future_Item"
+    assert inventories[19]["status"] == "partial"
+
+
+@pytest.mark.parametrize("slots", [
+    None, {}, [None], [{}], [{"Location": 0, "StackCount": 3}],
+    [{"Location": 0, "ItemStaticData": 5}],
+    [{"Location": 0, "ItemStaticData": {}}],
+    [{"Location": 0, "ItemStaticData": {"RowName": None}}],
+])
+def test_unreadable_inventory_contents_never_confirm_empty(slots):
+    row = summarize(tame(SavedInventories=[{"InventoryID": 19, "Slots": slots}]))["animals"][0]
+    assert row["inventory_status"] == "partial"
+    assert row["inventories"][0]["items"] == []
+    assert row["inventories"][0]["status"] == "partial"
+    assert row["inventories"][0]["warnings"]
+
+
+@pytest.mark.parametrize("item_data", ["", "None", "null", {"RowName": "None"}])
+def test_explicit_empty_item_identity_still_confirms_empty(item_data):
+    row = summarize(tame(SavedInventories=[{"InventoryID": 19, "Slots": [slot(item_data)]}]))["animals"][0]
+    assert row["inventory_status"] == "empty"
+    assert row["inventories"][0]["status"] == "empty"
+
+
+def test_partial_slot_data_only_marks_the_affected_inventory():
+    inventories = [{"InventoryID": 17, "Slots": []},
+                   {"InventoryID": 19, "Slots": [slot(quantity=3), None]},
+                   {"InventoryID": 20, "Slots": []}]
+    row = summarize(tame(SavedInventories=inventories))["animals"][0]
+    assert row["inventory_status"] == "partial"
+    assert [entry["status"] for entry in row["inventories"]] == ["empty", "partial", "empty"]
+    assert row["inventories"][1]["items"][0]["quantity"] == 3
+
+
+def test_duplicate_inventory_with_unreadable_slots_cannot_confirm_empty():
+    row = summarize(tame(SavedInventories=[{"InventoryID": 19, "Slots": []},
+                                          {"InventoryID": 19, "Slots": None}]))["animals"][0]
+    assert row["inventory_status"] == "partial"
+    assert len(row["inventories"]) == 1
+    assert row["inventories"][0]["status"] == "partial"
+
+
+@pytest.mark.parametrize("second_slots", [[], None, [slot(quantity=8, location=1)]])
+def test_conflicting_inventory_copies_keep_other_inventories_known(second_slots):
+    record = tame(SavedInventories=[{"InventoryID": 17, "Slots": [slot("Saddle", 1)]},
+                                   {"InventoryID": 19, "Slots": [slot(quantity=3)]},
+                                   {"InventoryID": 19, "Slots": second_slots},
+                                   {"InventoryID": 20, "Slots": [slot(quantity=5)]}])
+    original = deepcopy(record)
+    result = summarize(record)
+    row = result["animals"][0]
+    inventories = {entry["id"]: entry for entry in row["inventories"]}
+    assert row["inventory_status"] == "partial"
+    assert result["coverage"]["conflicting_inventories"] == 1
+    assert inventories[19]["status"] == "partial"
+    assert all(item["quantity"] is None for item in inventories[19]["items"])
+    assert inventories[17]["status"] == inventories[20]["status"] == "ok"
+    assert inventories[17]["items"][0]["quantity"] == 1
+    assert inventories[20]["items"][0]["quantity"] == 5
+    assert record == original
+
+
+@pytest.mark.parametrize("slots,expected_status,malformed", [([], "empty", 0), ([None], "partial", 1)])
+def test_identical_inventory_copies_are_deduplicated_before_validation(slots, expected_status, malformed):
+    inventory = {"InventoryID": 19, "Slots": slots}
+    result = summarize(tame(SavedInventories=[inventory, deepcopy(inventory)]))
+    row = result["animals"][0]
+    assert len(row["inventories"]) == 1
+    assert row["inventory_status"] == expected_status
+    assert result["coverage"]["conflicting_inventories"] == 0
+    assert result["coverage"]["malformed_inventories"] == malformed
+
+
+@pytest.mark.parametrize("location", [None, -1, True, 2**31])
+def test_unlocated_item_keeps_reported_quantity_only_as_unverified_diagnostic(location):
+    row = summarize(tame(SavedInventories=[{"InventoryID": 19, "Slots": [slot(location=location)]}]))["animals"][0]
+    assert row["inventory_status"] == "partial"
+    inventory = row["inventories"][0]
+    assert inventory["status"] == "partial"
+    assert inventory["items"][0]["quantity"] is None
+    assert inventory["items"][0]["unverified_quantity"] == 3
+    assert inventory["items"][0]["slot"] is None
+    assert inventory["items"][0]["warnings"]
+
+
+def test_identical_unlocated_items_are_not_presented_as_separate_stacks():
+    unlocated = slot(quantity=3)
+    unlocated.pop("Location")
+    result = summarize(tame(SavedInventories=[{"InventoryID": 19, "Slots": [unlocated, deepcopy(unlocated)]}]))
+    inventory = result["animals"][0]["inventories"][0]
+    assert inventory["status"] == "partial"
+    assert len(inventory["items"]) == 1
+    assert inventory["items"][0]["quantity"] is None
+    assert inventory["items"][0]["unverified_quantity"] == 3
+    assert result["coverage"]["unknown_stacks"] == 1
+    assert result["coverage"]["duplicate_slots"] == 1
 
 
 def test_unverified_recorder_or_installed_build_fails_closed(monkeypatch):
